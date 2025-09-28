@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Code, Brain, Briefcase, User, MessageSquare } from 'lucide-react';
+import { Menu, X, Code, Brain, Briefcase, User, MessageSquare, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navigation: React.FC = () => {
@@ -57,9 +57,13 @@ const Navigation: React.FC = () => {
                 <span>{item.label}</span>
               </button>
             ))}
-            <Button variant="outline" className="neural-glow">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Let's Connect
+            <Button 
+              variant="outline" 
+              className="neural-glow"
+              onClick={() => window.open('/admin', '_blank')}
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Admin
             </Button>
           </div>
 

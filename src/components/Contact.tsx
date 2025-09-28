@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FormData {
   name: string;
@@ -86,8 +87,21 @@ const Contact: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call - replace with actual Supabase integration
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Send contact message to Supabase
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert([
+          {
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            subject: formData.subject.trim(),
+            message: formData.message.trim()
+          }
+        ]);
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Message sent successfully!",
@@ -102,7 +116,8 @@ const Contact: React.FC = () => {
         message: ''
       });
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Contact form error:', error);
       toast({
         variant: "destructive",
         title: "Failed to send message",
