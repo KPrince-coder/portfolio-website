@@ -4,6 +4,8 @@ import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
 import Skills from '@/components/Skills';
+import Projects from '@/components/Projects';
+import Contact from '@/components/Contact';
 
 const Index: React.FC = () => {
   return (
@@ -20,39 +22,22 @@ const Index: React.FC = () => {
         <About />
         <Skills />
         
-        {/* Placeholder sections for future development */}
-        <section id="projects" className="py-20 bg-gradient-to-b from-background to-background/50">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="heading-xl mb-8">
-              Featured <span className="text-neural">Projects</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Showcase of innovative AI and data engineering solutions coming soon...
-            </p>
-          </div>
-        </section>
+        <Projects />
         
+        {/* Blog placeholder section */}
         <section id="blog" className="py-20 bg-background/50">
           <div className="container mx-auto px-6 text-center">
             <h2 className="heading-xl mb-8">
               Tech <span className="text-neural">Insights</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Deep dives into AI, data engineering, and emerging technologies coming soon...
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Deep dives into AI, data engineering, and emerging technologies. 
+              Interactive blog with CMS functionality coming soon...
             </p>
           </div>
         </section>
         
-        <section id="contact" className="py-20 bg-gradient-to-b from-background/50 to-background">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="heading-xl mb-8">
-              Let's <span className="text-neural">Connect</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Ready to collaborate on your next AI project? Contact form and CMS coming soon...
-            </p>
-          </div>
-        </section>
+        <Contact />
       </main>
       
       {/* Footer */}
