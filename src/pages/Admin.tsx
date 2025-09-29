@@ -298,39 +298,17 @@ const Admin: React.FC = () => {
     });
   };
 
-  const handleUpdateStatus = async (messageId: string, newStatus: ContactMessage['status']) => {
+  const handleUpdateStatus = async (messageId: string, updates: Partial<ContactMessage>) => {
     try {
-      let updates: Partial<ContactMessage> = {};
-      const currentMessage = contactMessages.find(msg => msg.id === messageId);
-      if (!currentMessage) throw new Error('Message not found for status update.');
+      // Optimistic update
+      updateMessage(messageId, updates);
 
-      if (newStatus === 'archived') {
-        // When archiving, set archived: true, but preserve the current status
-        updates = { archived: true };
-        updateMessage(messageId, { archived: true }); // Optimistic update
-
-      } else if (newStatus === 'spam') {
-        // When marking as spam, set status to 'spam' and archived: true
-        updates = { status: 'spam', archived: true };
-        updateMessage(messageId, { status: 'spam', archived: true }); // Optimistic update
-
-      } else if (currentMessage.status === 'spam' && newStatus === 'read') {
-        // This is the "Mark as Not Spam" action (from previous fix)
-        // Set status to 'read' and archived: false
-        updates = { status: 'read', archived: false };
-        updateMessage(messageId, { status: 'read', archived: false }); // Optimistic update
-
-      } else {
-        // For other status changes (e.g., 'unread', 'read', 'replied'), set status and archived: false
-        updates = { status: newStatus, archived: false };
-        updateMessage(messageId, { status: newStatus, archived: false }); // Optimistic update
-      }
-
+      // Call service with the updates
       await MessageService.updateMessageFields(messageId, updates);
 
       toast({
         title: "Status updated",
-        description: `Message status changed to ${newStatus}`,
+        description: `Message status changed.`, // Generic description
       });
     } catch (error) {
       toast({

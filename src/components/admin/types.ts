@@ -117,7 +117,7 @@ export interface ContactMessagesProps {
   onBulkAction: (messageIds: string[], action: string) => void;
   onDeleteMessage: (messageId: string) => void;
   onReplyToMessage: (messageId: string) => void;
-  onUpdateStatus: (messageId: string, status: ContactMessage['status']) => void;
+  onUpdateStatus: (messageId: string, updates: Partial<ContactMessage>) => void;
   onUpdatePriority: (messageId: string, priority: ContactMessage['priority']) => void;
   loading?: boolean;
 }

@@ -34,7 +34,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
   onUpdateStatus,
   onUpdatePriority,
   loading = false,
-}) => {
+}) => { // onUpdateStatus now expects Partial<ContactMessage>
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [filters, setFilters] = useState<MessageFilters>({
     status: 'all',
@@ -46,17 +46,19 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
   // Filter and search messages
   const filteredMessages = useMemo(() => {
     return contactMessages.filter((message) => {
-      // If filtered for 'archived', only show archived messages.
-      // Otherwise, hide archived messages by default.
+      // Filter by archived status
       if (filters.status === 'archived') {
         if (!message.archived) return false;
-      } else if (message.archived) {
-        return false; // Hide archived messages from default view
-      }
-
-      // Status filter (applies to non-archived messages or when 'archived' is not the filter)
-      if (filters.status && filters.status !== 'all' && filters.status !== 'archived') {
-        if (message.status !== filters.status) {
+      } else if (filters.status === 'spam') {
+        // If filtering for spam, only show messages with status 'spam'
+        if (message.status !== 'spam') return false;
+      } else {
+        // For 'all', 'unread', 'read', 'replied' filters, hide archived and spam messages
+        if (message.archived || message.status === 'spam') {
+          return false;
+        }
+        // Then apply the specific status filter
+        if (filters.status && filters.status !== 'all' && message.status !== filters.status) {
           return false;
         }
       }
@@ -130,11 +132,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
         return 'secondary';
       case 'replied':
         return 'default';
-      case 'archived':
-        return 'outline';
-      case 'spam':
-        return 'destructive';
-      default:
+      default: // Handle 'archived' and 'spam' or any other unexpected status
         return 'secondary';
     }
   };
@@ -273,7 +271,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                       From: <span className="font-medium">{message.name}</span> ({message.email})
                     </p>
                     <div className="flex items-center space-x-2 mt-1">
-                      {message.status !== 'spam' && (
+                      {(message.status === 'unread' || message.status === 'read' || message.status === 'replied') && (
                         <Badge variant={getStatusBadgeVariant(message.status)}>
                           {message.status}
                         </Badge>
@@ -281,13 +279,13 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                       {message.status === 'spam' && (
                         <Badge variant="destructive">
                           <AlertCircle className="w-3 h-3 mr-1" />
-                          Spam
+                          spam
                         </Badge>
                       )}
-                      {message.archived && message.status !== 'spam' && (
+                      {message.archived && ( // Always show archived badge if archived, regardless of status
                         <Badge variant="outline">
                           <Archive className="w-3 h-3 mr-1" />
-                          Archived
+                          archived
                         </Badge>
                       )}
                       {/* Priority Dropdown */}
@@ -338,17 +336,24 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                         <Reply className="w-4 h-4 mr-2" />
                         Reply
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'archived')}>
-                        <Archive className="w-4 h-4 mr-2" />
-                        Archive
-                      </DropdownMenuItem>
+                      {message.archived ? (
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { archived: false, status: 'read' })}>
+                          <Archive className="w-4 h-4 mr-2" />
+                          Unarchive
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { archived: true })}>
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archive
+                        </DropdownMenuItem>
+                      )}
                       {message.status === 'spam' ? (
-                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'read')}>
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { status: 'read', archived: false })}>
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Mark as Not Spam
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'spam')}>
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { status: 'spam', archived: true })}>
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Mark as Spam
                         </DropdownMenuItem>
