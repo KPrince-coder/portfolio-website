@@ -43,8 +43,6 @@ const Admin: React.FC = () => {
       const { data: messages } = await MessageService.getMessages({ limit: 50 });
       setInitialMessages(messages);
 
-      // Message statistics will be calculated from contactMessages
-
       // Load projects
       const { data: projectsData } = await supabase
         .from('projects')
@@ -95,26 +93,41 @@ const Admin: React.FC = () => {
 
   // Calculate message statistics from real-time messages
   const calculatedMessageStats = React.useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday as start of week
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const total = contactMessages.length;
     const unread = contactMessages.filter(msg => msg.status === 'unread').length;
     const replied = contactMessages.filter(msg => msg.status === 'replied').length;
 
-    // For average response time, messages this week/month, we'd need more complex logic
-    // For now, we'll keep these as placeholders or fetch them less frequently if needed.
-    // Or, if the MessageService.getMessageStats() is fast enough, we can keep it for these specific metrics.
-    // For simplicity and immediate responsiveness, let's focus on total, unread, replied.
-    // For time-based stats, a separate, less frequent fetch might be acceptable, or more complex client-side date calculations.
+    // Calculate average response time
+    const repliedMessagesList = contactMessages.filter(msg => msg.is_replied && msg.reply_sent_at && msg.created_at);
+    let avgResponseTime = 0;
+    if (repliedMessagesList.length > 0) {
+      const totalResponseTime = repliedMessagesList.reduce((sum, msg) => {
+        const created = new Date(msg.created_at).getTime();
+        const replied = new Date(msg.reply_sent_at!).getTime();
+        return sum + (replied - created);
+      }, 0);
+      avgResponseTime = totalResponseTime / repliedMessagesList.length / (1000 * 60 * 60); // Convert ms to hours
+    }
 
-    // For now, let's just update the core stats
+    // Calculate messages this week
+    const messagesThisWeek = contactMessages.filter(msg => new Date(msg.created_at) >= startOfWeek).length;
+
+    // Calculate messages this month
+    const messagesThisMonth = contactMessages.filter(msg => new Date(msg.created_at) >= startOfMonth).length;
+
     return {
       totalMessages: total,
       unreadMessages: unread,
       repliedMessages: replied,
-      averageResponseTime: messageStats.averageResponseTime, // Keep existing for now
-      messagesThisWeek: messageStats.messagesThisWeek, // Keep existing for now
-      messagesThisMonth: messageStats.messagesThisMonth, // Keep existing for now
+      averageResponseTime: avgResponseTime,
+      messagesThisWeek: messagesThisWeek,
+      messagesThisMonth: messagesThisMonth,
     };
-  }, [contactMessages, messageStats.averageResponseTime, messageStats.messagesThisWeek, messageStats.messagesThisMonth]);
+  }, [contactMessages]);
 
   // Update messageStats state when calculatedMessageStats changes
   useEffect(() => {
@@ -251,6 +264,10 @@ const Admin: React.FC = () => {
     if (message) {
       setSelectedMessage(message);
       setShowReplyModal(true);
+      // Automatically mark as read when opened, if it's unread
+      if (message.status === 'unread') {
+        await handleMarkAsRead(messageId);
+      }
     }
   };
 
