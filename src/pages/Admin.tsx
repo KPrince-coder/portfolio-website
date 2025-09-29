@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -52,11 +52,7 @@ const Admin: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -68,7 +64,11 @@ const Admin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const loadData = async () => {
     try {
@@ -118,17 +118,28 @@ const Admin: React.FC = () => {
 
     setIsSigningIn(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
-    } catch (error: any) {
+      
+      // Update user state and load data on successful login
+      if (data?.user) {
+        setUser(data.user);
+        await loadData();
+        // Clear form fields
+        setEmail('');
+        setPassword('');
+        // Redirect to admin panel
+        window.location.href = '/admin';
+      }
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Authentication failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
     } finally {
       setIsSigningIn(false);
@@ -153,11 +164,11 @@ const Admin: React.FC = () => {
       toast({
         title: "Message marked as read",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error updating message",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
     }
   };
