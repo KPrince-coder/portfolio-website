@@ -46,9 +46,19 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
   // Filter and search messages
   const filteredMessages = useMemo(() => {
     return contactMessages.filter((message) => {
-      // Status filter
-      if (filters.status && filters.status !== 'all' && message.status !== filters.status) {
-        return false;
+      // If filtered for 'archived', only show archived messages.
+      // Otherwise, hide archived messages by default.
+      if (filters.status === 'archived') {
+        if (!message.archived) return false;
+      } else if (message.archived) {
+        return false; // Hide archived messages from default view
+      }
+
+      // Status filter (applies to non-archived messages or when 'archived' is not the filter)
+      if (filters.status && filters.status !== 'all' && filters.status !== 'archived') {
+        if (message.status !== filters.status) {
+          return false;
+        }
       }
 
       // Priority filter
@@ -263,9 +273,23 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                       From: <span className="font-medium">{message.name}</span> ({message.email})
                     </p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <Badge variant={getStatusBadgeVariant(message.status)}>
-                        {message.status}
-                      </Badge>
+                      {message.status !== 'spam' && (
+                        <Badge variant={getStatusBadgeVariant(message.status)}>
+                          {message.status}
+                        </Badge>
+                      )}
+                      {message.status === 'spam' && (
+                        <Badge variant="destructive">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          Spam
+                        </Badge>
+                      )}
+                      {message.archived && message.status !== 'spam' && (
+                        <Badge variant="outline">
+                          <Archive className="w-3 h-3 mr-1" />
+                          Archived
+                        </Badge>
+                      )}
                       {/* Priority Dropdown */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

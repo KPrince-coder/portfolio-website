@@ -65,27 +65,18 @@ export class MessageService {
     return data;
   }
 
-  // Update message status
-  static async updateMessageStatus(id: string, status: ContactMessage['status']): Promise<void> {
-    const updates: Partial<ContactMessage> = {
-      status,
-      updated_at: new Date().toISOString(),
-    };
-
-    // Set 'archived' status based on the new status
-    if (status === 'archived' || status === 'spam') {
-      updates.archived = true;
-    } else {
-      updates.archived = false;
-    }
-
+  // Update message fields generically
+  static async updateMessageFields(id: string, updates: Partial<ContactMessage>): Promise<void> {
     const { error } = await supabase
       .from('contact_messages')
-      .update(updates)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', id);
 
     if (error) {
-      throw new Error(`Failed to update message status: ${error.message}`);
+      throw new Error(`Failed to update message fields: ${error.message}`);
     }
   }
 

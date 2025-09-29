@@ -298,15 +298,39 @@ const Admin: React.FC = () => {
     });
   };
 
-  const handleUpdateStatus = async (messageId: string, status: ContactMessage['status']) => {
+  const handleUpdateStatus = async (messageId: string, newStatus: ContactMessage['status']) => {
     try {
-      // Optimistic update
-      updateMessage(messageId, { status });
-      await MessageService.updateMessageStatus(messageId, status);
+      let updates: Partial<ContactMessage> = {};
+      const currentMessage = contactMessages.find(msg => msg.id === messageId);
+      if (!currentMessage) throw new Error('Message not found for status update.');
+
+      if (newStatus === 'archived') {
+        // When archiving, set archived: true, but preserve the current status
+        updates = { archived: true };
+        updateMessage(messageId, { archived: true }); // Optimistic update
+
+      } else if (newStatus === 'spam') {
+        // When marking as spam, set status to 'spam' and archived: true
+        updates = { status: 'spam', archived: true };
+        updateMessage(messageId, { status: 'spam', archived: true }); // Optimistic update
+
+      } else if (currentMessage.status === 'spam' && newStatus === 'read') {
+        // This is the "Mark as Not Spam" action (from previous fix)
+        // Set status to 'read' and archived: false
+        updates = { status: 'read', archived: false };
+        updateMessage(messageId, { status: 'read', archived: false }); // Optimistic update
+
+      } else {
+        // For other status changes (e.g., 'unread', 'read', 'replied'), set status and archived: false
+        updates = { status: newStatus, archived: false };
+        updateMessage(messageId, { status: newStatus, archived: false }); // Optimistic update
+      }
+
+      await MessageService.updateMessageFields(messageId, updates);
 
       toast({
         title: "Status updated",
-        description: `Message status changed to ${status}`,
+        description: `Message status changed to ${newStatus}`,
       });
     } catch (error) {
       toast({
@@ -314,9 +338,6 @@ const Admin: React.FC = () => {
         title: "Error updating status",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
-      // Revert optimistic update if API call fails (optional, but good for robustness)
-      // You would need to fetch the original message or pass it down to revert.
-      // For now, we'll rely on the real-time update to correct it if it fails.
     }
   };
 
