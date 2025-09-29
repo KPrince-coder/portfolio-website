@@ -62,38 +62,222 @@ export type Database = {
         }
         Relationships: []
       }
-      contact_messages: {
+      brand_settings: {
         Row: {
           created_at: string
-          email: string
+          description: string | null
           id: string
-          message: string
-          name: string
-          replied: boolean | null
-          status: string | null
-          subject: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
         }
         Insert: {
           created_at?: string
-          email: string
+          description?: string | null
           id?: string
-          message: string
-          name: string
-          replied?: boolean | null
-          status?: string | null
-          subject: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
         }
         Update: {
           created_at?: string
-          email?: string
+          description?: string | null
           id?: string
-          message?: string
-          name?: string
-          replied?: boolean | null
-          status?: string | null
-          subject?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
         }
         Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          admin_notes: string | null
+          archived: boolean | null
+          category: string | null
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          is_replied: boolean | null
+          message: string
+          name: string
+          priority: string | null
+          reply_content: string | null
+          reply_sent_at: string | null
+          status: string | null
+          subject: string
+          tags: string[] | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          archived?: boolean | null
+          category?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          is_replied?: boolean | null
+          message: string
+          name: string
+          priority?: string | null
+          reply_content?: string | null
+          reply_sent_at?: string | null
+          status?: string | null
+          subject: string
+          tags?: string[] | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          archived?: boolean | null
+          category?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          is_replied?: boolean | null
+          message?: string
+          name?: string
+          priority?: string | null
+          reply_content?: string | null
+          reply_sent_at?: string | null
+          status?: string | null
+          subject?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          text_content: string | null
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          text_content?: string | null
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          template_type?: string
+          text_content?: string | null
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      message_analytics: {
+        Row: {
+          admin_user_id: string | null
+          created_at: string
+          id: string
+          message_id: string
+          opened_at: string | null
+          replied_at: string | null
+          response_time_hours: number | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          message_id: string
+          opened_at?: string | null
+          replied_at?: string | null
+          response_time_hours?: number | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          response_time_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_analytics_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_notifications: {
+        Row: {
+          content: string
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string
+          notification_type: string
+          recipient_email: string
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id: string
+          notification_type: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string
+          notification_type?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_notifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

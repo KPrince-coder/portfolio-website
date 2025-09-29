@@ -159,7 +159,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
               />
             </div>
 
-            <Select value={filters.status || 'all'} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}>
+            <Select value={filters.status || 'all'} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as ContactMessage['status'] }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -173,7 +173,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
               </SelectContent>
             </Select>
 
-            <Select value={filters.priority || 'all'} onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value as any }))}>
+            <Select value={filters.priority || 'all'} onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value as ContactMessage['priority'] }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by priority" />
               </SelectTrigger>
@@ -266,9 +266,25 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                       <Badge variant={getStatusBadgeVariant(message.status)}>
                         {message.status}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {message.priority}
-                      </Badge>
+                      {/* Priority Dropdown */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Badge variant="outline" className="text-xs cursor-pointer">
+                            {message.priority}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => onUpdatePriority(message.id, 'high')}>
+                            <AlertCircle className="w-4 h-4 mr-2 text-red-500" /> High
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdatePriority(message.id, 'medium')}>
+                            <Clock className="w-4 h-4 mr-2 text-yellow-500" /> Medium
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdatePriority(message.id, 'low')}>
+                            <Star className="w-4 h-4 mr-2 text-green-500" /> Low
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       {message.category && (
                         <Badge variant="outline" className="text-xs">
                           {message.category}
@@ -301,6 +317,10 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                       <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'archived')}>
                         <Archive className="w-4 h-4 mr-2" />
                         Archive
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'spam')}>
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Mark as Spam
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDeleteMessage(message.id)}

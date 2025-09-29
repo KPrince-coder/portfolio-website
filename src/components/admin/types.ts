@@ -1,84 +1,83 @@
+import React from 'react';
+import { Database, Json } from '@/integrations/supabase/types';
+
+// Helper types for Supabase table rows
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
+
 export interface User {
   id: string;
   email?: string;
 }
 
+// Aligning interfaces with Supabase Row types
 export interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  status: 'unread' | 'read' | 'replied' | 'archived' | 'spam';
+  admin_notes: string | null;
+  archived: boolean | null;
+  category: string | null;
   created_at: string;
-  updated_at?: string;
-  reply_content?: string;
-  reply_sent_at?: string;
-  is_replied: boolean;
-  priority: 'low' | 'medium' | 'high';
-  category: string;
-  tags?: string[];
-  archived: boolean;
-  admin_notes?: string;
-  ip_address?: string;
-  user_agent?: string;
+  email: string;
+  id: string;
+  ip_address: string | null;
+  is_replied: boolean | null;
+  message: string;
+  name: string;
+  priority: string | null;
+  reply_content: string | null;
+  reply_sent_at: string | null;
+  status: string | null;
+  subject: string;
+  tags: string[] | null;
+  updated_at: string;
+  user_agent: string | null;
 }
 
 export interface MessageNotification {
+  content: string;
+  created_at: string;
+  error_message: string | null;
   id: string;
   message_id: string;
-  notification_type: 'new_message' | 'reply_sent' | 'admin_notification';
+  notification_type: string;
   recipient_email: string;
+  sent_at: string | null;
+  status: string;
   subject: string;
-  content: string;
-  status: 'pending' | 'sent' | 'failed' | 'bounced';
-  sent_at?: string;
-  error_message?: string;
-  created_at: string;
   updated_at: string;
 }
 
 export interface EmailTemplate {
+  created_at: string;
+  html_content: string;
   id: string;
+  is_active: boolean | null;
   name: string;
   subject: string;
-  html_content: string;
-  text_content?: string;
-  template_type: 'new_message_notification' | 'reply_to_sender' | 'auto_reply';
-  variables: Record<string, any>;
-  is_active: boolean;
-  created_at: string;
+  template_type: string;
+  text_content: string | null;
   updated_at: string;
+  variables: Json | null;
 }
 
 export interface MessageAnalytics {
+  admin_user_id: string | null;
+  created_at: string;
   id: string;
   message_id: string;
-  opened_at?: string;
-  replied_at?: string;
-  response_time_hours?: number;
-  admin_user_id?: string;
-  created_at: string;
+  opened_at: string | null;
+  replied_at: string | null;
+  response_time_hours: number | null;
 }
 
 export interface BrandSettings {
+  created_at: string;
+  description: string | null;
   id: string;
   setting_key: string;
-  setting_value: Record<string, any>;
-  description?: string;
-  created_at: string;
+  setting_value: Json;
   updated_at: string;
 }
 
-export interface Project {
-  id: string;
-  title: string;
-  category: string;
-  status: string;
-  featured: boolean;
-  published: boolean;
-  created_at: string;
-}
+export interface Project extends ProjectRow {}
 
 export interface AdminTab {
   id: string;
@@ -165,6 +164,6 @@ export interface EmailTemplateFormProps {
 
 export interface BrandSettingsProps {
   settings: BrandSettings[];
-  onUpdateSetting: (key: string, value: any) => Promise<void>;
+  onUpdateSetting: (key: string, value: Json) => Promise<void>;
   loading?: boolean;
 }

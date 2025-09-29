@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types'; // Import Database
 import { ContactMessage, MessageNotification, EmailTemplate, MessageAnalytics } from '@/components/admin/types';
 
 export class MessageService {
@@ -66,12 +67,21 @@ export class MessageService {
 
   // Update message status
   static async updateMessageStatus(id: string, status: ContactMessage['status']): Promise<void> {
+    const updates: Partial<ContactMessage> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Set 'archived' status based on the new status
+    if (status === 'archived' || status === 'spam') {
+      updates.archived = true;
+    } else {
+      updates.archived = false;
+    }
+
     const { error } = await supabase
       .from('contact_messages')
-      .update({ 
-        status, 
-        updated_at: new Date().toISOString() 
-      })
+      .update(updates)
       .eq('id', id);
 
     if (error) {
@@ -283,19 +293,50 @@ export class MessageService {
 
   // Save email template
   static async saveEmailTemplate(template: Partial<EmailTemplate>): Promise<EmailTemplate> {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .upsert({
+    const now = new Date().toISOString();
+
+    if (!template.id) {
+      // This is an insert operation, so required fields must be present.
+      if (!template.html_content || !template.name || !template.subject || !template.template_type) {
+        throw new Error('Missing required fields for new email template: html_content, name, subject, template_type.');
+      }
+      // Cast to Insert type to satisfy TypeScript, as we've checked for required fields.
+      const insertData: Database['public']['Tables']['email_templates']['Insert'] = {
         ...template,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+        html_content: template.html_content,
+        name: template.name,
+        subject: template.subject,
+        template_type: template.template_type,
+        updated_at: now,
+      };
+      const { data, error } = await supabase
+        .from('email_templates')
+        .insert(insertData) // Use insert directly
+        .select()
+        .single();
 
-    if (error) {
-      throw new Error(`Failed to save email template: ${error.message}`);
+      if (error) {
+        throw new Error(`Failed to save email template: ${error.message}`);
+      }
+      return data;
+
+    } else {
+      // This is an update operation.
+      const updateData: Database['public']['Tables']['email_templates']['Update'] = {
+        ...template,
+        updated_at: now,
+      };
+      const { data, error } = await supabase
+        .from('email_templates')
+        .update(updateData) // Use update directly
+        .eq('id', template.id) // Specify the record to update
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to save email template: ${error.message}`);
+      }
+      return data;
     }
-
-    return data;
   }
 }
