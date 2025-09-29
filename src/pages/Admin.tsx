@@ -9,10 +9,13 @@ import {
   ContactMessages,
   ProjectsManagement,
   PlaceholderSection,
+  MessageReply,
+  MessageStats,
   User,
   ContactMessage,
   Project,
 } from '@/components/admin';
+import { MessageService } from '@/lib/messages';
 
 const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +23,47 @@ const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [messageStats, setMessageStats] = useState({
+    totalMessages: 0,
+    unreadMessages: 0,
+    repliedMessages: 0,
+    averageResponseTime: 0,
+    messagesThisWeek: 0,
+    messagesThisMonth: 0,
+  });
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const { toast } = useToast();
+
+  const loadData = useCallback(async () => {
+    try {
+      // Load contact messages using MessageService
+      const { data: messages } = await MessageService.getMessages({ limit: 50 });
+      setContactMessages(messages);
+
+      // Load message statistics
+      const stats = await MessageService.getMessageStats();
+      setMessageStats(stats);
+
+      // Load projects
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (projectsData) {
+        setProjects(projectsData);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to load data",
+        description: "Please refresh the page to try again.",
+      });
+    }
+  }, [toast]);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -34,38 +77,11 @@ const Admin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadData]);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
-  const loadData = async () => {
-    try {
-      // Load contact messages
-      const { data: messages } = await supabase
-        .from('contact_messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (messages) {
-        setContactMessages(messages);
-      }
-
-      // Load projects
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (projectsData) {
-        setProjects(projectsData);
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-  };
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -116,18 +132,14 @@ const Admin: React.FC = () => {
     }
   };
 
-  const markMessageAsRead = async (messageId: string) => {
+  // Enhanced message handling functions
+  const handleMarkAsRead = async (messageId: string) => {
     try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .update({ status: 'read' })
-        .eq('id', messageId);
-
-      if (error) throw error;
+      await MessageService.markAsRead(messageId);
 
       setContactMessages(prev =>
         prev.map(msg =>
-          msg.id === messageId ? { ...msg, status: 'read' } : msg
+          msg.id === messageId ? { ...msg, status: 'read' as const } : msg
         )
       );
 
@@ -138,6 +150,174 @@ const Admin: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error updating message",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+    }
+  };
+
+  const handleBulkAction = async (messageIds: string[], action: string) => {
+    try {
+      setMessagesLoading(true);
+
+      switch (action) {
+        case 'mark_read':
+          await MessageService.bulkUpdateMessages(messageIds, { status: 'read' });
+          break;
+        case 'mark_unread':
+          await MessageService.bulkUpdateMessages(messageIds, { status: 'unread' });
+          break;
+        case 'archive':
+          await MessageService.bulkUpdateMessages(messageIds, { archived: true, status: 'archived' });
+          break;
+        case 'delete':
+          for (const id of messageIds) {
+            await MessageService.deleteMessage(id);
+          }
+          break;
+      }
+
+      // Reload messages
+      await loadData();
+
+      toast({
+        title: "Bulk action completed",
+        description: `Successfully ${action.replace('_', ' ')} ${messageIds.length} message(s)`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Bulk action failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await MessageService.deleteMessage(messageId);
+
+      setContactMessages(prev => prev.filter(msg => msg.id !== messageId));
+
+      toast({
+        title: "Message deleted",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting message",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+    }
+  };
+
+  const handleReplyToMessage = async (messageId: string) => {
+    const message = contactMessages.find(m => m.id === messageId);
+    if (message) {
+      setSelectedMessage(message);
+      setShowReplyModal(true);
+    }
+  };
+
+  const handleSendReply = async (replyContent: string) => {
+    if (!selectedMessage) return;
+
+    try {
+      await MessageService.sendReply(selectedMessage.id, replyContent, user?.email);
+
+      // Update the message in the list
+      setContactMessages(prev =>
+        prev.map(msg =>
+          msg.id === selectedMessage.id
+            ? {
+                ...msg,
+                reply_content: replyContent,
+                reply_sent_at: new Date().toISOString(),
+                is_replied: true,
+                status: 'replied' as const
+              }
+            : msg
+        )
+      );
+
+      setShowReplyModal(false);
+      setSelectedMessage(null);
+
+      toast({
+        title: "Reply sent successfully",
+        description: "Your reply has been sent to the sender.",
+      });
+    } catch (error) {
+      throw error; // Let the MessageReply component handle the error
+    }
+  };
+
+  const handleSaveDraft = async (replyContent: string) => {
+    if (!selectedMessage) return;
+
+    try {
+      await MessageService.saveReplyDraft(selectedMessage.id, replyContent);
+
+      // Update the message in the list
+      setContactMessages(prev =>
+        prev.map(msg =>
+          msg.id === selectedMessage.id
+            ? { ...msg, reply_content: replyContent }
+            : msg
+        )
+      );
+
+      toast({
+        title: "Draft saved",
+        description: "Your reply draft has been saved.",
+      });
+    } catch (error) {
+      throw error; // Let the MessageReply component handle the error
+    }
+  };
+
+  const handleUpdateStatus = async (messageId: string, status: ContactMessage['status']) => {
+    try {
+      await MessageService.updateMessageStatus(messageId, status);
+
+      setContactMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId ? { ...msg, status } : msg
+        )
+      );
+
+      toast({
+        title: "Status updated",
+        description: `Message status changed to ${status}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error updating status",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+    }
+  };
+
+  const handleUpdatePriority = async (messageId: string, priority: ContactMessage['priority']) => {
+    try {
+      await MessageService.updateMessagePriority(messageId, priority);
+
+      setContactMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId ? { ...msg, priority } : msg
+        )
+      );
+
+      toast({
+        title: "Priority updated",
+        description: `Message priority changed to ${priority}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error updating priority",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
     }
@@ -184,17 +364,26 @@ const Admin: React.FC = () => {
           {/* Main Content */}
           <div className="lg:col-span-3">
             {activeTab === 'overview' && (
-              <AdminDashboard
-                contactMessages={contactMessages}
-                projects={projects}
-                unreadMessages={unreadMessages}
-              />
+              <div className="space-y-6">
+                <MessageStats {...messageStats} />
+                <AdminDashboard
+                  contactMessages={contactMessages}
+                  projects={projects}
+                  unreadMessages={unreadMessages}
+                />
+              </div>
             )}
 
             {activeTab === 'messages' && (
               <ContactMessages
                 contactMessages={contactMessages}
-                onMarkAsRead={markMessageAsRead}
+                onMarkAsRead={handleMarkAsRead}
+                onBulkAction={handleBulkAction}
+                onDeleteMessage={handleDeleteMessage}
+                onReplyToMessage={handleReplyToMessage}
+                onUpdateStatus={handleUpdateStatus}
+                onUpdatePriority={handleUpdatePriority}
+                loading={messagesLoading}
               />
             )}
 
@@ -218,6 +407,19 @@ const Admin: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Message Reply Modal */}
+      {showReplyModal && selectedMessage && (
+        <MessageReply
+          message={selectedMessage}
+          onSendReply={handleSendReply}
+          onSaveDraft={handleSaveDraft}
+          onClose={() => {
+            setShowReplyModal(false);
+            setSelectedMessage(null);
+          }}
+        />
+      )}
     </div>
   );
 };

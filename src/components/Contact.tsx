@@ -88,26 +88,42 @@ const Contact: React.FC = () => {
     
     try {
       // Send contact message to Supabase
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('contact_messages')
         .insert([
           {
             name: formData.name.trim(),
             email: formData.email.trim(),
             subject: formData.subject.trim(),
-            message: formData.message.trim()
+            message: formData.message.trim(),
+            priority: 'medium',
+            category: 'general',
+            ip_address: null, // Could be populated with actual IP if needed
+            user_agent: navigator.userAgent
           }
-        ]);
+        ])
+        .select()
+        .single();
 
       if (error) {
         throw error;
       }
-      
+
+      // Send notification to admin (optional - could be triggered by database trigger instead)
+      try {
+        await supabase.functions.invoke('send-message-notification', {
+          body: { message_id: data.id }
+        });
+      } catch (notificationError) {
+        console.error('Failed to send notification:', notificationError);
+        // Don't fail the whole operation if notification fails
+      }
+
       toast({
         title: "Message sent successfully!",
         description: "Thank you for reaching out. I'll get back to you within 24 hours.",
       });
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -115,7 +131,7 @@ const Contact: React.FC = () => {
         subject: '',
         message: ''
       });
-      
+
     } catch (error: any) {
       console.error('Contact form error:', error);
       toast({
