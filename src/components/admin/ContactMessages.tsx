@@ -337,7 +337,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                         Reply
                       </DropdownMenuItem>
                       {message.archived ? (
-                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { archived: false, status: 'read' })}>
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { archived: false, status: message.status })}>
                           <Archive className="w-4 h-4 mr-2" />
                           Unarchive
                         </DropdownMenuItem>
@@ -348,7 +348,7 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                         </DropdownMenuItem>
                       )}
                       {message.status === 'spam' ? (
-                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { status: 'read', archived: false })}>
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, { status: message.is_replied ? 'replied' : 'unread', archived: false })}>
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Mark as Not Spam
                         </DropdownMenuItem>
