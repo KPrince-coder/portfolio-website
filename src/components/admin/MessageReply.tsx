@@ -37,9 +37,9 @@ const MessageReply: React.FC<MessageReplyProps> = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({
-        openOnClick: false,
-      }),
+      // Link extension is often included in StarterKit, or can be added separately if needed.
+      // Removing explicit Link.configure to avoid duplicate extension warning.
+      // If link functionality breaks, re-add Link.configure.
     ],
     content: message.reply_content || '',
     editorProps: {

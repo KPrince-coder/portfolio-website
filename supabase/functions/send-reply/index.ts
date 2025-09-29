@@ -384,16 +384,19 @@ serve(async (req) => {
       console.error('Failed to log notification:', notificationError);
     }
 
-    // Log analytics
+    // Log analytics (upsert to avoid duplicate key errors)
     const { error: analyticsError } = await supabaseClient
       .from('message_analytics')
-      .insert({
-        message_id,
-        replied_at: now,
-        response_time_hours: Math.round(
-          (new Date(now).getTime() - new Date(message.created_at).getTime()) / (1000 * 60 * 60)
-        ),
-      });
+      .upsert(
+        {
+          message_id,
+          replied_at: now,
+          response_time_hours: Math.round(
+            (new Date(now).getTime() - new Date(message.created_at).getTime()) / (1000 * 60 * 60)
+          ),
+        },
+        { onConflict: 'message_id' } // Specify conflict target
+      );
 
     if (analyticsError) {
       console.error('Failed to log analytics:', analyticsError);

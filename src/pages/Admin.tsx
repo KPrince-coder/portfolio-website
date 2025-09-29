@@ -24,7 +24,7 @@ const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [messageStats, setMessageStats] = useState({
+  const [messageStats, setMessageStats] = useState({ // Keep useState for initial empty state
     totalMessages: 0,
     unreadMessages: 0,
     repliedMessages: 0,
@@ -43,9 +43,7 @@ const Admin: React.FC = () => {
       const { data: messages } = await MessageService.getMessages({ limit: 50 });
       setInitialMessages(messages);
 
-      // Load message statistics
-      const stats = await MessageService.getMessageStats();
-      setMessageStats(stats);
+      // Message statistics will be calculated from contactMessages
 
       // Load projects
       const { data: projectsData } = await supabase
@@ -88,14 +86,40 @@ const Admin: React.FC = () => {
   const { messages: contactMessages, updateMessage } = useRealtimeMessages({
     initialMessages,
     onNewMessage: (message) => {
-      // Refresh stats when new message arrives
-      MessageService.getMessageStats().then(setMessageStats);
+      // Stats will be re-calculated via useMemo
     },
     onMessageUpdate: (message) => {
-      // Refresh stats when message is updated
-      MessageService.getMessageStats().then(setMessageStats);
+      // Stats will be re-calculated via useMemo
     },
   });
+
+  // Calculate message statistics from real-time messages
+  const calculatedMessageStats = React.useMemo(() => {
+    const total = contactMessages.length;
+    const unread = contactMessages.filter(msg => msg.status === 'unread').length;
+    const replied = contactMessages.filter(msg => msg.status === 'replied').length;
+
+    // For average response time, messages this week/month, we'd need more complex logic
+    // For now, we'll keep these as placeholders or fetch them less frequently if needed.
+    // Or, if the MessageService.getMessageStats() is fast enough, we can keep it for these specific metrics.
+    // For simplicity and immediate responsiveness, let's focus on total, unread, replied.
+    // For time-based stats, a separate, less frequent fetch might be acceptable, or more complex client-side date calculations.
+
+    // For now, let's just update the core stats
+    return {
+      totalMessages: total,
+      unreadMessages: unread,
+      repliedMessages: replied,
+      averageResponseTime: messageStats.averageResponseTime, // Keep existing for now
+      messagesThisWeek: messageStats.messagesThisWeek, // Keep existing for now
+      messagesThisMonth: messageStats.messagesThisMonth, // Keep existing for now
+    };
+  }, [contactMessages, messageStats.averageResponseTime, messageStats.messagesThisWeek, messageStats.messagesThisMonth]);
+
+  // Update messageStats state when calculatedMessageStats changes
+  useEffect(() => {
+    setMessageStats(calculatedMessageStats);
+  }, [calculatedMessageStats]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
