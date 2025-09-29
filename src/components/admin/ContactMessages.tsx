@@ -318,10 +318,17 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                         <Archive className="w-4 h-4 mr-2" />
                         Archive
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'spam')}>
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        Mark as Spam
-                      </DropdownMenuItem>
+                      {message.status === 'spam' ? (
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'read')}>
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          Mark as Not Spam
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => onUpdateStatus(message.id, 'spam')}>
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          Mark as Spam
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => onDeleteMessage(message.id)}
                         className="text-destructive"

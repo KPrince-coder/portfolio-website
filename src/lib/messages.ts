@@ -270,7 +270,7 @@ export class MessageService {
       .upsert({
         message_id: messageId,
         ...data,
-      });
+      }, { onConflict: 'message_id' }); // Add onConflict option
 
     if (error) {
       console.error('Failed to log message analytics:', error);

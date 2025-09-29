@@ -299,23 +299,45 @@ const Admin: React.FC = () => {
   };
 
   const handleUpdateStatus = async (messageId: string, status: ContactMessage['status']) => {
-    await MessageService.updateMessageStatus(messageId, status);
+    try {
+      // Optimistic update
+      updateMessage(messageId, { status });
+      await MessageService.updateMessageStatus(messageId, status);
 
-    // Real-time subscription will handle updating the message
-    toast({
-      title: "Status updated",
+      toast({
+        title: "Status updated",
         description: `Message status changed to ${status}`,
       });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error updating status",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+      // Revert optimistic update if API call fails (optional, but good for robustness)
+      // You would need to fetch the original message or pass it down to revert.
+      // For now, we'll rely on the real-time update to correct it if it fails.
+    }
   };
 
   const handleUpdatePriority = async (messageId: string, priority: ContactMessage['priority']) => {
-    await MessageService.updateMessagePriority(messageId, priority);
+    try {
+      // Optimistic update
+      updateMessage(messageId, { priority });
+      await MessageService.updateMessagePriority(messageId, priority);
 
-    // Real-time subscription will handle updating the message
-    toast({
-      title: "Priority updated",
-      description: `Message priority changed to ${priority}`,
-    });
+      toast({
+        title: "Priority updated",
+        description: `Message priority changed to ${priority}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error updating priority",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+      });
+      // Revert optimistic update if API call fails (optional)
+    }
   };
 
   if (loading) {
