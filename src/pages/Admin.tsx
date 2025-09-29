@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Shield, 
   Users, 
@@ -100,13 +102,25 @@ const Admin: React.FC = () => {
     setUser(null);
   };
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
   const signIn = async () => {
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Missing credentials",
+        description: "Please enter both email and password",
+      });
+      return;
+    }
+
+    setIsSigningIn(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: `${window.location.origin}/admin`
-        }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
       
       if (error) throw error;
@@ -116,6 +130,8 @@ const Admin: React.FC = () => {
         title: "Authentication failed",
         description: error.message,
       });
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -168,15 +184,41 @@ const Admin: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-muted-foreground text-center">
+            <p className="text-muted-foreground text-center mb-6">
               Please authenticate to access the admin panel
             </p>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+            
             <Button
               onClick={signIn}
+              disabled={isSigningIn}
               className="w-full neural-glow"
             >
               <Shield className="w-4 h-4 mr-2" />
-              Sign in with GitHub
+              {isSigningIn ? 'Signing in...' : 'Sign In'}
             </Button>
           </CardContent>
         </Card>

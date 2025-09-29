@@ -19,7 +19,7 @@ const Navigation: React.FC = () => {
     { icon: User, label: 'About', href: '#about' },
     { icon: Brain, label: 'Skills', href: '#skills' },
     { icon: Briefcase, label: 'Projects', href: '#projects' },
-    { icon: Code, label: 'Blog', href: '#blog' },
+    { icon: Code, label: 'Resume', href: '#resume' },
     { icon: MessageSquare, label: 'Contact', href: '#contact' },
   ];
 
@@ -46,7 +46,7 @@ const Navigation: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <button
                 key={item.href}
@@ -57,30 +57,22 @@ const Navigation: React.FC = () => {
                 <span>{item.label}</span>
               </button>
             ))}
-            <Button 
-              variant="outline" 
-              className="neural-glow"
-              onClick={() => window.open('/admin', '_blank')}
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Tablet/Mobile menu button */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Tablet/Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-lg border-b border-border">
+          <div className="lg:hidden absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-lg border-b border-border">
             <div className="px-6 py-4 space-y-4">
               {navItems.map((item) => (
                 <button
@@ -92,10 +84,6 @@ const Navigation: React.FC = () => {
                   <span>{item.label}</span>
                 </button>
               ))}
-              <Button variant="outline" className="w-full neural-glow">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Let's Connect
-              </Button>
             </div>
           </div>
         )}

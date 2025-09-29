@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import About from '@/components/About';
 import Skills from '@/components/Skills';
 import Projects from '@/components/Projects';
+import Resume from '@/components/Resume';
 import Contact from '@/components/Contact';
 
 const Index: React.FC = () => {
@@ -21,21 +22,8 @@ const Index: React.FC = () => {
         <Hero />
         <About />
         <Skills />
-        
         <Projects />
-        
-        {/* Blog placeholder section */}
-        <section id="blog" className="py-20 bg-background/50">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="heading-xl mb-8">
-              Tech <span className="text-neural">Insights</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Deep dives into AI, data engineering, and emerging technologies. 
-              Interactive blog with CMS functionality coming soon...
-            </p>
-          </div>
-        </section>
+        <Resume />
         
         <Contact />
       </main>
