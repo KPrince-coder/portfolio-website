@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from 'https://esm.sh/resend@2.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,33 +104,26 @@ serve(async (req) => {
       emailText = emailText.replace(new RegExp(placeholder, 'g'), value);
     });
 
-    // Send email using Resend
+    // Send email using Resend package
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
       throw new Error('Resend API key not configured');
     }
 
+    const resend = new Resend(resendApiKey);
+
     const emailPayload = {
-      from: `${emailBranding.company_name || 'Portfolio'} <${emailBranding.company_email || 'noreply@example.com'}>`,
+      from: `${emailBranding.company_name || 'Portfolio'} <onboarding@resend.dev>`, // Using Resend's default test domain
       to: admin_email || notificationSettings.admin_email || 'admin@example.com',
       subject: emailSubject,
       html: emailHtml,
       text: emailText,
     };
 
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(emailPayload),
-    });
+    const { data: resendResult, error: resendError } = await resend.emails.send(emailPayload);
 
-    const resendResult = await resendResponse.json();
-
-    if (!resendResponse.ok) {
-      throw new Error(`Resend API error: ${resendResult.message}`);
+    if (resendError) {
+      throw new Error(`Resend API error: ${resendError.message}`);
     }
 
     // Log notification
@@ -152,7 +146,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        email_id: resendResult.id,
+        email_id: resendResult?.id,
         message: 'Notification sent successfully' 
       }),
       { 

@@ -16,12 +16,13 @@ import {
   Project,
 } from '@/components/admin';
 import { MessageService } from '@/lib/messages';
+import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 
 const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+  const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [messageStats, setMessageStats] = useState({
     totalMessages: 0,
@@ -40,7 +41,7 @@ const Admin: React.FC = () => {
     try {
       // Load contact messages using MessageService
       const { data: messages } = await MessageService.getMessages({ limit: 50 });
-      setContactMessages(messages);
+      setInitialMessages(messages);
 
       // Load message statistics
       const stats = await MessageService.getMessageStats();
@@ -82,6 +83,19 @@ const Admin: React.FC = () => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // Set up real-time messages with callbacks
+  const { messages: contactMessages, updateMessage } = useRealtimeMessages({
+    initialMessages,
+    onNewMessage: (message) => {
+      // Refresh stats when new message arrives
+      MessageService.getMessageStats().then(setMessageStats);
+    },
+    onMessageUpdate: (message) => {
+      // Refresh stats when message is updated
+      MessageService.getMessageStats().then(setMessageStats);
+    },
+  });
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -137,11 +151,8 @@ const Admin: React.FC = () => {
     try {
       await MessageService.markAsRead(messageId);
 
-      setContactMessages(prev =>
-        prev.map(msg =>
-          msg.id === messageId ? { ...msg, status: 'read' as const } : msg
-        )
-      );
+      // Update local state optimistically - real-time will sync the actual change
+      updateMessage(messageId, { status: 'read' as const });
 
       toast({
         title: "Message marked as read",
@@ -198,8 +209,7 @@ const Admin: React.FC = () => {
     try {
       await MessageService.deleteMessage(messageId);
 
-      setContactMessages(prev => prev.filter(msg => msg.id !== messageId));
-
+      // Real-time subscription will handle removing the message from the list
       toast({
         title: "Message deleted",
       });
@@ -223,104 +233,48 @@ const Admin: React.FC = () => {
   const handleSendReply = async (replyContent: string) => {
     if (!selectedMessage) return;
 
-    try {
-      await MessageService.sendReply(selectedMessage.id, replyContent, user?.email);
+    await MessageService.sendReply(selectedMessage.id, replyContent, user?.email);
 
-      // Update the message in the list
-      setContactMessages(prev =>
-        prev.map(msg =>
-          msg.id === selectedMessage.id
-            ? {
-                ...msg,
-                reply_content: replyContent,
-                reply_sent_at: new Date().toISOString(),
-                is_replied: true,
-                status: 'replied' as const
-              }
-            : msg
-        )
-      );
+    // Real-time subscription will handle updating the message
+    setShowReplyModal(false);
+    setSelectedMessage(null);
 
-      setShowReplyModal(false);
-      setSelectedMessage(null);
-
-      toast({
-        title: "Reply sent successfully",
-        description: "Your reply has been sent to the sender.",
-      });
-    } catch (error) {
-      throw error; // Let the MessageReply component handle the error
-    }
+    toast({
+      title: "Reply sent successfully",
+      description: "Your reply has been sent to the sender.",
+    });
   };
 
   const handleSaveDraft = async (replyContent: string) => {
     if (!selectedMessage) return;
 
-    try {
-      await MessageService.saveReplyDraft(selectedMessage.id, replyContent);
+    await MessageService.saveReplyDraft(selectedMessage.id, replyContent);
 
-      // Update the message in the list
-      setContactMessages(prev =>
-        prev.map(msg =>
-          msg.id === selectedMessage.id
-            ? { ...msg, reply_content: replyContent }
-            : msg
-        )
-      );
-
-      toast({
-        title: "Draft saved",
-        description: "Your reply draft has been saved.",
-      });
-    } catch (error) {
-      throw error; // Let the MessageReply component handle the error
-    }
+    // Real-time subscription will handle updating the message
+    toast({
+      title: "Draft saved",
+      description: "Your reply draft has been saved.",
+    });
   };
 
   const handleUpdateStatus = async (messageId: string, status: ContactMessage['status']) => {
-    try {
-      await MessageService.updateMessageStatus(messageId, status);
+    await MessageService.updateMessageStatus(messageId, status);
 
-      setContactMessages(prev =>
-        prev.map(msg =>
-          msg.id === messageId ? { ...msg, status } : msg
-        )
-      );
-
-      toast({
-        title: "Status updated",
+    // Real-time subscription will handle updating the message
+    toast({
+      title: "Status updated",
         description: `Message status changed to ${status}`,
       });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error updating status",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-      });
-    }
   };
 
   const handleUpdatePriority = async (messageId: string, priority: ContactMessage['priority']) => {
-    try {
-      await MessageService.updateMessagePriority(messageId, priority);
+    await MessageService.updateMessagePriority(messageId, priority);
 
-      setContactMessages(prev =>
-        prev.map(msg =>
-          msg.id === messageId ? { ...msg, priority } : msg
-        )
-      );
-
-      toast({
-        title: "Priority updated",
-        description: `Message priority changed to ${priority}`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error updating priority",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-      });
-    }
+    // Real-time subscription will handle updating the message
+    toast({
+      title: "Priority updated",
+      description: `Message priority changed to ${priority}`,
+    });
   };
 
   if (loading) {
