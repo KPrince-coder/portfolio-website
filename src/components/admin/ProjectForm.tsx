@@ -9,24 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, X, Plus } from 'lucide-react';
-
-interface Project {
-  id?: string;
-  title: string;
-  slug: string;
-  description: string;
-  long_description: string;
-  category: string;
-  image_url: string;
-  technologies: string[];
-  github_url: string;
-  demo_url: string;
-  status: string;
-  featured: boolean;
-  published: boolean;
-  metrics?: Record<string, any>;
-}
+import { Save, X, Plus, CalendarIcon } from 'lucide-react'; // Added CalendarIcon
+import { Project } from './types'; // Import Project from types.ts
+import { Calendar } from '@/components/ui/calendar'; // Import Calendar
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
+import { format } from 'date-fns'; // Import format for date formatting
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 interface ProjectFormProps {
   project?: Project;
@@ -48,6 +36,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     status: 'Development',
     featured: false,
     published: true,
+    metrics: {},
+    completion_date: project?.completion_date || null, // Initialize completion_date
     ...project
   });
   const [newTech, setNewTech] = useState('');
@@ -141,7 +131,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
       toast({
         variant: "destructive",
         title: "Error saving project",
-        description: error.message,
+        description: (error instanceof Error) ? error.message : "An unexpected error occurred",
       });
     } finally {
       setSaving(false);
@@ -149,7 +139,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-screen overflow-y-auto p-4"> {/* Added max-h-screen and overflow-y-auto */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
           {formData.id ? 'Edit Project' : 'Create New Project'}
@@ -259,6 +249,33 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               <CardTitle>Project Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Completion Date */}
+              <div>
+                <Label htmlFor="completion_date">Completion Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.completion_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.completion_date ? format(new Date(formData.completion_date), "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.completion_date ? new Date(formData.completion_date) : undefined}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, completion_date: date ? date.toISOString() : null }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select

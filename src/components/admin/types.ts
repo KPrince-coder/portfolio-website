@@ -77,7 +77,9 @@ export interface BrandSettings {
   updated_at: string;
 }
 
-export interface Project extends ProjectRow {}
+export interface Project extends ProjectRow {
+  completion_date?: string | null; // Added for project duration
+}
 
 export interface AdminTab {
   id: string;
