@@ -118,24 +118,24 @@ const Projects: React.FC = () => {
         </div>
 
         {/* Projects Grid */}
-        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredProjects.map((project, index) => {
             const CategoryIcon = getCategoryIcon(project.category);
             
             return (
               <Card 
                 key={project.id} 
-                className={`card-neural neural-glow group hover:scale-105 transition-all duration-500 cursor-pointer ${
-                  project.featured ? 'lg:col-span-2 xl:col-span-2' : ''
+                className={`card-neural neural-glow group hover:scale-105 transition-all duration-500 cursor-pointer relative overflow-hidden border border-primary/20 shadow-lg hover:shadow-xl hover:border-secondary animate-fadeInUp ${
+                  project.featured ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : 'max-w-sm'
                 }`}
-                style={{ animationDelay: `${index * 0.2}s` }}
+                style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => setActiveProject(activeProject === project.id ? null : project.id)}
               >
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden h-56">
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   
                   {/* Project Status & Category Badge */}
