@@ -276,7 +276,14 @@ const Admin: React.FC = () => {
 
     await MessageService.sendReply(selectedMessage.id, replyContent, user?.email);
 
-    // Real-time subscription will handle updating the message
+    // Optimistically update the message status in the local state
+    updateMessage(selectedMessage.id, { 
+      is_replied: true, 
+      status: 'replied',
+      reply_content: replyContent, // Update reply content
+      reply_sent_at: new Date().toISOString(), // Update reply sent time
+    });
+
     setShowReplyModal(false);
     setSelectedMessage(null);
 
