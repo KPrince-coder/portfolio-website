@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Code, Brain, Briefcase, User, MessageSquare, Shield } from 'lucide-react';
+import { Menu, X, Code, Brain, Briefcase, User, MessageSquare, Shield, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,19 +18,24 @@ const Navigation: React.FC = () => {
   }, []);
 
   const navItems = [
-    { icon: User, label: 'About', href: '#about' },
-    { icon: Brain, label: 'Skills', href: '#skills' },
-    { icon: Briefcase, label: 'Projects', href: '#projects' },
-    { icon: Code, label: 'Resume', href: '#resume' },
-    { icon: MessageSquare, label: 'Contact', href: '#contact' },
+    { icon: User, label: 'About', href: '#about', isRoute: false },
+    { icon: Brain, label: 'Skills', href: '#skills', isRoute: false },
+    { icon: Briefcase, label: 'Projects', href: '#projects', isRoute: false },
+    { icon: Code, label: 'Resume', href: '#resume', isRoute: false },
+    { icon: FileText, label: 'Blog', href: '/blog', isRoute: true },
+    { icon: MessageSquare, label: 'Contact', href: '#contact', isRoute: false },
   ];
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
+  const handleNavClick = (href: string, isRoute: boolean) => {
+    if (isRoute) {
+      navigate(href);
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
+    setIsOpen(false);
   };
 
   return (
@@ -50,7 +57,7 @@ const Navigation: React.FC = () => {
             {navItems.map((item) => (
               <button
                 key={item.href}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => handleNavClick(item.href, item.isRoute)}
                 className="flex items-center space-x-2 text-muted hover:text-secondary transition-colors duration-200 group"
               >
                 <item.icon className="w-4 h-4 group-hover:text-secondary" />
@@ -77,7 +84,7 @@ const Navigation: React.FC = () => {
               {navItems.map((item) => (
                 <button
                   key={item.href}
-                  onClick={() => scrollToSection(item.href)}
+                  onClick={() => handleNavClick(item.href, item.isRoute)}
                   className="flex items-center space-x-3 w-full text-left text-muted hover:text-secondary transition-colors duration-200"
                 >
                   <item.icon className="w-5 h-5" />

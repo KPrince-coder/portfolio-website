@@ -56,7 +56,7 @@ const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
       subject: template?.subject || '',
       html_content: template?.html_content || '',
       text_content: template?.text_content || '',
-      template_type: template?.template_type || 'reply_to_sender',
+      template_type: (template?.template_type as 'new_message_notification' | 'reply_to_sender' | 'auto_reply') || 'reply_to_sender',
       is_active: template?.is_active ?? true,
     },
   });
@@ -69,7 +69,7 @@ const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
       setValue('subject', template.subject);
       setValue('html_content', template.html_content);
       setValue('text_content', template.text_content || '');
-      setValue('template_type', template.template_type);
+      setValue('template_type', template.template_type as 'new_message_notification' | 'reply_to_sender' | 'auto_reply');
       setValue('is_active', template.is_active);
     }
   }, [template, setValue]);
