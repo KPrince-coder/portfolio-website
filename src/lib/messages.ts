@@ -47,7 +47,7 @@ export class MessageService {
       throw new Error(`Failed to fetch messages: ${error.message}`);
     }
 
-    return { data: data || [], count: count || 0 };
+    return { data: (data || []) as ContactMessage[], count: count || 0 };
   }
 
   // Get a single message by ID
@@ -62,7 +62,7 @@ export class MessageService {
       throw new Error(`Failed to fetch message: ${error.message}`);
     }
 
-    return data;
+    return data as ContactMessage;
   }
 
   // Update message fields generically
@@ -279,7 +279,7 @@ export class MessageService {
       throw new Error(`Failed to fetch email templates: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []) as EmailTemplate[];
   }
 
   // Save email template
@@ -309,7 +309,7 @@ export class MessageService {
       if (error) {
         throw new Error(`Failed to save email template: ${error.message}`);
       }
-      return data;
+      return data as EmailTemplate;
 
     } else {
       // This is an update operation.
@@ -327,7 +327,7 @@ export class MessageService {
       if (error) {
         throw new Error(`Failed to save email template: ${error.message}`);
       }
-      return data;
+      return data as EmailTemplate;
     }
   }
 }

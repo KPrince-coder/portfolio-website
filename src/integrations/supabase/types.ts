@@ -64,28 +64,28 @@ export type Database = {
       }
       brand_settings: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           setting_key: string
           setting_value: Json
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           setting_key: string
           setting_value: Json
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           setting_key?: string
           setting_value?: Json
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -97,17 +97,18 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          ip_address: string | null
+          ip_address: unknown | null
           is_replied: boolean | null
           message: string
           name: string
           priority: string | null
+          replied: boolean | null
           reply_content: string | null
           reply_sent_at: string | null
           status: string | null
           subject: string
           tags: string[] | null
-          updated_at: string
+          updated_at: string | null
           user_agent: string | null
         }
         Insert: {
@@ -117,17 +118,18 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown | null
           is_replied?: boolean | null
           message: string
           name: string
           priority?: string | null
+          replied?: boolean | null
           reply_content?: string | null
           reply_sent_at?: string | null
           status?: string | null
           subject: string
           tags?: string[] | null
-          updated_at?: string
+          updated_at?: string | null
           user_agent?: string | null
         }
         Update: {
@@ -137,24 +139,25 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown | null
           is_replied?: boolean | null
           message?: string
           name?: string
           priority?: string | null
+          replied?: boolean | null
           reply_content?: string | null
           reply_sent_at?: string | null
           status?: string | null
           subject?: string
           tags?: string[] | null
-          updated_at?: string
+          updated_at?: string | null
           user_agent?: string | null
         }
         Relationships: []
       }
       email_templates: {
         Row: {
-          created_at: string
+          created_at: string | null
           html_content: string
           id: string
           is_active: boolean | null
@@ -162,11 +165,10 @@ export type Database = {
           subject: string
           template_type: string
           text_content: string | null
-          updated_at: string
-          variables: Json | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           html_content: string
           id?: string
           is_active?: boolean | null
@@ -174,11 +176,10 @@ export type Database = {
           subject: string
           template_type: string
           text_content?: string | null
-          updated_at?: string
-          variables?: Json | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           html_content?: string
           id?: string
           is_active?: boolean | null
@@ -186,44 +187,43 @@ export type Database = {
           subject?: string
           template_type?: string
           text_content?: string | null
-          updated_at?: string
-          variables?: Json | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       message_analytics: {
         Row: {
-          admin_user_id: string | null
-          created_at: string
+          created_at: string | null
           id: string
-          message_id: string
+          message_id: string | null
           opened_at: string | null
           replied_at: string | null
           response_time_hours: number | null
+          updated_at: string | null
         }
         Insert: {
-          admin_user_id?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
-          message_id: string
+          message_id?: string | null
           opened_at?: string | null
           replied_at?: string | null
           response_time_hours?: number | null
+          updated_at?: string | null
         }
         Update: {
-          admin_user_id?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
-          message_id?: string
+          message_id?: string | null
           opened_at?: string | null
           replied_at?: string | null
           response_time_hours?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "message_analytics_message_id_fkey"
             columns: ["message_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "contact_messages"
             referencedColumns: ["id"]
           },
@@ -232,42 +232,42 @@ export type Database = {
       message_notifications: {
         Row: {
           content: string
-          created_at: string
+          created_at: string | null
           error_message: string | null
           id: string
-          message_id: string
+          message_id: string | null
           notification_type: string
           recipient_email: string
           sent_at: string | null
-          status: string
+          status: string | null
           subject: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           content: string
-          created_at?: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
-          message_id: string
+          message_id?: string | null
           notification_type: string
           recipient_email: string
           sent_at?: string | null
-          status?: string
+          status?: string | null
           subject: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           content?: string
-          created_at?: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
-          message_id?: string
+          message_id?: string | null
           notification_type?: string
           recipient_email?: string
           sent_at?: string | null
-          status?: string
+          status?: string | null
           subject?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -324,12 +324,84 @@ export type Database = {
         }
         Relationships: []
       }
+      project_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          last_viewed_at: string | null
+          project_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          project_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          project_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_analytics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_assets: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_type: string
+          file_url: string
+          id: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
+          assets: string[] | null
+          author_id: string | null
           category: string
           created_at: string
           demo_url: string | null
           description: string | null
+          duration: number | null
+          end_date: string | null
+          excerpt: string | null
           featured: boolean | null
           github_url: string | null
           id: string
@@ -337,18 +409,26 @@ export type Database = {
           long_description: string | null
           metrics: Json | null
           published: boolean | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           sort_order: number | null
+          start_date: string | null
           status: string | null
           technologies: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+          assets?: string[] | null
+          author_id?: string | null
           category: string
           created_at?: string
           demo_url?: string | null
           description?: string | null
+          duration?: number | null
+          end_date?: string | null
+          excerpt?: string | null
           featured?: boolean | null
           github_url?: string | null
           id?: string
@@ -356,18 +436,26 @@ export type Database = {
           long_description?: string | null
           metrics?: Json | null
           published?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           sort_order?: number | null
+          start_date?: string | null
           status?: string | null
           technologies?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+          assets?: string[] | null
+          author_id?: string | null
           category?: string
           created_at?: string
           demo_url?: string | null
           description?: string | null
+          duration?: number | null
+          end_date?: string | null
+          excerpt?: string | null
           featured?: boolean | null
           github_url?: string | null
           id?: string
@@ -375,8 +463,11 @@ export type Database = {
           long_description?: string | null
           metrics?: Json | null
           published?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           sort_order?: number | null
+          start_date?: string | null
           status?: string | null
           technologies?: string[] | null
           title?: string
