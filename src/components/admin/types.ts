@@ -78,7 +78,8 @@ export interface BrandSettings {
 }
 
 export interface Project extends ProjectRow {
-  completion_date?: string | null; // Added for project duration
+  start_date?: string | null; // Added for project start date
+  end_date?: string | null;   // Added for project end date
 }
 
 export interface AdminTab {

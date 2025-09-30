@@ -37,14 +37,18 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     featured: false,
     published: true,
     metrics: {},
-    completion_date: project?.completion_date || null, // Initialize completion_date
+    start_date: project?.start_date || null, // Initialize start_date
+    end_date: project?.end_date || null,     // Initialize end_date
     ...project
   });
   const [newTech, setNewTech] = useState('');
+  const [newCategory, setNewCategory] = useState(''); // New state for custom category
+  const [customCategories, setCustomCategories] = useState<string[]>([]); // State for custom categories
   const [saving, setSaving] = useState(false);
+  const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url'); // New state for image upload mode
   const { toast } = useToast();
 
-  const categories = [
+  const predefinedCategories = [
     'Data Engineering',
     'AI/Machine Learning',
     'Frontend Development',
@@ -52,6 +56,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     'Backend Development',
     'DevOps'
   ];
+
+  const allCategories = [...predefinedCategories, ...customCategories];
 
   const statuses = [
     'Planning',
@@ -85,6 +91,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
         technologies: [...prev.technologies, newTech.trim()]
       }));
       setNewTech('');
+    }
+  };
+
+  const addCategory = () => {
+    if (newCategory.trim() && !allCategories.includes(newCategory.trim())) {
+      setCustomCategories(prev => [...prev, newCategory.trim()]);
+      setFormData(prev => ({ ...prev, category: newCategory.trim() })); // Set new category as active
+      setNewCategory('');
     }
   };
 
@@ -127,11 +141,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
       });
 
       onSave();
-    } catch (error: any) {
+    } catch (error: unknown) { // Changed type to unknown
       toast({
         variant: "destructive",
         title: "Error saving project",
-        description: (error instanceof Error) ? error.message : "An unexpected error occurred",
+        description: (error instanceof Error) ? error.message : String(error),
       });
     } finally {
       setSaving(false);
@@ -229,13 +243,54 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               </div>
 
               <div>
-                <Label htmlFor="image_url">Project Image URL</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://example.com/project-image.jpg"
-                />
+                <Label htmlFor="image_url">Project Image</Label>
+                <div className="flex space-x-2 mb-2">
+                  <Button
+                    variant={imageUploadMode === 'url' ? 'default' : 'outline'}
+                    onClick={() => setImageUploadMode('url')}
+                    size="sm"
+                  >
+                    Use URL
+                  </Button>
+                  <Button
+                    variant={imageUploadMode === 'file' ? 'default' : 'outline'}
+                    onClick={() => setImageUploadMode('file')}
+                    size="sm"
+                  >
+                    Upload File
+                  </Button>
+                </div>
+
+                {imageUploadMode === 'url' ? (
+                  <Input
+                    id="image_url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                    placeholder="https://example.com/project-image.jpg"
+                  />
+                ) : (
+                  <Input
+                    id="image_file"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData(prev => ({ ...prev, image_url: reader.result as string }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                )}
+                {formData.image_url && (
+                  <div className="mt-4">
+                    <Label>Image Preview</Label>
+                    <img src={formData.image_url} alt="Project Preview" className="w-full h-32 object-cover rounded-md mt-2" />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -249,35 +304,90 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               <CardTitle>Project Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Completion Date */}
+              {/* Start Date */}
               <div>
-                <Label htmlFor="completion_date">Completion Date</Label>
+                <Label htmlFor="start_date">Start Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !formData.completion_date && "text-muted-foreground"
+                        !formData.start_date && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.completion_date ? format(new Date(formData.completion_date), "PPP") : <span>Pick a date</span>}
+                      {formData.start_date ? format(new Date(formData.start_date), "PPP") : <span>Pick a start date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={formData.completion_date ? new Date(formData.completion_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, completion_date: date ? date.toISOString() : null }))}
+                      selected={formData.start_date ? new Date(formData.start_date) : undefined}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, start_date: date ? date.toISOString() : null }))}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
               </div>
 
+              {/* End Date */}
+              <div>
+                <Label htmlFor="end_date">End Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.end_date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.end_date ? format(new Date(formData.end_date), "PPP") : <span>Pick an end date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.end_date ? new Date(formData.end_date) : undefined}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, end_date: date ? date.toISOString() : null }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Duration Display */}
+              {formData.start_date && formData.end_date && (
+                <div>
+                  <Label>Duration</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {(() => {
+                      const start = new Date(formData.start_date!);
+                      const end = new Date(formData.end_date!);
+                      const diffTime = Math.abs(end.getTime() - start.getTime());
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      return `${diffDays} days`;
+                    })()}
+                  </p>
+                </div>
+              )}
+
+              {/* Category Management */}
               <div>
                 <Label htmlFor="category">Category</Label>
+                <div className="flex space-x-2 mb-2">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Add new category"
+                    onKeyPress={(e) => e.key === 'Enter' && addCategory()}
+                  />
+                  <Button onClick={addCategory} size="sm">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
                 <Select
                   value={formData.category}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
@@ -286,9 +396,26 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {predefinedCategories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
+                      </SelectItem>
+                    ))}
+                    {customCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        <div className="flex items-center justify-between">
+                          {category}
+                          <X
+                            className="w-3 h-3 ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent select item from closing
+                              setCustomCategories(prev => prev.filter(c => c !== category));
+                              if (formData.category === category) {
+                                setFormData(prev => ({ ...prev, category: predefinedCategories[0] })); // Reset to a default category
+                              }
+                            }}
+                          />
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
