@@ -13,7 +13,8 @@ import {
   AlertCircle,
   Clock,
   Star,
-  MessageSquare
+  MessageSquare,
+  X // Add X icon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -163,8 +164,18 @@ const ContactMessages: React.FC<ContactMessagesProps> = ({
                 placeholder="Search messages..."
                 value={filters.search || ''}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="pl-10"
+                className="pl-10 pr-10" // Added padding-right for the clear button
               />
+              {filters.search && ( // Show clear button only when search has text
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-auto p-1 text-muted-foreground"
+                  onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
             </div>
 
             <Select value={filters.status || 'all'} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as ContactMessage['status'] }))}>
