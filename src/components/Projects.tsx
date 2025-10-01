@@ -213,7 +213,7 @@ const Projects: React.FC = () => {
                   <p className="text-sm text-secondary font-medium mb-2">{project.category}</p>
                   {project.start_date && project.end_date && (
                     <p className="text-xs text-muted-foreground mb-2">
-                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+                      {new Date(project.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(project.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} {project.duration ? `(${project.duration} days)` : ''}
                     </p>
                   )}
                   <p className="text-muted-foreground leading-relaxed">

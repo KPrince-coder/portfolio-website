@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, Edit, Trash2, Search } from 'lucide-react';
+import { Briefcase, Edit, Trash2, Search, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,10 +94,20 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
-            className="pl-9"
+            className="pl-9 pr-9"
             value={projectSearchTerm}
             onChange={(e) => setProjectSearchTerm(e.target.value)}
           />
+          {projectSearchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 p-0 text-muted-foreground hover:bg-transparent"
+              onClick={() => setProjectSearchTerm('')}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         <Select value={projectCategoryFilter} onValueChange={setProjectCategoryFilter}>
@@ -160,7 +170,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                   <p className="text-sm text-muted-foreground">{project.category}</p>
                   {project.start_date && project.end_date && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+                      {new Date(project.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(project.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} {project.duration ? `(${project.duration} days)` : ''}
                     </p>
                   )}
                   <div className="flex space-x-2 mt-2">
