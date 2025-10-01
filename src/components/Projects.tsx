@@ -141,7 +141,7 @@ const Projects: React.FC = () => {
               <Card 
                 key={project.id} 
                 className={`card-neural neural-glow group hover:scale-105 transition-all duration-500 cursor-pointer relative overflow-hidden border border-primary/20 shadow-lg hover:shadow-xl hover:border-secondary animate-fadeInUp ${
-                  project.featured ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : 'max-w-sm'
+                  project.featured ? 'md:col-span-2 lg:col-span-2 xl:col-span-2' : ''
                 }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => setActiveProject(activeProject === project.id ? null : project.id)}
@@ -155,18 +155,34 @@ const Projects: React.FC = () => {
                   
                   {/* Project Status & Category Badge */}
                   <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className="bg-success/20 text-success border-success/50 backdrop-blur-sm"
                     >
                       {project.status}
                     </Badge>
                     {project.featured && (
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className="bg-accent/20 text-accent border-accent/50 backdrop-blur-sm"
                       >
                         Featured
+                      </Badge>
+                    )}
+                    {project.published && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-info/20 text-info border-info/50 backdrop-blur-sm"
+                      >
+                        Published
+                      </Badge>
+                    )}
+                    {project.duration && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-warning/20 text-warning border-warning/50 backdrop-blur-sm"
+                      >
+                        {project.duration} days
                       </Badge>
                     )}
                   </div>

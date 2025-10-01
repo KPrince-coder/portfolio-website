@@ -3,6 +3,7 @@ import { Database, Json } from '@/integrations/supabase/types';
 
 // Helper types for Supabase table rows
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type ProjectCategoryRow = Database['public']['Tables']['projects_categories']['Row'];
 
 export interface User {
   id: string;
@@ -151,6 +152,18 @@ export interface MessageStatsProps {
 
 export interface ProjectsManagementProps {
   projects: ProjectRow[];
+  projectCategories: ProjectCategoryRow[];
+  projectSearchTerm: string;
+  setProjectSearchTerm: (term: string) => void;
+  projectCategoryFilter: string;
+  setProjectCategoryFilter: (category: string) => void;
+  projectStatusFilter: string;
+  setProjectStatusFilter: (status: string) => void;
+  projectPublishedFilter: string;
+  setProjectPublishedFilter: (published: string) => void;
+  projectFeaturedFilter: string;
+  setProjectFeaturedFilter: (featured: string) => void;
+  refetchProjects: () => Promise<void>;
 }
 
 // Email template related interfaces
