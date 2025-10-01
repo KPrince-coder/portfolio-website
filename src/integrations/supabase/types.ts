@@ -408,6 +408,33 @@ export type Database = {
         }
         Relationships: []
       }
+      projects_categories: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          icon: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          icon?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          icon?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string

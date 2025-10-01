@@ -14,49 +14,72 @@ const Projects: React.FC = () => {
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>(['All']); // Initialize with 'All'
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const { data, error } = await supabase
+        const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
           .order('sort_order', { ascending: true });
 
-        if (error) {
-          throw error;
+        if (projectsError) {
+          throw projectsError;
         }
+        setProjects(projectsData || []);
 
-        setProjects(data || []);
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('projects_categories')
+          .select('*') // Select all columns to get the icon
+          .order('name', { ascending: true });
+
+        if (categoriesError) {
+          throw categoriesError;
+        }
+        setCategories(['All', ...(categoriesData?.map(cat => cat.name) || [])]);
+
+        // Store category icons for later use
+        const iconsMap = new Map<string, string>();
+        categoriesData?.forEach(cat => {
+          if (cat.name && cat.icon) {
+            iconsMap.set(cat.name, cat.icon);
+          }
+        });
+        setCategoryIcons(iconsMap);
+
       } catch (err) {
-        console.error('Error fetching projects:', err);
-        setError('Failed to load projects.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load data.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProjects();
+    fetchData();
   }, []);
 
-  const categories = ['All', 'AI/ML', 'Mobile/AI', 'Data Engineering', 'Frontend Development', 'Backend Development', 'DevOps'];
   const [activeCategory, setActiveCategory] = useState('All');
+  const [categoryIcons, setCategoryIcons] = useState<Map<string, string>>(new Map());
 
   const filteredProjects = activeCategory === 'All' 
     ? projects 
     : projects.filter(project => project.category === activeCategory);
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'AI/Machine Learning': return Brain;
-      case 'Mobile Development': return Smartphone;
-      case 'Data Engineering': return Database;
-      case 'Frontend Development': return Play; // Placeholder
-      case 'Backend Development': return Database; // Placeholder
-      case 'DevOps': return TrendingUp; // Placeholder
-      default: return Award;
+  const getCategoryIcon = (categoryName: string) => {
+    const iconName = categoryIcons.get(categoryName);
+    switch (iconName) {
+      case 'Brain': return Brain;
+      case 'Smartphone': return Smartphone;
+      case 'Database': return Database;
+      case 'Play': return Play;
+      case 'TrendingUp': return TrendingUp;
+      case 'Award': return Award;
+      case 'Github': return Github;
+      case 'ExternalLink': return ExternalLink;
+      default: return Award; // Default icon
     }
   };
 

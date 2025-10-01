@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import { Calendar } from '@/components/ui/calendar'; // Import Calendar
 import { Database } from '@/integrations/supabase/types';
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type CategoryRow = Database['public']['Tables']['projects_categories']['Row'];
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 import { format } from 'date-fns'; // Import format for date formatting
@@ -54,8 +55,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     author_id: project?.author_id || null,
   });
   const [newTech, setNewTech] = useState('');
-  const [newCategory, setNewCategory] = useState(''); // New state for custom category
-  const [customCategories, setCustomCategories] = useState<string[]>([]); // State for custom categories
+  const [dbCategories, setDbCategories] = useState<CategoryRow[]>([]); // State for categories from DB
+  const [newCategoryName, setNewCategoryName] = useState(''); // New state for custom category name
   const [saving, setSaving] = useState(false);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url'); // New state for image upload mode
   const { toast } = useToast();
@@ -64,16 +65,26 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
-  const predefinedCategories = [
-    'Data Engineering',
-    'AI/Machine Learning',
-    'Frontend Development',
-    'Mobile Development',
-    'Backend Development',
-    'DevOps'
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('projects_categories')
+        .select('*')
+        .order('name', { ascending: true });
 
-  const allCategories = [...predefinedCategories, ...customCategories];
+      if (error) {
+        console.error('Error fetching categories:', error);
+        toast({
+          variant: "destructive",
+          title: "Failed to load categories",
+          description: error.message,
+        });
+      } else {
+        setDbCategories(data || []);
+      }
+    };
+    fetchCategories();
+  }, [toast]);
 
   const statuses = [
     'Planning',
@@ -110,11 +121,51 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     }
   };
 
-  const addCategory = () => {
-    if (newCategory.trim() && !allCategories.includes(newCategory.trim())) {
-      setCustomCategories(prev => [...prev, newCategory.trim()]);
-      setFormData(prev => ({ ...prev, category: newCategory.trim() })); // Set new category as active
-      setNewCategory('');
+  const addCategory = async () => {
+    if (newCategoryName.trim()) {
+      const newSlug = generateSlug(newCategoryName.trim());
+      const { data, error } = await supabase
+        .from('projects_categories')
+        .insert([{ name: newCategoryName.trim(), slug: newSlug, icon: 'Award' }]) // Default icon
+        .select();
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error adding category",
+          description: error.message,
+        });
+      } else if (data && data.length > 0) {
+        setDbCategories(prev => [...prev, data[0]]);
+        setFormData(prev => ({ ...prev, category: data[0].name }));
+        setNewCategoryName('');
+        toast({
+          title: "Category added successfully",
+        });
+      }
+    }
+  };
+
+  const removeCategory = async (categoryId: string) => {
+    const { error } = await supabase
+      .from('projects_categories')
+      .delete()
+      .eq('id', categoryId);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting category",
+        description: error.message,
+      });
+    } else {
+      setDbCategories(prev => prev.filter(cat => cat.id !== categoryId));
+      if (formData.category === dbCategories.find(cat => cat.id === categoryId)?.name) {
+        setFormData(prev => ({ ...prev, category: dbCategories[0]?.name || '' })); // Reset to first category or empty
+      }
+      toast({
+        title: "Category deleted successfully",
+      });
     }
   };
 
@@ -425,8 +476,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 <Label htmlFor="category">Category</Label>
                 <div className="flex space-x-2 mb-2">
                   <Input
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
                     placeholder="Add new category"
                     onKeyPress={(e) => e.key === 'Enter' && addCategory()}
                   />
@@ -442,29 +493,23 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {predefinedCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                    {customCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
+                    {dbCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
                         <div className="flex items-center justify-between w-full">
-                          {category}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent select item from closing
-                              setCustomCategories(prev => prev.filter(c => c !== category));
-                              if (formData.category === category) {
-                                setFormData(prev => ({ ...prev, category: predefinedCategories[0] })); // Reset to a default category
-                              }
-                            }}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
+                          {category.name}
+                          {category.name !== 'Data Engineering' && category.name !== 'AI/Machine Learning' && category.name !== 'Frontend Development' && category.name !== 'Mobile Development' && category.name !== 'Backend Development' && category.name !== 'DevOps' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent select item from closing
+                                removeCategory(category.id);
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
                         </div>
                       </SelectItem>
                     ))}
@@ -472,6 +517,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 </Select>
               </div>
 
+              {/* Status */}
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select
@@ -491,6 +537,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 </Select>
               </div>
 
+              {/* Featured */}
               <div className="flex items-center justify-between">
                 <Label htmlFor="featured">Featured Project</Label>
                 <Switch
@@ -500,6 +547,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 />
               </div>
 
+              {/* Published */}
               <div className="flex items-center justify-between">
                 <Label htmlFor="published">Published</Label>
                 <Switch
@@ -531,7 +579,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
 
               <div className="flex flex-wrap gap-2">
                 {formData.technologies.map((tech) => (
-                  <Badge key={tech} variant="secondary" className="cursor-pointer">
+                  <Badge key={tech} variant="secondary" className="cursor-pointer" onClick={() => removeTechnology(tech)}>
                     {tech}
                     <X
                       className="w-3 h-3 ml-1"
@@ -559,7 +607,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     {formData.featured && <Badge variant="accent" className="text-xs">Featured</Badge>}
                     {!formData.published && <Badge variant="outline" className="text-xs">Draft</Badge>}
                   </div>
-                </CardContent>
+                </div>
               </CardContent>
             </Card>
           )}
