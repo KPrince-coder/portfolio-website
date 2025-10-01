@@ -78,6 +78,20 @@ const Admin: React.FC = () => {
     return projectsData || [];
   }, [projectSearchTerm, projectCategoryFilter, projectStatusFilter, projectPublishedFilter, projectFeaturedFilter]);
 
+  const refetchProjects = useCallback(async () => {
+    try {
+      const projectsData = await fetchProjects();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Error refetching projects:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to refetch projects",
+        description: "Please try again.",
+      });
+    }
+  }, [fetchProjects, toast]);
+
 
   const loadData = useCallback(async () => {
     try {
@@ -487,7 +501,7 @@ const Admin: React.FC = () => {
                 setProjectPublishedFilter={setProjectPublishedFilter}
                 projectFeaturedFilter={projectFeaturedFilter}
                 setProjectFeaturedFilter={setProjectFeaturedFilter}
-                refetchProjects={fetchProjects} // Pass the refetch function
+                refetchProjects={refetchProjects} // Pass the refetch function
               />
             )}
 
