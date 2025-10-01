@@ -86,6 +86,19 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
+  // Effect to calculate duration when start_date or end_date changes
+  useEffect(() => {
+    if (formData.start_date && formData.end_date) {
+      const start = new Date(formData.start_date);
+      const end = new Date(formData.end_date);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setFormData(prev => ({ ...prev, duration: diffDays }));
+    } else {
+      setFormData(prev => ({ ...prev, duration: null }));
+    }
+  }, [formData.start_date, formData.end_date]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       const { data, error } = await supabase
@@ -541,7 +554,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                       mode="single"
                       selected={formData.start_date ? new Date(formData.start_date) : undefined}
                       onSelect={(date) => {
-                        setFormData(prev => ({ ...prev, start_date: date ? date.toISOString() : null }));
+                        const newStartDate = date ? date.toISOString() : null;
+                        setFormData(prev => {
+                          const updatedFormData = { ...prev, start_date: newStartDate };
+                          if (updatedFormData.start_date && updatedFormData.end_date) {
+                            const start = new Date(updatedFormData.start_date);
+                            const end = new Date(updatedFormData.end_date);
+                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            updatedFormData.duration = diffDays;
+                          } else {
+                            updatedFormData.duration = null;
+                          }
+                          return updatedFormData;
+                        });
                         setIsStartDatePickerOpen(false); // Close the popover after selection
                       }}
                       initialFocus
@@ -571,7 +597,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                       mode="single"
                       selected={formData.end_date ? new Date(formData.end_date) : undefined}
                       onSelect={(date) => {
-                        setFormData(prev => ({ ...prev, end_date: date ? date.toISOString() : null }));
+                        const newEndDate = date ? date.toISOString() : null;
+                        setFormData(prev => {
+                          const updatedFormData = { ...prev, end_date: newEndDate };
+                          if (updatedFormData.start_date && updatedFormData.end_date) {
+                            const start = new Date(updatedFormData.start_date);
+                            const end = new Date(updatedFormData.end_date);
+                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            updatedFormData.duration = diffDays;
+                          } else {
+                            updatedFormData.duration = null;
+                          }
+                          return updatedFormData;
+                        });
                         setIsEndDatePickerOpen(false); // Close the popover after selection
                       }}
                       initialFocus
@@ -585,13 +624,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 <div>
                   <Label>Duration</Label>
                   <p className="text-sm text-muted-foreground">
-                    {(() => {
-                      const start = new Date(formData.start_date!);
-                      const end = new Date(formData.end_date!);
-                      const diffTime = Math.abs(end.getTime() - start.getTime());
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      return `${diffDays} days`;
-                    })()}
+                    {formData.duration ? `${formData.duration} days` : 'N/A'}
                   </p>
                 </div>
               )}
