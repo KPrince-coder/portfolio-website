@@ -150,6 +150,17 @@ export interface MessageStatsProps {
   messagesThisMonth: number;
 }
 
+export interface ProjectStatsProps {
+  totalProjects: number;
+  publishedProjects: number;
+  draftProjects: number;
+  totalViews: number;
+  averageViewsPerProject: number;
+  mostViewedProjectTitle: string | null;
+  projectsThisWeek: number;
+  projectsThisMonth: number;
+}
+
 export interface ProjectsManagementProps {
   projects: ProjectRow[];
   projectCategories: ProjectCategoryRow[];

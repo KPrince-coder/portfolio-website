@@ -324,6 +324,38 @@ export type Database = {
         }
         Relationships: []
       }
+      project_analytics: {
+        Row: {
+          id: string
+          project_id: string
+          view_count: number
+          last_viewed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          view_count?: number
+          last_viewed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          view_count?: number
+          last_viewed_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_analytics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       projects: {
         Row: {
           category: string

@@ -7,5 +7,6 @@ export { default as ProjectsManagement } from './ProjectsManagement';
 export { default as PlaceholderSection } from './PlaceholderSection';
 export { default as MessageReply } from './MessageReply';
 export { default as MessageStats } from './MessageStats';
+export { default as ProjectStats } from './ProjectStats';
 export { default as EmailTemplateForm } from './EmailTemplateForm';
 export * from './types';

@@ -11,6 +11,7 @@ import {
   PlaceholderSection,
   MessageReply,
   MessageStats,
+  ProjectStats, // Import ProjectStats
   User,
   ContactMessage,
 } from '@/components/admin';
@@ -18,6 +19,7 @@ import { Database } from '@/integrations/supabase/types';
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
 type ProjectCategoryRow = Database['public']['Tables']['projects_categories']['Row'];
+type ProjectAnalyticsRow = Database['public']['Tables']['project_analytics']['Row']; // Import ProjectAnalyticsRow
 
 import { MessageService } from '@/lib/messages';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
@@ -29,6 +31,7 @@ const Admin: React.FC = () => {
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [projectCategories, setProjectCategories] = useState<ProjectCategoryRow[]>([]);
+  const [projectAnalytics, setProjectAnalytics] = useState<ProjectAnalyticsRow[]>([]); // New state for project analytics
   const [messageStats, setMessageStats] = useState({
     totalMessages: 0,
     unreadMessages: 0,
@@ -36,6 +39,16 @@ const Admin: React.FC = () => {
     averageResponseTime: 0,
     messagesThisWeek: 0,
     messagesThisMonth: 0,
+  });
+  const [projectStats, setProjectStats] = useState({ // New state for project stats
+    totalProjects: 0,
+    publishedProjects: 0,
+    draftProjects: 0,
+    totalViews: 0,
+    averageViewsPerProject: 0,
+    mostViewedProjectTitle: null as string | null,
+    projectsThisWeek: 0,
+    projectsThisMonth: 0,
   });
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [showReplyModal, setShowReplyModal] = useState(false);
@@ -113,6 +126,16 @@ const Admin: React.FC = () => {
         throw categoriesError;
       }
       setProjectCategories(categoriesData || []);
+
+      // Load project analytics
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('project_analytics')
+        .select('*');
+
+      if (analyticsError) {
+        throw analyticsError;
+      }
+      setProjectAnalytics(analyticsData || []);
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -210,6 +233,47 @@ const Admin: React.FC = () => {
   useEffect(() => {
     setMessageStats(calculatedMessageStats);
   }, [calculatedMessageStats]);
+
+  // Calculate project statistics from projects and projectAnalytics
+  const calculatedProjectStats = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday as start of week
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const total = projects.length;
+    const published = projects.filter(p => p.published).length;
+    const draft = projects.filter(p => !p.published).length;
+
+    const totalViews = projectAnalytics.reduce((sum, pa) => sum + pa.view_count, 0);
+    const averageViewsPerProject = total > 0 ? totalViews / total : 0;
+
+    let mostViewedProjectTitle: string | null = null;
+    if (projectAnalytics.length > 0) {
+      const sortedAnalytics = [...projectAnalytics].sort((a, b) => b.view_count - a.view_count);
+      const mostViewedProjectId = sortedAnalytics[0].project_id;
+      const mostViewedProject = projects.find(p => p.id === mostViewedProjectId);
+      mostViewedProjectTitle = mostViewedProject?.title || null;
+    }
+
+    const projectsThisWeek = projects.filter(p => new Date(p.created_at) >= startOfWeek).length;
+    const projectsThisMonth = projects.filter(p => new Date(p.created_at) >= startOfMonth).length;
+
+    return {
+      totalProjects: total,
+      publishedProjects: published,
+      draftProjects: draft,
+      totalViews: totalViews,
+      averageViewsPerProject: averageViewsPerProject,
+      mostViewedProjectTitle: mostViewedProjectTitle,
+      projectsThisWeek: projectsThisWeek,
+      projectsThisMonth: projectsThisMonth,
+    };
+  }, [projects, projectAnalytics]);
+
+  // Update projectStats state when calculatedProjectStats changes
+  useEffect(() => {
+    setProjectStats(calculatedProjectStats);
+  }, [calculatedProjectStats]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -466,6 +530,7 @@ const Admin: React.FC = () => {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <MessageStats {...messageStats} />
+                <ProjectStats {...projectStats} /> {/* Add ProjectStats */}
                 <AdminDashboard
                   contactMessages={contactMessages}
                   projects={projects}
