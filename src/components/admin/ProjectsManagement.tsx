@@ -192,7 +192,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                   <Button size="sm" variant="outline" onClick={() => handleEditProject(project)}>
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDeleteProject(project.id)}>
+                  <Button size="sm" variant="outline" onClick={() => handleDeleteProject(project.id)} className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
