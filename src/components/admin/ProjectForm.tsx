@@ -65,7 +65,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null);
   const [saving, setSaving] = useState(false);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url');
-  const [iconSearchQuery, setIconSearchQuery] = useState(''); // New state for icon search query
+  const [iconSearchQuery, setIconSearchQuery] = useState('');
+  const [metricsInput, setMetricsInput] = useState<string>(
+    project?.metrics ? JSON.stringify(project.metrics, null, 2) : ''
+  );
   const { toast } = useToast();
 
   // State for controlling calendar popover visibility
@@ -233,17 +236,37 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
 
     setSaving(true);
     try {
+      let parsedMetrics: Json | null = null;
+      if (metricsInput.trim()) {
+        try {
+          parsedMetrics = JSON.parse(metricsInput);
+        } catch (jsonError) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Metrics JSON",
+            description: "Please enter valid JSON for project metrics.",
+          });
+          setSaving(false);
+          return;
+        }
+      }
+
+      const dataToSave = {
+        ...formData,
+        metrics: parsedMetrics,
+      };
+
       if (formData.id) {
         const { error } = await supabase
           .from('projects')
-          .update(formData)
+          .update(dataToSave)
           .eq('id', formData.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('projects')
-          .insert([formData]);
+          .insert([dataToSave]);
 
         if (error) throw error;
       }
@@ -440,6 +463,22 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               <CardTitle>Project Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Project Metrics */}
+              <div>
+                <Label htmlFor="metrics">Project Metrics (JSON)</Label>
+                <Textarea
+                  id="metrics"
+                  value={metricsInput}
+                  onChange={(e) => setMetricsInput(e.target.value)}
+                  placeholder='Enter project metrics as JSON, e.g., {"users": 1000, "downloads": 500}'
+                  rows={5}
+                  className="font-mono text-xs"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter metrics as a valid JSON object.
+                </p>
+              </div>
+
               {/* Start Date */}
               <div>
                 <Label htmlFor="start_date">Start Date</Label>
