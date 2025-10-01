@@ -61,10 +61,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [newTech, setNewTech] = useState('');
   const [dbCategories, setDbCategories] = useState<CategoryRow[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<string>(availableIcons[0]); // State for selected icon
-  const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null); // State for category being edited
+  const [selectedIcon, setSelectedIcon] = useState<string>(availableIcons[0]);
+  const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null);
   const [saving, setSaving] = useState(false);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url');
+  const [iconSearchQuery, setIconSearchQuery] = useState(''); // New state for icon search query
   const { toast } = useToast();
 
   // State for controlling calendar popover visibility
@@ -568,23 +569,37 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                       <Label htmlFor="edit-category-icon">Category Icon</Label>
                       <Select
                         value={editingCategory.icon || ''}
-                        onValueChange={(value) => setEditingCategory(prev => prev ? { ...prev, icon: value } : null)}
+                        onValueChange={(value) => {
+                          setEditingCategory(prev => prev ? { ...prev, icon: value } : null);
+                          setIconSearchQuery(''); // Clear search query on selection
+                        }}
                       >
                         <SelectTrigger id="edit-category-icon">
                           <SelectValue placeholder="Select an icon" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {availableIcons.map((iconName) => {
-                            const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
-                            return (
-                              <SelectItem key={iconName} value={iconName}>
-                                <div className="flex items-center gap-2">
-                                  <IconComponent className="w-4 h-4" />
-                                  {iconName}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
+                        <SelectContent className="p-0">
+                          <div className="p-2">
+                            <Input
+                              placeholder="Search icons..."
+                              value={iconSearchQuery}
+                              onChange={(e) => setIconSearchQuery(e.target.value)}
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {availableIcons
+                              .filter(iconName => iconName.toLowerCase().includes(iconSearchQuery.toLowerCase()))
+                              .map((iconName) => {
+                                const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                                return (
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent className="w-4 h-4" />
+                                      {iconName}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                          </div>
                         </SelectContent>
                       </Select>
                     </div>
@@ -610,23 +625,37 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                       <Label htmlFor="new-category-icon">Category Icon</Label>
                       <Select
                         value={selectedIcon}
-                        onValueChange={setSelectedIcon}
+                        onValueChange={(value) => {
+                          setSelectedIcon(value);
+                          setIconSearchQuery(''); // Clear search query on selection
+                        }}
                       >
                         <SelectTrigger id="new-category-icon">
                           <SelectValue placeholder="Select an icon" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {availableIcons.map((iconName) => {
-                            const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
-                            return (
-                              <SelectItem key={iconName} value={iconName}>
-                                <div className="flex items-center gap-2">
-                                  <IconComponent className="w-4 h-4" />
-                                  {iconName}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
+                        <SelectContent className="p-0">
+                          <div className="p-2">
+                            <Input
+                              placeholder="Search icons..."
+                              value={iconSearchQuery}
+                              onChange={(e) => setIconSearchQuery(e.target.value)}
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {availableIcons
+                              .filter(iconName => iconName.toLowerCase().includes(iconSearchQuery.toLowerCase()))
+                              .map((iconName) => {
+                                const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                                return (
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent className="w-4 h-4" />
+                                      {iconName}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                          </div>
                         </SelectContent>
                       </Select>
                     </div>
