@@ -48,6 +48,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url'); // New state for image upload mode
   const { toast } = useToast();
 
+  // State for controlling calendar popover visibility
+  const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
+  const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
+
   const predefinedCategories = [
     'Data Engineering',
     'AI/Machine Learning',
@@ -310,7 +314,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               {/* Start Date */}
               <div>
                 <Label htmlFor="start_date">Start Date</Label>
-                <Popover>
+                <Popover open={isStartDatePickerOpen} onOpenChange={setIsStartDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -327,7 +331,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     <Calendar
                       mode="single"
                       selected={formData.start_date ? new Date(formData.start_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, start_date: date ? date.toISOString() : null }))}
+                      onSelect={(date) => {
+                        setFormData(prev => ({ ...prev, start_date: date ? date.toISOString() : null }));
+                        setIsStartDatePickerOpen(false); // Close the popover after selection
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
@@ -337,7 +344,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               {/* End Date */}
               <div>
                 <Label htmlFor="end_date">End Date</Label>
-                <Popover>
+                <Popover open={isEndDatePickerOpen} onOpenChange={setIsEndDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -354,7 +361,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     <Calendar
                       mode="single"
                       selected={formData.end_date ? new Date(formData.end_date) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, end_date: date ? date.toISOString() : null }))}
+                      onSelect={(date) => {
+                        setFormData(prev => ({ ...prev, end_date: date ? date.toISOString() : null }));
+                        setIsEndDatePickerOpen(false); // Close the popover after selection
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
