@@ -20,6 +20,11 @@ type CategoryRow = Database['public']['Tables']['projects_categories']['Row'];
 type CategoryInsert = Database['public']['Tables']['projects_categories']['Insert'];
 type CategoryUpdate = Database['public']['Tables']['projects_categories']['Update'];
 
+type MetricItem = {
+  label: string;
+  value: string;
+};
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 import { format } from 'date-fns'; // Import format for date formatting
 import { cn } from '@/lib/utils'; // Import cn for conditional class names
@@ -66,9 +71,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const [saving, setSaving] = useState(false);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url');
   const [iconSearchQuery, setIconSearchQuery] = useState('');
-  const [metricsInput, setMetricsInput] = useState<string>(
-    project?.metrics ? JSON.stringify(project.metrics, null, 2) : ''
-  );
+  const [metrics, setMetrics] = useState<MetricItem[]>(() => {
+    if (project?.metrics && Array.isArray(project.metrics)) {
+      return project.metrics.map((metric: MetricItem) => ({
+        label: metric.label || '',
+        value: metric.value || '',
+      }));
+    }
+    return [];
+  });
   const { toast } = useToast();
 
   // State for controlling calendar popover visibility
@@ -95,6 +106,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     };
     fetchCategories();
   }, [toast]);
+
+  useEffect(() => {
+    if (project?.metrics && Array.isArray(project.metrics)) {
+      setMetrics(project.metrics.map((metric: MetricItem) => ({
+        label: metric.label || '',
+        value: metric.value || '',
+      })));
+    } else {
+      setMetrics([]);
+    }
+  }, [project?.metrics]);
 
   const statuses = [
     'Planning',
@@ -236,24 +258,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
 
     setSaving(true);
     try {
-      let parsedMetrics: Json | null = null;
-      if (metricsInput.trim()) {
-        try {
-          parsedMetrics = JSON.parse(metricsInput);
-        } catch (jsonError) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Metrics JSON",
-            description: "Please enter valid JSON for project metrics.",
-          });
-          setSaving(false);
-          return;
-        }
-      }
+      const metricsArray = metrics.filter(metric => metric.label.trim() !== '' && metric.value.trim() !== '').map(metric => ({
+        label: metric.label.trim(),
+        value: metric.value.trim(),
+      }));
 
       const dataToSave = {
         ...formData,
-        metrics: parsedMetrics,
+        metrics: metricsArray,
       };
 
       if (formData.id) {
@@ -464,19 +476,48 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Project Metrics */}
-              <div>
-                <Label htmlFor="metrics">Project Metrics (JSON)</Label>
-                <Textarea
-                  id="metrics"
-                  value={metricsInput}
-                  onChange={(e) => setMetricsInput(e.target.value)}
-                  placeholder='Enter project metrics as JSON, e.g., {"users": 1000, "downloads": 500}'
-                  rows={5}
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter metrics as a valid JSON object.
-                </p>
+              <div className="space-y-2">
+                <Label>Project Metrics</Label>
+                {metrics.map((metric, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Metric Label"
+                      value={metric.label}
+                      onChange={(e) => {
+                        const newMetrics = [...metrics];
+                        newMetrics[index].label = e.target.value;
+                        setMetrics(newMetrics);
+                      }}
+                      className="w-1/2"
+                    />
+                    <Input
+                      placeholder="Metric Value"
+                      value={metric.value}
+                      onChange={(e) => {
+                        const newMetrics = [...metrics];
+                        newMetrics[index].value = e.target.value;
+                        setMetrics(newMetrics);
+                      }}
+                      className="w-1/2"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMetrics(prev => prev.filter((_, i) => i !== index))}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMetrics(prev => [...prev, { label: '', value: '' }])}
+                  className="mt-2"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Metric
+                </Button>
               </div>
 
               {/* Start Date */}
@@ -844,6 +885,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                       <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
                     ))}
                   </div>
+
+                  {metrics.length > 0 && (
+                    <div className="mt-4">
+                      <h5 className="font-semibold text-sm mb-2">Metrics:</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {metrics.map((metric, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {metric.label}: {metric.value}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {(formData.github_url || formData.demo_url) && (
                     <div className="flex gap-2 mt-4">
                       {formData.github_url && (
