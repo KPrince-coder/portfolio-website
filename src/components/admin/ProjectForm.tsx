@@ -265,7 +265,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                   <Input
                     id="image_url"
                     value={formData.image_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, image_url: e.target.value }));
+                      setImageUploadMode('url'); // Ensure mode is 'url' when typing in URL input
+                    }}
                     placeholder="https://example.com/project-image.jpg"
                   />
                 ) : (
@@ -403,10 +406,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     ))}
                     {customCategories.map((category) => (
                       <SelectItem key={category} value={category}>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between w-full">
                           {category}
-                          <X
-                            className="w-3 h-3 ml-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
                             onClick={(e) => {
                               e.stopPropagation(); // Prevent select item from closing
                               setCustomCategories(prev => prev.filter(c => c !== category));
@@ -414,7 +419,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                                 setFormData(prev => ({ ...prev, category: predefinedCategories[0] })); // Reset to a default category
                               }
                             }}
-                          />
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       </SelectItem>
                     ))}

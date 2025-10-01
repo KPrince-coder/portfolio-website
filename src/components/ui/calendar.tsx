@@ -40,6 +40,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         caption_dropdowns: "flex gap-1", // Added for dropdown styling
+        dropdown: "rdp-dropdown bg-popover text-popover-foreground", // Added background and text color
+        vhidden: "hidden", // Hide visually hidden elements
         ...classNames,
       }}
       components={{
