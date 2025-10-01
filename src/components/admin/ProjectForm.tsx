@@ -879,79 +879,79 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               </div>
             </CardContent>
           </Card>
-
-          {/* Preview */}
-          {formData.title && (
-            <Card className="card-neural">
-              <CardHeader>
-                <CardTitle>Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 text-sm">
-                  <h4 className="font-semibold text-lg">{formData.title}</h4>
-                  {formData.image_url && (
-                    <img src={formData.image_url} alt="Project Preview" className="w-full h-48 object-cover rounded-md" />
-                  )}
-                  <p className="text-muted-foreground">{formData.description}</p>
-                  {formData.long_description && (
-                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.long_description }} />
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {formData.category && (
-                      <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        {(() => {
-                          const category = dbCategories.find(cat => cat.name === formData.category);
-                          const IconComponent = category?.icon ? (LucideIcons[category.icon as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType : LucideIcons.Folder as React.ElementType;
-                          return (
-                            <>
-                              <IconComponent className="w-3 h-3" />
-                              {formData.category}
-                            </>
-                          );
-                        })()}
-                      </Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs">{formData.status}</Badge>
-                    {formData.featured && <Badge variant="accent" className="text-xs">Featured</Badge>}
-                    {!formData.published && <Badge variant="outline" className="text-xs">Draft</Badge>}
-                    {formData.technologies && formData.technologies.map(tech => (
-                      <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
-                    ))}
-                  </div>
-
-                  {metrics.length > 0 && (
-                    <div className="mt-4">
-                      <h5 className="font-semibold text-sm mb-2">Metrics:</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {metrics.map((metric, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {metric.label}: {metric.value}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {(formData.github_url || formData.demo_url) && (
-                    <div className="flex gap-2 mt-4">
-                      {formData.github_url && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={formData.github_url} target="_blank" rel="noopener noreferrer">GitHub</a>
-                        </Button>
-                      )}
-                      {formData.demo_url && (
-                        <Button variant="default" size="sm" asChild>
-                          <a href={formData.demo_url} target="_blank" rel="noopener noreferrer">Live Demo</a>
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
+
+      {/* Preview - Full Width */}
+      {formData.title && (
+        <Card className="card-neural mt-6">
+          <CardHeader>
+            <CardTitle>Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 text-sm">
+              <h4 className="font-semibold text-lg">{formData.title}</h4>
+              {formData.image_url && (
+                <img src={formData.image_url} alt="Project Preview" className="w-full h-48 object-cover rounded-md" />
+              )}
+              <p className="text-muted-foreground">{formData.description}</p>
+              {formData.long_description && (
+                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.long_description }} />
+              )}
+              <div className="flex flex-wrap gap-2">
+                {formData.category && (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1">
+                    {(() => {
+                      const category = dbCategories.find(cat => cat.name === formData.category);
+                      const IconComponent = category?.icon ? (LucideIcons[category.icon as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType : LucideIcons.Folder as React.ElementType;
+                      return (
+                        <>
+                          <IconComponent className="w-3 h-3" />
+                          {formData.category}
+                        </>
+                      );
+                    })()}
+                  </Badge>
+                )}
+                <Badge variant="outline" className="text-xs">{formData.status}</Badge>
+                {formData.featured && <Badge variant="accent" className="text-xs">Featured</Badge>}
+                {!formData.published && <Badge variant="outline" className="text-xs">Draft</Badge>}
+                {formData.technologies && formData.technologies.map(tech => (
+                  <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
+                ))}
+              </div>
+
+              {metrics.length > 0 && (
+                <div className="mt-4">
+                  <h5 className="font-semibold text-sm mb-2">Metrics:</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {metrics.map((metric, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {metric.label}: {metric.value}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(formData.github_url || formData.demo_url) && (
+                <div className="flex gap-2 mt-4">
+                  {formData.github_url && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={formData.github_url} target="_blank" rel="noopener noreferrer">GitHub</a>
+                    </Button>
+                  )}
+                  {formData.demo_url && (
+                    <Button variant="default" size="sm" asChild>
+                      <a href={formData.demo_url} target="_blank" rel="noopener noreferrer">Live Demo</a>
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
