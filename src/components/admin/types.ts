@@ -77,10 +77,6 @@ export interface BrandSettings {
   updated_at: string;
 }
 
-export interface Project extends ProjectRow {
-  start_date?: string | null; // Added for project start date
-  end_date?: string | null;   // Added for project end date
-}
 
 export interface AdminTab {
   id: string;
@@ -110,7 +106,7 @@ export interface AdminSidebarProps {
 
 export interface AdminDashboardProps {
   contactMessages: ContactMessage[];
-  projects: Project[];
+  projects: ProjectRow[];
   unreadMessages: number;
 }
 
@@ -154,7 +150,7 @@ export interface MessageStatsProps {
 }
 
 export interface ProjectsManagementProps {
-  projects: Project[];
+  projects: ProjectRow[];
 }
 
 // Email template related interfaces

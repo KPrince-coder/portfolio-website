@@ -10,36 +10,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Save, X, Plus, CalendarIcon } from 'lucide-react'; // Added CalendarIcon
-import { Project } from './types'; // Import Project from types.ts
 import { Calendar } from '@/components/ui/calendar'; // Import Calendar
+import { Database } from '@/integrations/supabase/types';
+
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 import { format } from 'date-fns'; // Import format for date formatting
 import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 interface ProjectFormProps {
-  project?: Project;
+  project?: ProjectRow;
   onSave: () => void;
   onCancel: () => void;
 }
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Project>({
-    title: '',
-    slug: '',
-    description: '',
-    long_description: '',
-    category: 'Data Engineering',
-    image_url: '',
-    technologies: [],
-    github_url: '',
-    demo_url: '',
-    status: 'Development',
-    featured: false,
-    published: true,
-    metrics: {},
-    start_date: project?.start_date || null, // Initialize start_date
-    end_date: project?.end_date || null,     // Initialize end_date
-    ...project
+  const [formData, setFormData] = useState<ProjectRow>({
+    id: project?.id || '', // Add id for existing projects
+    title: project?.title || '',
+    slug: project?.slug || '',
+    description: project?.description || null,
+    long_description: project?.long_description || null,
+    category: project?.category || 'Data Engineering',
+    image_url: project?.image_url || null,
+    technologies: project?.technologies || [],
+    github_url: project?.github_url || null,
+    demo_url: project?.demo_url || null,
+    status: project?.status || 'Development',
+    featured: project?.featured || false,
+    published: project?.published || true,
+    metrics: project?.metrics || null,
+    sort_order: project?.sort_order || 0,
+    created_at: project?.created_at || new Date().toISOString(),
+    updated_at: project?.updated_at || new Date().toISOString(),
+    excerpt: project?.excerpt || null,
+    start_date: project?.start_date || null,
+    end_date: project?.end_date || null,
+    duration: project?.duration || null,
+    assets: project?.assets || [],
+    seo_title: project?.seo_title || null,
+    seo_description: project?.seo_description || null,
+    author_id: project?.author_id || null,
   });
   const [newTech, setNewTech] = useState('');
   const [newCategory, setNewCategory] = useState(''); // New state for custom category
@@ -206,7 +218,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 <Label htmlFor="description">Short Description *</Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
+                  value={formData.description || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Brief description of the project"
                   rows={3}
@@ -217,7 +229,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 <Label htmlFor="long_description">Detailed Description</Label>
                 <Textarea
                   id="long_description"
-                  value={formData.long_description}
+                  value={formData.long_description || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, long_description: e.target.value }))}
                   placeholder="Detailed project description (HTML supported)"
                   rows={8}
@@ -229,7 +241,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                   <Label htmlFor="github_url">GitHub URL</Label>
                   <Input
                     id="github_url"
-                    value={formData.github_url}
+                    value={formData.github_url || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, github_url: e.target.value }))}
                     placeholder="https://github.com/username/repo"
                   />
@@ -239,11 +251,32 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                   <Label htmlFor="demo_url">Demo URL</Label>
                   <Input
                     id="demo_url"
-                    value={formData.demo_url}
+                    value={formData.demo_url || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, demo_url: e.target.value }))}
                     placeholder="https://demo-url.com"
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="seo_title">SEO Title</Label>
+                <Input
+                  id="seo_title"
+                  value={formData.seo_title || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, seo_title: e.target.value }))}
+                  placeholder="Enter SEO title"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="seo_description">SEO Description</Label>
+                <Textarea
+                  id="seo_description"
+                  value={formData.seo_description || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, seo_description: e.target.value }))}
+                  placeholder="Enter SEO description"
+                  rows={3}
+                />
               </div>
 
               <div>
@@ -268,7 +301,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 {imageUploadMode === 'url' ? (
                   <Input
                     id="image_url"
-                    value={formData.image_url}
+                    value={formData.image_url || ''}
                     onChange={(e) => {
                       setFormData(prev => ({ ...prev, image_url: e.target.value }));
                       setImageUploadMode('url'); // Ensure mode is 'url' when typing in URL input
@@ -526,7 +559,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                     {formData.featured && <Badge variant="accent" className="text-xs">Featured</Badge>}
                     {!formData.published && <Badge variant="outline" className="text-xs">Draft</Badge>}
                   </div>
-                </div>
+                </CardContent>
               </CardContent>
             </Card>
           )}

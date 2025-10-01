@@ -343,9 +343,17 @@ export type Database = {
           technologies: string[] | null
           title: string
           updated_at: string
+          excerpt: string | null
+          start_date: string | null
+          end_date: string | null
+          duration: number | null
+          assets: string[] | null
+          seo_title: string | null
+          seo_description: string | null
+          author_id: string | null
         }
         Insert: {
-          category: string
+          category?: string
           created_at?: string
           demo_url?: string | null
           description?: string | null
@@ -356,12 +364,20 @@ export type Database = {
           long_description?: string | null
           metrics?: Json | null
           published?: boolean | null
-          slug: string
+          slug?: string
           sort_order?: number | null
           status?: string | null
           technologies?: string[] | null
-          title: string
+          title?: string
           updated_at?: string
+          excerpt?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          duration?: number | null
+          assets?: string[] | null
+          seo_title?: string | null
+          seo_description?: string | null
+          author_id?: string | null
         }
         Update: {
           category?: string
@@ -381,6 +397,14 @@ export type Database = {
           technologies?: string[] | null
           title?: string
           updated_at?: string
+          excerpt?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          duration?: number | null
+          assets?: string[] | null
+          seo_title?: string | null
+          seo_description?: string | null
+          author_id?: string | null
         }
         Relationships: []
       }

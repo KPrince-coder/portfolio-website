@@ -3,19 +3,22 @@ import { Briefcase, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ProjectsManagementProps, Project } from './types';
+import { ProjectsManagementProps } from './types';
 import ProjectForm from './ProjectForm'; // Import ProjectForm
+import { Database } from '@/integrations/supabase/types';
+
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
 
 const ProjectsManagement: React.FC<ProjectsManagementProps> = ({ projects }) => {
   const [showProjectForm, setShowProjectForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | undefined>(undefined);
+  const [editingProject, setEditingProject] = useState<ProjectRow | undefined>(undefined);
 
   const handleAddProject = () => {
     setEditingProject(undefined);
     setShowProjectForm(true);
   };
 
-  const handleEditProject = (project: Project) => {
+  const handleEditProject = (project: ProjectRow) => {
     setEditingProject(project);
     setShowProjectForm(true);
   };

@@ -13,8 +13,10 @@ import {
   MessageStats,
   User,
   ContactMessage,
-  Project,
 } from '@/components/admin';
+import { Database } from '@/integrations/supabase/types';
+
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
 import { MessageService } from '@/lib/messages';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 
@@ -23,7 +25,7 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [messageStats, setMessageStats] = useState({ // Keep useState for initial empty state
     totalMessages: 0,
     unreadMessages: 0,
