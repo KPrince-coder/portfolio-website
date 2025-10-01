@@ -9,12 +9,16 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, X, Plus, CalendarIcon } from 'lucide-react'; // Added CalendarIcon
-import { Calendar } from '@/components/ui/calendar'; // Import Calendar
+import { Save, X, Plus, CalendarIcon, Edit, Trash2 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react'; // Import all Lucide icons
+import { Calendar } from '@/components/ui/calendar';
 import { Database } from '@/integrations/supabase/types';
+import { availableIcons } from '@/lib/icons'; // Import available icons
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
 type CategoryRow = Database['public']['Tables']['projects_categories']['Row'];
+type CategoryInsert = Database['public']['Tables']['projects_categories']['Insert'];
+type CategoryUpdate = Database['public']['Tables']['projects_categories']['Update'];
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Import Popover components
 import { format } from 'date-fns'; // Import format for date formatting
@@ -55,10 +59,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     author_id: project?.author_id || null,
   });
   const [newTech, setNewTech] = useState('');
-  const [dbCategories, setDbCategories] = useState<CategoryRow[]>([]); // State for categories from DB
-  const [newCategoryName, setNewCategoryName] = useState(''); // New state for custom category name
+  const [dbCategories, setDbCategories] = useState<CategoryRow[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState<string>(availableIcons[0]); // State for selected icon
+  const [editingCategory, setEditingCategory] = useState<CategoryRow | null>(null); // State for category being edited
   const [saving, setSaving] = useState(false);
-  const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url'); // New state for image upload mode
+  const [imageUploadMode, setImageUploadMode] = useState<'url' | 'file'>('url');
   const { toast } = useToast();
 
   // State for controlling calendar popover visibility
@@ -124,9 +130,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
   const addCategory = async () => {
     if (newCategoryName.trim()) {
       const newSlug = generateSlug(newCategoryName.trim());
+      const categoryToInsert: CategoryInsert = {
+        name: newCategoryName.trim(),
+        slug: newSlug,
+        icon: selectedIcon,
+      };
+
       const { data, error } = await supabase
         .from('projects_categories')
-        .insert([{ name: newCategoryName.trim(), slug: newSlug, icon: 'Award' }]) // Default icon
+        .insert([categoryToInsert])
         .select();
 
       if (error) {
@@ -139,6 +151,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
         setDbCategories(prev => [...prev, data[0]]);
         setFormData(prev => ({ ...prev, category: data[0].name }));
         setNewCategoryName('');
+        setSelectedIcon(availableIcons[0]); // Reset selected icon
         toast({
           title: "Category added successfully",
         });
@@ -146,7 +159,38 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     }
   };
 
-  const removeCategory = async (categoryId: string) => {
+  const updateCategory = async () => {
+    if (editingCategory && editingCategory.name.trim()) {
+      const categoryToUpdate: CategoryUpdate = {
+        name: editingCategory.name.trim(),
+        slug: generateSlug(editingCategory.name.trim()),
+        icon: editingCategory.icon,
+      };
+
+      const { data, error } = await supabase
+        .from('projects_categories')
+        .update(categoryToUpdate)
+        .eq('id', editingCategory.id)
+        .select();
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error updating category",
+          description: error.message,
+        });
+      } else if (data && data.length > 0) {
+        setDbCategories(prev => prev.map(cat => cat.id === data[0].id ? data[0] : cat));
+        setFormData(prev => ({ ...prev, category: data[0].name }));
+        setEditingCategory(null); // Exit editing mode
+        toast({
+          title: "Category updated successfully",
+        });
+      }
+    }
+  };
+
+  const deleteCategory = async (categoryId: string) => {
     const { error } = await supabase
       .from('projects_categories')
       .delete()
@@ -161,7 +205,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
     } else {
       setDbCategories(prev => prev.filter(cat => cat.id !== categoryId));
       if (formData.category === dbCategories.find(cat => cat.id === categoryId)?.name) {
-        setFormData(prev => ({ ...prev, category: dbCategories[0]?.name || '' })); // Reset to first category or empty
+        setFormData(prev => ({ ...prev, category: dbCategories[0]?.name || '' }));
       }
       toast({
         title: "Category deleted successfully",
@@ -472,47 +516,150 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
               )}
 
               {/* Category Management */}
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <div className="flex space-x-2 mb-2">
-                  <Input
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="Add new category"
-                    onKeyPress={(e) => e.key === 'Enter' && addCategory()}
-                  />
-                  <Button onClick={addCategory} size="sm">
-                    <Plus className="w-4 h-4" />
-                  </Button>
+              <div className="space-y-4">
+                <Label htmlFor="category">Categories</Label>
+                <div className="flex flex-col gap-2">
+                  {dbCategories.map((category) => {
+                    const IconComponent = (LucideIcons[category.icon as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                    return (
+                      <div key={category.id} className="flex items-center justify-between p-2 border rounded-md">
+                        <div className="flex items-center gap-2">
+                          <IconComponent className="w-4 h-4" />
+                          <span>{category.name}</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setEditingCategory(category)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          {category.name !== 'AI/ML' && category.name !== 'Mobile/AI' && category.name !== 'Data Engineering' && category.name !== 'Frontend Development' && category.name !== 'Backend Development' && category.name !== 'DevOps' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                              onClick={() => deleteCategory(category.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+
+                {editingCategory ? (
+                  <div className="space-y-2 mt-4 p-3 border rounded-md bg-muted/20">
+                    <h5 className="font-semibold">Edit Category</h5>
+                    <div>
+                      <Label htmlFor="edit-category-name">Category Name</Label>
+                      <Input
+                        id="edit-category-name"
+                        value={editingCategory.name}
+                        onChange={(e) => setEditingCategory(prev => prev ? { ...prev, name: e.target.value } : null)}
+                        placeholder="Edit category name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-category-icon">Category Icon</Label>
+                      <Select
+                        value={editingCategory.icon || ''}
+                        onValueChange={(value) => setEditingCategory(prev => prev ? { ...prev, icon: value } : null)}
+                      >
+                        <SelectTrigger id="edit-category-icon">
+                          <SelectValue placeholder="Select an icon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableIcons.map((iconName) => {
+                            const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                            return (
+                              <SelectItem key={iconName} value={iconName}>
+                                <div className="flex items-center gap-2">
+                                  <IconComponent className="w-4 h-4" />
+                                  {iconName}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button onClick={updateCategory} size="sm">Save Changes</Button>
+                      <Button variant="outline" size="sm" onClick={() => setEditingCategory(null)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2 mt-4 p-3 border rounded-md bg-muted/20">
+                    <h5 className="font-semibold">Add New Category</h5>
+                    <div>
+                      <Label htmlFor="new-category-name">Category Name</Label>
+                      <Input
+                        id="new-category-name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="New category name"
+                        onKeyPress={(e) => e.key === 'Enter' && addCategory()}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-category-icon">Category Icon</Label>
+                      <Select
+                        value={selectedIcon}
+                        onValueChange={setSelectedIcon}
+                      >
+                        <SelectTrigger id="new-category-icon">
+                          <SelectValue placeholder="Select an icon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableIcons.map((iconName) => {
+                            const IconComponent = (LucideIcons[iconName as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                            return (
+                              <SelectItem key={iconName} value={iconName}>
+                                <div className="flex items-center gap-2">
+                                  <IconComponent className="w-4 h-4" />
+                                  {iconName}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={addCategory} size="sm" className="mt-2">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Category
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Project Category Selection */}
+              <div>
+                <Label htmlFor="project-category-select">Assign Project Category</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="project-category-select">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {dbCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.name}>
-                        <div className="flex items-center justify-between w-full">
-                          {category.name}
-                          {category.name !== 'Data Engineering' && category.name !== 'AI/Machine Learning' && category.name !== 'Frontend Development' && category.name !== 'Mobile Development' && category.name !== 'Backend Development' && category.name !== 'DevOps' && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent select item from closing
-                                removeCategory(category.id);
-                              }}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {dbCategories.map((category) => {
+                      const IconComponent = (LucideIcons[category.icon as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType;
+                      return (
+                        <SelectItem key={category.id} value={category.name}>
+                          <div className="flex items-center gap-2">
+                            <IconComponent className="w-4 h-4" />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -598,15 +745,51 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel }) 
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
-                  <h4 className="font-semibold">{formData.title}</h4>
-                  <p className="text-muted-foreground line-clamp-2">{formData.description}</p>
-                  <div className="flex flex-wrap gap-1">
-                    <Badge variant="outline" className="text-xs">{formData.category}</Badge>
+                <div className="space-y-4 text-sm">
+                  <h4 className="font-semibold text-lg">{formData.title}</h4>
+                  {formData.image_url && (
+                    <img src={formData.image_url} alt="Project Preview" className="w-full h-48 object-cover rounded-md" />
+                  )}
+                  <p className="text-muted-foreground">{formData.description}</p>
+                  {formData.long_description && (
+                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formData.long_description }} />
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {formData.category && (
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        {(() => {
+                          const category = dbCategories.find(cat => cat.name === formData.category);
+                          const IconComponent = category?.icon ? (LucideIcons[category.icon as keyof typeof LucideIcons] || LucideIcons.Folder) as React.ElementType : LucideIcons.Folder as React.ElementType;
+                          return (
+                            <>
+                              <IconComponent className="w-3 h-3" />
+                              {formData.category}
+                            </>
+                          );
+                        })()}
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-xs">{formData.status}</Badge>
                     {formData.featured && <Badge variant="accent" className="text-xs">Featured</Badge>}
                     {!formData.published && <Badge variant="outline" className="text-xs">Draft</Badge>}
+                    {formData.technologies && formData.technologies.map(tech => (
+                      <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
+                    ))}
                   </div>
+                  {(formData.github_url || formData.demo_url) && (
+                    <div className="flex gap-2 mt-4">
+                      {formData.github_url && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={formData.github_url} target="_blank" rel="noopener noreferrer">GitHub</a>
+                        </Button>
+                      )}
+                      {formData.demo_url && (
+                        <Button variant="default" size="sm" asChild>
+                          <a href={formData.demo_url} target="_blank" rel="noopener noreferrer">Live Demo</a>
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
