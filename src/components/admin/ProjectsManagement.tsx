@@ -158,6 +158,11 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                 <div>
                   <h3 className="font-semibold text-lg">{project.title}</h3>
                   <p className="text-sm text-muted-foreground">{project.category}</p>
+                  {project.start_date && project.end_date && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+                    </p>
+                  )}
                   <div className="flex space-x-2 mt-2">
                     <Badge variant={project.published ? 'secondary' : 'outline'}>
                       {project.published ? 'Published' : 'Draft'}

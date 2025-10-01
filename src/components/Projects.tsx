@@ -169,14 +169,6 @@ const Projects: React.FC = () => {
                         Featured
                       </Badge>
                     )}
-                    {project.published && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-info/20 text-info border-info/50 backdrop-blur-sm"
-                      >
-                        Published
-                      </Badge>
-                    )}
                     {project.duration && (
                       <Badge
                         variant="secondary"
@@ -219,6 +211,11 @@ const Projects: React.FC = () => {
                     <TrendingUp className="w-5 h-5 text-success" />
                   </div>
                   <p className="text-sm text-secondary font-medium mb-2">{project.category}</p>
+                  {project.start_date && project.end_date && (
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+                    </p>
+                  )}
                   <p className="text-muted-foreground leading-relaxed">
                     {activeProject === project.id ? project.long_description : project.description}
                   </p>
