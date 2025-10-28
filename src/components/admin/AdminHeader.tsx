@@ -1,7 +1,7 @@
-import React from 'react';
-import { Shield, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AdminHeaderProps } from './types';
+import React from "react";
+import { Shield, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AdminHeaderProps } from "./types";
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onSignOut }) => {
   return (

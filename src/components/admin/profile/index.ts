@@ -2,5 +2,8 @@ export { default as ProfileManagement } from "./ProfileManagement";
 export { default as PersonalInfoSection } from "./PersonalInfoSection";
 export { default as HeroSection } from "./HeroSection";
 export { default as AboutSection } from "./AboutSection";
+export { default as ExperienceSection } from "./ExperienceSection";
+export { default as ImpactMetricsSection } from "./ImpactMetricsSection";
+export { default as PhilosophySection } from "./PhilosophySection";
 export { default as SocialLinksSection } from "./SocialLinksSection";
 export { default as ResumeSection } from "./ResumeSection";

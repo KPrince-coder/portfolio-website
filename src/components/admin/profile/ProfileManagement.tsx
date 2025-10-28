@@ -9,6 +9,9 @@ import HeroSection from "./HeroSection.tsx";
 import AboutSection from "./AboutSection.tsx";
 import SocialLinksSection from "./SocialLinksSection.tsx";
 import ResumeSection from "./ResumeSection.tsx";
+import ExperienceSection from "./ExperienceSection.tsx";
+import ImpactMetricsSection from "./ImpactMetricsSection.tsx";
+import PhilosophySection from "./PhilosophySection.tsx";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
@@ -150,6 +153,21 @@ const ProfileManagement: React.FC = () => {
       <HeroSection formData={formData} onInputChange={handleInputChange} />
 
       <AboutSection formData={formData} onInputChange={handleInputChange} />
+
+      <ExperienceSection
+        formData={formData}
+        onInputChange={handleInputChange}
+      />
+
+      <ImpactMetricsSection
+        formData={formData}
+        onInputChange={handleInputChange}
+      />
+
+      <PhilosophySection
+        formData={formData}
+        onInputChange={handleInputChange}
+      />
 
       <SocialLinksSection
         formData={formData}
