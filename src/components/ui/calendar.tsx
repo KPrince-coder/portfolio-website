@@ -16,7 +16,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "hidden",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -39,12 +39,18 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
+        caption_dropdowns: "flex gap-1", // Added for dropdown styling
+        dropdown: "rdp-dropdown bg-popover text-popover-foreground", // Added background and text color
+        vhidden: "hidden", // Hide visually hidden elements
         ...classNames,
       }}
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
       }}
+      captionLayout="dropdown" // Enable dropdowns
+      fromYear={1900} // Set a reasonable start year
+      toYear={new Date().getFullYear() + 10} // Set a reasonable end year (current year + 10)
       {...props}
     />
   );

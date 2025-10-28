@@ -326,25 +326,25 @@ export type Database = {
       }
       project_analytics: {
         Row: {
-          created_at: string
           id: string
-          last_viewed_at: string | null
           project_id: string
           view_count: number
+          last_viewed_at: string | null
+          created_at: string
         }
         Insert: {
-          created_at?: string
           id?: string
-          last_viewed_at?: string | null
           project_id: string
           view_count?: number
+          last_viewed_at?: string | null
+          created_at?: string
         }
         Update: {
-          created_at?: string
           id?: string
-          last_viewed_at?: string | null
           project_id?: string
           view_count?: number
+          last_viewed_at?: string | null
+          created_at?: string
         }
         Relationships: [
           {
@@ -353,42 +353,7 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "projects"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_assets: {
-        Row: {
-          created_at: string
-          description: string | null
-          file_type: string
-          file_url: string
-          id: string
-          project_id: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          file_type: string
-          file_url: string
-          id?: string
-          project_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          file_type?: string
-          file_url?: string
-          id?: string
-          project_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_assets_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
       projects: {
@@ -418,11 +383,17 @@ export type Database = {
           technologies: string[] | null
           title: string
           updated_at: string
+          excerpt: string | null
+          start_date: string | null
+          end_date: string | null
+          duration: number | null
+          assets: string[] | null
+          seo_title: string | null
+          seo_description: string | null
+          author_id: string | null
         }
         Insert: {
-          assets?: string[] | null
-          author_id?: string | null
-          category: string
+          category?: string
           created_at?: string
           demo_url?: string | null
           description?: string | null
@@ -436,15 +407,21 @@ export type Database = {
           long_description?: string | null
           metrics?: Json | null
           published?: boolean | null
-          seo_description?: string | null
-          seo_title?: string | null
-          slug: string
+          slug?: string
           sort_order?: number | null
           start_date?: string | null
           status?: string | null
           technologies?: string[] | null
-          title: string
+          title?: string
           updated_at?: string
+          excerpt?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          duration?: number | null
+          assets?: string[] | null
+          seo_title?: string | null
+          seo_description?: string | null
+          author_id?: string | null
         }
         Update: {
           assets?: string[] | null
@@ -471,6 +448,41 @@ export type Database = {
           status?: string | null
           technologies?: string[] | null
           title?: string
+          updated_at?: string
+          excerpt?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          duration?: number | null
+          assets?: string[] | null
+          seo_title?: string | null
+          seo_description?: string | null
+          author_id?: string | null
+        }
+        Relationships: []
+      }
+      projects_categories: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          icon: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          icon?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          icon?: string | null
+          created_at?: string
           updated_at?: string
         }
         Relationships: []

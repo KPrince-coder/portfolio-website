@@ -3,6 +3,7 @@ import { Database, Json } from '@/integrations/supabase/types';
 
 // Helper types for Supabase table rows
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type ProjectCategoryRow = Database['public']['Tables']['projects_categories']['Row'];
 
 export interface User {
   id: string;
@@ -77,7 +78,6 @@ export interface BrandSettings {
   updated_at: string;
 }
 
-export interface Project extends ProjectRow {}
 
 export interface AdminTab {
   id: string;
@@ -107,7 +107,7 @@ export interface AdminSidebarProps {
 
 export interface AdminDashboardProps {
   contactMessages: ContactMessage[];
-  projects: Project[];
+  projects: ProjectRow[];
   unreadMessages: number;
 }
 
@@ -150,8 +150,31 @@ export interface MessageStatsProps {
   messagesThisMonth: number;
 }
 
+export interface ProjectStatsProps {
+  totalProjects: number;
+  publishedProjects: number;
+  draftProjects: number;
+  totalViews: number;
+  averageViewsPerProject: number;
+  mostViewedProjectTitle: string | null;
+  projectsThisWeek: number;
+  projectsThisMonth: number;
+}
+
 export interface ProjectsManagementProps {
-  projects: Project[];
+  projects: ProjectRow[];
+  projectCategories: ProjectCategoryRow[];
+  projectSearchTerm: string;
+  setProjectSearchTerm: (term: string) => void;
+  projectCategoryFilter: string;
+  setProjectCategoryFilter: (category: string) => void;
+  projectStatusFilter: string;
+  setProjectStatusFilter: (status: string) => void;
+  projectPublishedFilter: string;
+  setProjectPublishedFilter: (published: string) => void;
+  projectFeaturedFilter: string;
+  setProjectFeaturedFilter: (featured: string) => void;
+  refetchProjects: () => Promise<void>;
 }
 
 // Email template related interfaces

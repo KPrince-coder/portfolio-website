@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -11,10 +11,16 @@ import {
   PlaceholderSection,
   MessageReply,
   MessageStats,
+  ProjectStats, // Import ProjectStats
   User,
   ContactMessage,
-  Project,
 } from '@/components/admin';
+import { Database } from '@/integrations/supabase/types';
+
+type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type ProjectCategoryRow = Database['public']['Tables']['projects_categories']['Row'];
+type ProjectAnalyticsRow = Database['public']['Tables']['project_analytics']['Row']; // Import ProjectAnalyticsRow
+
 import { MessageService } from '@/lib/messages';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 
@@ -23,8 +29,10 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [messageStats, setMessageStats] = useState({ // Keep useState for initial empty state
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [projectCategories, setProjectCategories] = useState<ProjectCategoryRow[]>([]);
+  const [projectAnalytics, setProjectAnalytics] = useState<ProjectAnalyticsRow[]>([]); // New state for project analytics
+  const [messageStats, setMessageStats] = useState({
     totalMessages: 0,
     unreadMessages: 0,
     repliedMessages: 0,
@@ -32,10 +40,71 @@ const Admin: React.FC = () => {
     messagesThisWeek: 0,
     messagesThisMonth: 0,
   });
+  const [projectStats, setProjectStats] = useState({ // New state for project stats
+    totalProjects: 0,
+    publishedProjects: 0,
+    draftProjects: 0,
+    totalViews: 0,
+    averageViewsPerProject: 0,
+    mostViewedProjectTitle: null as string | null,
+    projectsThisWeek: 0,
+    projectsThisMonth: 0,
+  });
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const { toast } = useToast();
+
+  // Project filter states
+  const [projectSearchTerm, setProjectSearchTerm] = useState('');
+  const [projectCategoryFilter, setProjectCategoryFilter] = useState('All');
+  const [projectStatusFilter, setProjectStatusFilter] = useState('All');
+  const [projectPublishedFilter, setProjectPublishedFilter] = useState('All');
+  const [projectFeaturedFilter, setProjectFeaturedFilter] = useState('All');
+
+  const fetchProjects = useCallback(async () => {
+    let query = supabase.from('projects').select('*');
+
+    if (projectSearchTerm) {
+      query = query.or(`title.ilike.%${projectSearchTerm}%,description.ilike.%${projectSearchTerm}%`);
+    }
+    if (projectCategoryFilter !== 'All') {
+      query = query.eq('category', projectCategoryFilter);
+    }
+    if (projectStatusFilter !== 'All') {
+      query = query.eq('status', projectStatusFilter);
+    }
+    if (projectPublishedFilter !== 'All') {
+      query = query.eq('published', projectPublishedFilter === 'true');
+    }
+    if (projectFeaturedFilter !== 'All') {
+      query = query.eq('featured', projectFeaturedFilter === 'true');
+    }
+
+    query = query.order('created_at', { ascending: false });
+
+    const { data: projectsData, error: projectsError } = await query;
+
+    if (projectsError) {
+      throw projectsError;
+    }
+    return projectsData || [];
+  }, [projectSearchTerm, projectCategoryFilter, projectStatusFilter, projectPublishedFilter, projectFeaturedFilter]);
+
+  const refetchProjects = useCallback(async () => {
+    try {
+      const projectsData = await fetchProjects();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Error refetching projects:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to refetch projects",
+        description: "Please try again.",
+      });
+    }
+  }, [fetchProjects, toast]);
+
 
   const loadData = useCallback(async () => {
     try {
@@ -44,14 +113,30 @@ const Admin: React.FC = () => {
       setInitialMessages(messages);
 
       // Load projects
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const projectsData = await fetchProjects();
+      setProjects(projectsData);
 
-      if (projectsData) {
-        setProjects(projectsData);
+      // Load project categories
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('projects_categories')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (categoriesError) {
+        throw categoriesError;
       }
+      setProjectCategories(categoriesData || []);
+
+      // Load project analytics
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('project_analytics')
+        .select('*');
+
+      if (analyticsError) {
+        throw analyticsError;
+      }
+      setProjectAnalytics(analyticsData || []);
+
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -60,7 +145,7 @@ const Admin: React.FC = () => {
         description: "Please refresh the page to try again.",
       });
     }
-  }, [toast]);
+  }, [toast, fetchProjects]);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -80,6 +165,21 @@ const Admin: React.FC = () => {
     checkAuth();
   }, [checkAuth]);
 
+  // Refetch projects when filter states change
+  useEffect(() => {
+    if (user) { // Only refetch if user is authenticated
+      fetchProjects().then(setProjects).catch(err => {
+        console.error('Error refetching projects:', err);
+        toast({
+          variant: "destructive",
+          title: "Failed to refetch projects",
+          description: "Please try again.",
+        });
+      });
+    }
+  }, [fetchProjects, user, toast]);
+
+
   // Set up real-time messages with callbacks
   const { messages: contactMessages, updateMessage } = useRealtimeMessages({
     initialMessages,
@@ -92,7 +192,7 @@ const Admin: React.FC = () => {
   });
 
   // Calculate message statistics from real-time messages
-  const calculatedMessageStats = React.useMemo(() => {
+  const calculatedMessageStats = useMemo(() => {
     const now = new Date();
     const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday as start of week
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -133,6 +233,47 @@ const Admin: React.FC = () => {
   useEffect(() => {
     setMessageStats(calculatedMessageStats);
   }, [calculatedMessageStats]);
+
+  // Calculate project statistics from projects and projectAnalytics
+  const calculatedProjectStats = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday as start of week
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const total = projects.length;
+    const published = projects.filter(p => p.published).length;
+    const draft = projects.filter(p => !p.published).length;
+
+    const totalViews = projectAnalytics.reduce((sum, pa) => sum + pa.view_count, 0);
+    const averageViewsPerProject = total > 0 ? totalViews / total : 0;
+
+    let mostViewedProjectTitle: string | null = null;
+    if (projectAnalytics.length > 0) {
+      const sortedAnalytics = [...projectAnalytics].sort((a, b) => b.view_count - a.view_count);
+      const mostViewedProjectId = sortedAnalytics[0].project_id;
+      const mostViewedProject = projects.find(p => p.id === mostViewedProjectId);
+      mostViewedProjectTitle = mostViewedProject?.title || null;
+    }
+
+    const projectsThisWeek = projects.filter(p => new Date(p.created_at) >= startOfWeek).length;
+    const projectsThisMonth = projects.filter(p => new Date(p.created_at) >= startOfMonth).length;
+
+    return {
+      totalProjects: total,
+      publishedProjects: published,
+      draftProjects: draft,
+      totalViews: totalViews,
+      averageViewsPerProject: averageViewsPerProject,
+      mostViewedProjectTitle: mostViewedProjectTitle,
+      projectsThisWeek: projectsThisWeek,
+      projectsThisMonth: projectsThisMonth,
+    };
+  }, [projects, projectAnalytics]);
+
+  // Update projectStats state when calculatedProjectStats changes
+  useEffect(() => {
+    setProjectStats(calculatedProjectStats);
+  }, [calculatedProjectStats]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -389,6 +530,7 @@ const Admin: React.FC = () => {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <MessageStats {...messageStats} />
+                <ProjectStats {...projectStats} /> {/* Add ProjectStats */}
                 <AdminDashboard
                   contactMessages={contactMessages}
                   projects={projects}
@@ -411,7 +553,21 @@ const Admin: React.FC = () => {
             )}
 
             {activeTab === 'projects' && (
-              <ProjectsManagement projects={projects} />
+              <ProjectsManagement
+                projects={projects}
+                projectCategories={projectCategories}
+                projectSearchTerm={projectSearchTerm}
+                setProjectSearchTerm={setProjectSearchTerm}
+                projectCategoryFilter={projectCategoryFilter}
+                setProjectCategoryFilter={setProjectCategoryFilter}
+                projectStatusFilter={projectStatusFilter}
+                setProjectStatusFilter={setProjectStatusFilter}
+                projectPublishedFilter={projectPublishedFilter}
+                setProjectPublishedFilter={setProjectPublishedFilter}
+                projectFeaturedFilter={projectFeaturedFilter}
+                setProjectFeaturedFilter={setProjectFeaturedFilter}
+                refetchProjects={refetchProjects} // Pass the refetch function
+              />
             )}
 
             {activeTab === 'posts' && (
