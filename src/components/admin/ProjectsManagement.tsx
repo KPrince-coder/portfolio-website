@@ -103,7 +103,6 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
     "On Hold",
     "Archived",
   ];
-  const booleanFilters = ["All", "true", "false"];
 
   return (
     <div className="space-y-6">
