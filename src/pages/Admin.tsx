@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AdminAuth,
   AdminHeader,
@@ -8,30 +8,37 @@ import {
   AdminDashboard,
   ContactMessages,
   ProjectsManagement,
+  ProfileManagement,
   PlaceholderSection,
   MessageReply,
   MessageStats,
   ProjectStats, // Import ProjectStats
   User,
   ContactMessage,
-} from '@/components/admin';
-import { Database } from '@/integrations/supabase/types';
+} from "@/components/admin";
+import { Database } from "@/integrations/supabase/types";
 
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
-type ProjectCategoryRow = Database['public']['Tables']['projects_categories']['Row'];
-type ProjectAnalyticsRow = Database['public']['Tables']['project_analytics']['Row']; // Import ProjectAnalyticsRow
+type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
+type ProjectCategoryRow =
+  Database["public"]["Tables"]["projects_categories"]["Row"];
+type ProjectAnalyticsRow =
+  Database["public"]["Tables"]["project_analytics"]["Row"]; // Import ProjectAnalyticsRow
 
-import { MessageService } from '@/lib/messages';
-import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
+import { MessageService } from "@/lib/messages";
+import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 
 const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
-  const [projectCategories, setProjectCategories] = useState<ProjectCategoryRow[]>([]);
-  const [projectAnalytics, setProjectAnalytics] = useState<ProjectAnalyticsRow[]>([]); // New state for project analytics
+  const [projectCategories, setProjectCategories] = useState<
+    ProjectCategoryRow[]
+  >([]);
+  const [projectAnalytics, setProjectAnalytics] = useState<
+    ProjectAnalyticsRow[]
+  >([]); // New state for project analytics
   const [messageStats, setMessageStats] = useState({
     totalMessages: 0,
     unreadMessages: 0,
@@ -40,7 +47,8 @@ const Admin: React.FC = () => {
     messagesThisWeek: 0,
     messagesThisMonth: 0,
   });
-  const [projectStats, setProjectStats] = useState({ // New state for project stats
+  const [projectStats, setProjectStats] = useState({
+    // New state for project stats
     totalProjects: 0,
     publishedProjects: 0,
     draftProjects: 0,
@@ -50,38 +58,42 @@ const Admin: React.FC = () => {
     projectsThisWeek: 0,
     projectsThisMonth: 0,
   });
-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(
+    null
+  );
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const { toast } = useToast();
 
   // Project filter states
-  const [projectSearchTerm, setProjectSearchTerm] = useState('');
-  const [projectCategoryFilter, setProjectCategoryFilter] = useState('All');
-  const [projectStatusFilter, setProjectStatusFilter] = useState('All');
-  const [projectPublishedFilter, setProjectPublishedFilter] = useState('All');
-  const [projectFeaturedFilter, setProjectFeaturedFilter] = useState('All');
+  const [projectSearchTerm, setProjectSearchTerm] = useState("");
+  const [projectCategoryFilter, setProjectCategoryFilter] = useState("All");
+  const [projectStatusFilter, setProjectStatusFilter] = useState("All");
+  const [projectPublishedFilter, setProjectPublishedFilter] = useState("All");
+  const [projectFeaturedFilter, setProjectFeaturedFilter] = useState("All");
 
   const fetchProjects = useCallback(async () => {
-    let query = supabase.from('projects').select('*');
+    let query = supabase.from("projects").select("*");
 
     if (projectSearchTerm) {
-      query = query.or(`title.ilike.%${projectSearchTerm}%,description.ilike.%${projectSearchTerm}%`);
+      query = query.or(
+        `title.ilike.%${projectSearchTerm}%,description.ilike.%${projectSearchTerm}%`
+      );
     }
-    if (projectCategoryFilter !== 'All') {
-      query = query.eq('category', projectCategoryFilter);
+    if (projectCategoryFilter !== "All") {
+      query = query.eq("category", projectCategoryFilter);
     }
-    if (projectStatusFilter !== 'All') {
-      query = query.eq('status', projectStatusFilter);
+    if (projectStatusFilter !== "All") {
+      query = query.eq("status", projectStatusFilter);
     }
-    if (projectPublishedFilter !== 'All') {
-      query = query.eq('published', projectPublishedFilter === 'true');
+    if (projectPublishedFilter !== "All") {
+      query = query.eq("published", projectPublishedFilter === "true");
     }
-    if (projectFeaturedFilter !== 'All') {
-      query = query.eq('featured', projectFeaturedFilter === 'true');
+    if (projectFeaturedFilter !== "All") {
+      query = query.eq("featured", projectFeaturedFilter === "true");
     }
 
-    query = query.order('created_at', { ascending: false });
+    query = query.order("created_at", { ascending: false });
 
     const { data: projectsData, error: projectsError } = await query;
 
@@ -89,14 +101,20 @@ const Admin: React.FC = () => {
       throw projectsError;
     }
     return projectsData || [];
-  }, [projectSearchTerm, projectCategoryFilter, projectStatusFilter, projectPublishedFilter, projectFeaturedFilter]);
+  }, [
+    projectSearchTerm,
+    projectCategoryFilter,
+    projectStatusFilter,
+    projectPublishedFilter,
+    projectFeaturedFilter,
+  ]);
 
   const refetchProjects = useCallback(async () => {
     try {
       const projectsData = await fetchProjects();
       setProjects(projectsData);
     } catch (error) {
-      console.error('Error refetching projects:', error);
+      console.error("Error refetching projects:", error);
       toast({
         variant: "destructive",
         title: "Failed to refetch projects",
@@ -105,11 +123,12 @@ const Admin: React.FC = () => {
     }
   }, [fetchProjects, toast]);
 
-
   const loadData = useCallback(async () => {
     try {
       // Load contact messages using MessageService
-      const { data: messages } = await MessageService.getMessages({ limit: 50 });
+      const { data: messages } = await MessageService.getMessages({
+        limit: 50,
+      });
       setInitialMessages(messages);
 
       // Load projects
@@ -118,9 +137,9 @@ const Admin: React.FC = () => {
 
       // Load project categories
       const { data: categoriesData, error: categoriesError } = await supabase
-        .from('projects_categories')
-        .select('*')
-        .order('name', { ascending: true });
+        .from("projects_categories")
+        .select("*")
+        .order("name", { ascending: true });
 
       if (categoriesError) {
         throw categoriesError;
@@ -129,16 +148,15 @@ const Admin: React.FC = () => {
 
       // Load project analytics
       const { data: analyticsData, error: analyticsError } = await supabase
-        .from('project_analytics')
-        .select('*');
+        .from("project_analytics")
+        .select("*");
 
       if (analyticsError) {
         throw analyticsError;
       }
       setProjectAnalytics(analyticsData || []);
-
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
       toast({
         variant: "destructive",
         title: "Failed to load data",
@@ -149,13 +167,15 @@ const Admin: React.FC = () => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
         loadData();
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error("Auth error:", error);
     } finally {
       setLoading(false);
     }
@@ -167,18 +187,20 @@ const Admin: React.FC = () => {
 
   // Refetch projects when filter states change
   useEffect(() => {
-    if (user) { // Only refetch if user is authenticated
-      fetchProjects().then(setProjects).catch(err => {
-        console.error('Error refetching projects:', err);
-        toast({
-          variant: "destructive",
-          title: "Failed to refetch projects",
-          description: "Please try again.",
+    if (user) {
+      // Only refetch if user is authenticated
+      fetchProjects()
+        .then(setProjects)
+        .catch((err) => {
+          console.error("Error refetching projects:", err);
+          toast({
+            variant: "destructive",
+            title: "Failed to refetch projects",
+            description: "Please try again.",
+          });
         });
-      });
     }
   }, [fetchProjects, user, toast]);
-
 
   // Set up real-time messages with callbacks
   const { messages: contactMessages, updateMessage } = useRealtimeMessages({
@@ -198,11 +220,17 @@ const Admin: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const total = contactMessages.length;
-    const unread = contactMessages.filter(msg => msg.status === 'unread').length;
-    const replied = contactMessages.filter(msg => msg.status === 'replied').length;
+    const unread = contactMessages.filter(
+      (msg) => msg.status === "unread"
+    ).length;
+    const replied = contactMessages.filter(
+      (msg) => msg.status === "replied"
+    ).length;
 
     // Calculate average response time
-    const repliedMessagesList = contactMessages.filter(msg => msg.is_replied && msg.reply_sent_at && msg.created_at);
+    const repliedMessagesList = contactMessages.filter(
+      (msg) => msg.is_replied && msg.reply_sent_at && msg.created_at
+    );
     let avgResponseTime = 0;
     if (repliedMessagesList.length > 0) {
       const totalResponseTime = repliedMessagesList.reduce((sum, msg) => {
@@ -210,14 +238,19 @@ const Admin: React.FC = () => {
         const replied = new Date(msg.reply_sent_at!).getTime();
         return sum + (replied - created);
       }, 0);
-      avgResponseTime = totalResponseTime / repliedMessagesList.length / (1000 * 60 * 60); // Convert ms to hours
+      avgResponseTime =
+        totalResponseTime / repliedMessagesList.length / (1000 * 60 * 60); // Convert ms to hours
     }
 
     // Calculate messages this week
-    const messagesThisWeek = contactMessages.filter(msg => new Date(msg.created_at) >= startOfWeek).length;
+    const messagesThisWeek = contactMessages.filter(
+      (msg) => new Date(msg.created_at) >= startOfWeek
+    ).length;
 
     // Calculate messages this month
-    const messagesThisMonth = contactMessages.filter(msg => new Date(msg.created_at) >= startOfMonth).length;
+    const messagesThisMonth = contactMessages.filter(
+      (msg) => new Date(msg.created_at) >= startOfMonth
+    ).length;
 
     return {
       totalMessages: total,
@@ -241,22 +274,33 @@ const Admin: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const total = projects.length;
-    const published = projects.filter(p => p.published).length;
-    const draft = projects.filter(p => !p.published).length;
+    const published = projects.filter((p) => p.published).length;
+    const draft = projects.filter((p) => !p.published).length;
 
-    const totalViews = projectAnalytics.reduce((sum, pa) => sum + pa.view_count, 0);
+    const totalViews = projectAnalytics.reduce(
+      (sum, pa) => sum + pa.view_count,
+      0
+    );
     const averageViewsPerProject = total > 0 ? totalViews / total : 0;
 
     let mostViewedProjectTitle: string | null = null;
     if (projectAnalytics.length > 0) {
-      const sortedAnalytics = [...projectAnalytics].sort((a, b) => b.view_count - a.view_count);
+      const sortedAnalytics = [...projectAnalytics].sort(
+        (a, b) => b.view_count - a.view_count
+      );
       const mostViewedProjectId = sortedAnalytics[0].project_id;
-      const mostViewedProject = projects.find(p => p.id === mostViewedProjectId);
+      const mostViewedProject = projects.find(
+        (p) => p.id === mostViewedProjectId
+      );
       mostViewedProjectTitle = mostViewedProject?.title || null;
     }
 
-    const projectsThisWeek = projects.filter(p => new Date(p.created_at) >= startOfWeek).length;
-    const projectsThisMonth = projects.filter(p => new Date(p.created_at) >= startOfMonth).length;
+    const projectsThisWeek = projects.filter(
+      (p) => new Date(p.created_at) >= startOfWeek
+    ).length;
+    const projectsThisMonth = projects.filter(
+      (p) => new Date(p.created_at) >= startOfMonth
+    ).length;
 
     return {
       totalProjects: total,
@@ -280,8 +324,8 @@ const Admin: React.FC = () => {
     setUser(null);
   };
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const signIn = async () => {
@@ -300,24 +344,27 @@ const Admin: React.FC = () => {
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       // Update user state and load data on successful login
       if (data?.user) {
         setUser(data.user);
         await loadData();
         // Clear form fields
-        setEmail('');
-        setPassword('');
+        setEmail("");
+        setPassword("");
         // Redirect to admin panel
-        window.location.href = '/admin';
+        window.location.href = "/admin";
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Authentication failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
     } finally {
       setIsSigningIn(false);
@@ -330,7 +377,7 @@ const Admin: React.FC = () => {
       await MessageService.markAsRead(messageId);
 
       // Update local state optimistically - real-time will sync the actual change
-      updateMessage(messageId, { status: 'read' as const });
+      updateMessage(messageId, { status: "read" as const });
 
       toast({
         title: "Message marked as read",
@@ -339,7 +386,10 @@ const Admin: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error updating message",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
     }
   };
@@ -349,16 +399,23 @@ const Admin: React.FC = () => {
       setMessagesLoading(true);
 
       switch (action) {
-        case 'mark_read':
-          await MessageService.bulkUpdateMessages(messageIds, { status: 'read' });
+        case "mark_read":
+          await MessageService.bulkUpdateMessages(messageIds, {
+            status: "read",
+          });
           break;
-        case 'mark_unread':
-          await MessageService.bulkUpdateMessages(messageIds, { status: 'unread' });
+        case "mark_unread":
+          await MessageService.bulkUpdateMessages(messageIds, {
+            status: "unread",
+          });
           break;
-        case 'archive':
-          await MessageService.bulkUpdateMessages(messageIds, { archived: true, status: 'archived' });
+        case "archive":
+          await MessageService.bulkUpdateMessages(messageIds, {
+            archived: true,
+            status: "archived",
+          });
           break;
-        case 'delete':
+        case "delete":
           for (const id of messageIds) {
             await MessageService.deleteMessage(id);
           }
@@ -370,13 +427,18 @@ const Admin: React.FC = () => {
 
       toast({
         title: "Bulk action completed",
-        description: `Successfully ${action.replace('_', ' ')} ${messageIds.length} message(s)`,
+        description: `Successfully ${action.replace("_", " ")} ${
+          messageIds.length
+        } message(s)`,
       });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Bulk action failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
     } finally {
       setMessagesLoading(false);
@@ -395,18 +457,21 @@ const Admin: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error deleting message",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
     }
   };
 
   const handleReplyToMessage = async (messageId: string) => {
-    const message = contactMessages.find(m => m.id === messageId);
+    const message = contactMessages.find((m) => m.id === messageId);
     if (message) {
       setSelectedMessage(message);
       setShowReplyModal(true);
       // Automatically mark as read when opened, if it's unread
-      if (message.status === 'unread') {
+      if (message.status === "unread") {
         await handleMarkAsRead(messageId);
       }
     }
@@ -415,12 +480,16 @@ const Admin: React.FC = () => {
   const handleSendReply = async (replyContent: string) => {
     if (!selectedMessage) return;
 
-    await MessageService.sendReply(selectedMessage.id, replyContent, user?.email);
+    await MessageService.sendReply(
+      selectedMessage.id,
+      replyContent,
+      user?.email
+    );
 
     // Optimistically update the message status in the local state
-    updateMessage(selectedMessage.id, { 
-      is_replied: true, 
-      status: 'replied',
+    updateMessage(selectedMessage.id, {
+      is_replied: true,
+      status: "replied",
       reply_content: replyContent, // Update reply content
       reply_sent_at: new Date().toISOString(), // Update reply sent time
     });
@@ -446,7 +515,10 @@ const Admin: React.FC = () => {
     });
   };
 
-  const handleUpdateStatus = async (messageId: string, updates: Partial<ContactMessage>) => {
+  const handleUpdateStatus = async (
+    messageId: string,
+    updates: Partial<ContactMessage>
+  ) => {
     try {
       // Optimistic update
       updateMessage(messageId, updates);
@@ -462,12 +534,18 @@ const Admin: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error updating status",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
     }
   };
 
-  const handleUpdatePriority = async (messageId: string, priority: ContactMessage['priority']) => {
+  const handleUpdatePriority = async (
+    messageId: string,
+    priority: ContactMessage["priority"]
+  ) => {
     try {
       // Optimistic update
       updateMessage(messageId, { priority });
@@ -481,7 +559,10 @@ const Admin: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error updating priority",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
       });
       // Revert optimistic update if API call fails (optional)
     }
@@ -511,7 +592,9 @@ const Admin: React.FC = () => {
     );
   }
 
-  const unreadMessages = contactMessages.filter(msg => msg.status === 'unread').length;
+  const unreadMessages = contactMessages.filter(
+    (msg) => msg.status === "unread"
+  ).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -527,7 +610,7 @@ const Admin: React.FC = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {activeTab === 'overview' && (
+            {activeTab === "overview" && (
               <div className="space-y-6">
                 <MessageStats {...messageStats} />
                 <ProjectStats {...projectStats} /> {/* Add ProjectStats */}
@@ -539,7 +622,9 @@ const Admin: React.FC = () => {
               </div>
             )}
 
-            {activeTab === 'messages' && (
+            {activeTab === "profile" && <ProfileManagement />}
+
+            {activeTab === "messages" && (
               <ContactMessages
                 contactMessages={contactMessages}
                 onMarkAsRead={handleMarkAsRead}
@@ -552,7 +637,7 @@ const Admin: React.FC = () => {
               />
             )}
 
-            {activeTab === 'projects' && (
+            {activeTab === "projects" && (
               <ProjectsManagement
                 projects={projects}
                 projectCategories={projectCategories}
@@ -570,14 +655,14 @@ const Admin: React.FC = () => {
               />
             )}
 
-            {activeTab === 'posts' && (
+            {activeTab === "posts" && (
               <PlaceholderSection
                 title="Blog Posts"
                 description="Blog management"
               />
             )}
 
-            {activeTab === 'settings' && (
+            {activeTab === "settings" && (
               <PlaceholderSection
                 title="Site Settings"
                 description="Site settings"

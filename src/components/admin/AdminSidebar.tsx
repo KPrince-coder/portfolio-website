@@ -1,9 +1,16 @@
-import React from 'react';
-import { Shield, Mail, Briefcase, FileText, Settings } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { AdminSidebarProps, AdminTab } from './types';
+import React from "react";
+import {
+  Shield,
+  Mail,
+  Briefcase,
+  FileText,
+  Settings,
+  User,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { AdminSidebarProps, AdminTab } from "./types";
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
   activeTab,
@@ -11,11 +18,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onTabChange,
 }) => {
   const tabs: AdminTab[] = [
-    { id: 'overview', label: 'Overview', icon: Shield },
-    { id: 'messages', label: 'Messages', icon: Mail },
-    { id: 'projects', label: 'Projects', icon: Briefcase },
-    { id: 'posts', label: 'Blog Posts', icon: FileText },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: "overview", label: "Overview", icon: Shield },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "messages", label: "Messages", icon: Mail },
+    { id: "projects", label: "Projects", icon: Briefcase },
+    { id: "posts", label: "Blog Posts", icon: FileText },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
@@ -32,7 +40,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               >
                 <tab.icon className="w-4 h-4 mr-2" />
                 {tab.label}
-                {tab.id === 'messages' && unreadMessages > 0 && (
+                {tab.id === "messages" && unreadMessages > 0 && (
                   <Badge variant="accent" className="ml-auto">
                     {unreadMessages}
                   </Badge>
