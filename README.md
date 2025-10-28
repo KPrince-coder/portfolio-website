@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/128c4c86-0b4a-4f20-b768-3ef35432fb4c
+**URL**: <https://lovable.dev/projects/128c4c86-0b4a-4f20-b768-3ef35432fb4c>
 
 ## How can I edit this code?
 
@@ -71,3 +71,41 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## 📚 Documentation
+
+All project documentation is organized in the [`docs/`](./docs) directory:
+
+- **[Current Status](./docs/CURRENT_STATUS.md)** - Migration progress and status
+- **[Migration Success](./docs/MIGRATION_SUCCESS.md)** - Profiles migration verification
+- **[Profiles Migration Guide](./docs/PROFILES_MIGRATION_GUIDE.md)** - Step-by-step migration guide
+- **[File Upload Guide](./docs/FILE_UPLOAD_GUIDE.md)** - Avatar and resume upload guide
+- **[Migration Checklist](./docs/MIGRATION_CHECKLIST.md)** - General migration checklist
+
+See the [docs README](./docs/README.md) for a complete index of all documentation.
+
+## 🗄️ Database
+
+This project uses Supabase for the backend:
+
+- **Project ID:** `jcsghggucepqzmonlpeg`
+- **Dashboard:** <https://supabase.com/dashboard/project/jcsghggucepqzmonlpeg>
+
+### Migrations
+
+Database migrations are located in `supabase/migrations/`:
+
+- ✅ **Profiles** - Hero section, About section, Resume management
+
+To apply migrations:
+
+```bash
+npx supabase link --project-ref jcsghggucepqzmonlpeg
+npx supabase db push
+```
+
+To generate TypeScript types:
+
+```bash
+npx supabase gen types typescript --project-id jcsghggucepqzmonlpeg > src/integrations/supabase/types.ts
+```
