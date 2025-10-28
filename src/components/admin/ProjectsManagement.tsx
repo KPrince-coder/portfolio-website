@@ -40,50 +40,53 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   );
   const { toast } = useToast();
 
-  const handleAddProject = () => {
+  const handleAddProject = React.useCallback(() => {
     setEditingProject(undefined);
     setShowProjectForm(true);
-  };
+  }, []);
 
-  const handleEditProject = (project: ProjectRow) => {
+  const handleEditProject = React.useCallback((project: ProjectRow) => {
     setEditingProject(project);
     setShowProjectForm(true);
-  };
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = React.useCallback(async () => {
     setShowProjectForm(false);
     setEditingProject(undefined);
     await refetchProjects(); // Refetch projects after save
-  };
+  }, [refetchProjects]);
 
-  const handleCancel = () => {
+  const handleCancel = React.useCallback(() => {
     setShowProjectForm(false);
     setEditingProject(undefined);
-  };
+  }, []);
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      try {
-        const { error } = await supabase
-          .from("projects")
-          .delete()
-          .eq("id", projectId);
-        if (error) throw error;
-        toast({ title: "Project deleted successfully." });
-        await refetchProjects(); // Refetch projects after delete
-      } catch (error) {
-        console.error("Error deleting project:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to delete project.",
-          description:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred.",
-        });
+  const handleDeleteProject = React.useCallback(
+    async (projectId: string) => {
+      if (window.confirm("Are you sure you want to delete this project?")) {
+        try {
+          const { error } = await supabase
+            .from("projects")
+            .delete()
+            .eq("id", projectId);
+          if (error) throw error;
+          toast({ title: "Project deleted successfully." });
+          await refetchProjects(); // Refetch projects after delete
+        } catch (error) {
+          console.error("Error deleting project:", error);
+          toast({
+            variant: "destructive",
+            title: "Failed to delete project.",
+            description:
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred.",
+          });
+        }
       }
-    }
-  };
+    },
+    [refetchProjects, toast]
+  );
 
   if (showProjectForm) {
     return (
@@ -95,14 +98,17 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
     );
   }
 
-  const projectStatuses = [
-    "All",
-    "Planning",
-    "In Progress",
-    "Completed",
-    "On Hold",
-    "Archived",
-  ];
+  const projectStatuses = React.useMemo(
+    () => [
+      "All",
+      "Planning",
+      "In Progress",
+      "Completed",
+      "On Hold",
+      "Archived",
+    ],
+    []
+  );
 
   return (
     <div className="space-y-6">
