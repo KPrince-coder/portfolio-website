@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
-import { Briefcase, Edit, Trash2, Search, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ProjectsManagementProps } from './types';
-import ProjectForm from './ProjectForm'; // Import ProjectForm
-import { Database } from '@/integrations/supabase/types';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { Briefcase, Edit, Trash2, Search, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ProjectsManagementProps } from "./types";
+import ProjectForm from "./ProjectForm"; // Import ProjectForm
+import { Database } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
+type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 
 const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   projects,
@@ -29,7 +35,9 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   refetchProjects,
 }) => {
   const [showProjectForm, setShowProjectForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectRow | undefined>(undefined);
+  const [editingProject, setEditingProject] = useState<ProjectRow | undefined>(
+    undefined
+  );
   const { toast } = useToast();
 
   const handleAddProject = () => {
@@ -54,29 +62,48 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    if (window.confirm("Are you sure you want to delete this project?")) {
       try {
-        const { error } = await supabase.from('projects').delete().eq('id', projectId);
+        const { error } = await supabase
+          .from("projects")
+          .delete()
+          .eq("id", projectId);
         if (error) throw error;
-        toast({ title: 'Project deleted successfully.' });
+        toast({ title: "Project deleted successfully." });
         await refetchProjects(); // Refetch projects after delete
       } catch (error) {
-        console.error('Error deleting project:', error);
+        console.error("Error deleting project:", error);
         toast({
-          variant: 'destructive',
-          title: 'Failed to delete project.',
-          description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+          variant: "destructive",
+          title: "Failed to delete project.",
+          description:
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred.",
         });
       }
     }
   };
 
   if (showProjectForm) {
-    return <ProjectForm project={editingProject} onSave={handleSave} onCancel={handleCancel} />;
+    return (
+      <ProjectForm
+        project={editingProject}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      />
+    );
   }
 
-  const projectStatuses = ['All', 'Planning', 'In Progress', 'Completed', 'On Hold', 'Archived'];
-  const booleanFilters = ['All', 'true', 'false'];
+  const projectStatuses = [
+    "All",
+    "Planning",
+    "In Progress",
+    "Completed",
+    "On Hold",
+    "Archived",
+  ];
+  const booleanFilters = ["All", "true", "false"];
 
   return (
     <div className="space-y-6">
@@ -103,14 +130,17 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
               variant="ghost"
               size="sm"
               className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 p-0 text-muted-foreground hover:bg-transparent"
-              onClick={() => setProjectSearchTerm('')}
+              onClick={() => setProjectSearchTerm("")}
             >
               <X className="w-4 h-4" />
             </Button>
           )}
         </div>
 
-        <Select value={projectCategoryFilter} onValueChange={setProjectCategoryFilter}>
+        <Select
+          value={projectCategoryFilter}
+          onValueChange={setProjectCategoryFilter}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Filter by Category" />
           </SelectTrigger>
@@ -124,7 +154,10 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={projectStatusFilter} onValueChange={setProjectStatusFilter}>
+        <Select
+          value={projectStatusFilter}
+          onValueChange={setProjectStatusFilter}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
@@ -137,7 +170,10 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={projectPublishedFilter} onValueChange={setProjectPublishedFilter}>
+        <Select
+          value={projectPublishedFilter}
+          onValueChange={setProjectPublishedFilter}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Filter by Published" />
           </SelectTrigger>
@@ -148,7 +184,10 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={projectFeaturedFilter} onValueChange={setProjectFeaturedFilter}>
+        <Select
+          value={projectFeaturedFilter}
+          onValueChange={setProjectFeaturedFilter}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Filter by Featured" />
           </SelectTrigger>
@@ -159,7 +198,7 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-4">
         {projects.map((project) => (
           <Card key={project.id} className="card-neural">
@@ -167,15 +206,29 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-lg">{project.title}</h3>
-                  <p className="text-sm text-muted-foreground">{project.category}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {project.category}
+                  </p>
                   {project.start_date && project.end_date && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(project.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(project.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} {project.duration ? `(${project.duration} days)` : ''}
+                      {new Date(project.start_date).toLocaleDateString(
+                        "en-US",
+                        { year: "numeric", month: "long", day: "numeric" }
+                      )}{" "}
+                      -{" "}
+                      {new Date(project.end_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                      {project.duration ? `(${project.duration} days)` : ""}
                     </p>
                   )}
                   <div className="flex space-x-2 mt-2">
-                    <Badge variant={project.published ? 'secondary' : 'outline'}>
-                      {project.published ? 'Published' : 'Draft'}
+                    <Badge
+                      variant={project.published ? "secondary" : "outline"}
+                    >
+                      {project.published ? "Published" : "Draft"}
                     </Badge>
                     {project.featured && (
                       <Badge variant="accent">Featured</Badge>
@@ -189,10 +242,19 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEditProject(project)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEditProject(project)}
+                  >
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDeleteProject(project.id)} className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeleteProject(project.id)}
+                    className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -205,21 +267,13 @@ const ProjectsManagement: React.FC<ProjectsManagementProps> = ({
           <div className="text-center py-12">
             <Briefcase className="w-12 h-12 text-muted mx-auto mb-4" />
             <p className="text-muted-foreground">No projects yet</p>
-            <Button className="mt-4 neural-glow" onClick={handleCreate}>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button className="mt-4 neural-glow" onClick={handleAddProject}>
+              <Briefcase className="w-4 h-4 mr-2" />
               Create Your First Project
             </Button>
           </div>
         )}
       </div>
-
-      {showForm && (
-        <ProjectFormModal
-          project={editingProject}
-          onSave={handleFormClose}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
     </div>
   );
 };
