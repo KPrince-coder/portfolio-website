@@ -14,6 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconPicker } from "@/components/ui/icon-picker";
+import { useToast } from "@/hooks/use-toast";
 import { useSkillCategories } from "./hooks/useSkillCategories";
 import type { Skill, SkillFormData, SkillFormProps } from "./types";
 
@@ -30,6 +31,7 @@ const COLOR_OPTIONS = [
  * Form for creating and editing skills
  */
 const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose, onSave }) => {
+  const { toast } = useToast();
   const { categories, loading: categoriesLoading } = useSkillCategories();
   const [formData, setFormData] = useState<SkillFormData>({
     category_id: skill?.category_id || "",
@@ -65,13 +67,28 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose, onSave }) => {
       }
 
       if (result.error) {
-        alert(`Error saving skill: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving skill",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Skill saved",
+          description: `Successfully ${skill ? "updated" : "created"} skill`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving skill:", error);
-      alert("An error occurred while saving the skill");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving the skill",
+      });
     } finally {
       setSaving(false);
     }

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import type { WorkExperienceFormProps, WorkExperienceFormData } from "./types";
 import { EMPLOYMENT_TYPES } from "./types";
 
@@ -21,6 +22,7 @@ const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<WorkExperienceFormData>({
     title: experience?.title || "",
     company: experience?.company || "",
@@ -71,13 +73,30 @@ const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({
         : await onSave(formData);
 
       if (result.error) {
-        alert(`Error saving work experience: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving work experience",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Work experience saved",
+          description: `Successfully ${
+            experience ? "updated" : "created"
+          } work experience`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving work experience:", error);
-      alert("An error occurred while saving");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving",
+      });
     } finally {
       setSaving(false);
     }
@@ -229,7 +248,7 @@ const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({
                   value={achievementInput}
                   onChange={(e) => setAchievementInput(e.target.value)}
                   placeholder="Add an achievement"
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddAchievement();

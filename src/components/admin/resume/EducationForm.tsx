@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import type { EducationFormProps, EducationFormData } from "./types";
 
 const EducationForm: React.FC<EducationFormProps> = ({
@@ -13,6 +14,7 @@ const EducationForm: React.FC<EducationFormProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<EducationFormData>({
     degree: education?.degree || "",
     field_of_study: education?.field_of_study || "",
@@ -57,13 +59,30 @@ const EducationForm: React.FC<EducationFormProps> = ({
     try {
       const result = await onSave(formData);
       if (result.error) {
-        alert(`Error saving education: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving education",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Education saved",
+          description: `Successfully ${
+            education ? "updated" : "created"
+          } education entry`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving education:", error);
-      alert("An error occurred while saving");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving",
+      });
     } finally {
       setSaving(false);
     }
@@ -214,7 +233,7 @@ const EducationForm: React.FC<EducationFormProps> = ({
                   value={activityInput}
                   onChange={(e) => setActivityInput(e.target.value)}
                   placeholder="Add an activity"
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddActivity();

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { useProjectCategories } from "./hooks/useProjectCategories";
 import { useTechnologies } from "./hooks/useTechnologies";
 import { useProjects } from "./hooks/useProjects";
@@ -29,6 +30,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const { categories, loading: categoriesLoading } = useProjectCategories();
   const { technologies, loading: technologiesLoading } = useTechnologies();
   const { uploadImage } = useProjects();
@@ -71,13 +73,28 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     try {
       const { url, error } = await uploadImage(file);
       if (error) {
-        alert(`Error uploading image: ${error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error uploading image",
+          description: error.message,
+        });
       } else if (url) {
         setFormData({ ...formData, image_url: url });
+        toast({
+          title: "Image uploaded",
+          description: "Project image uploaded successfully",
+        });
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("An error occurred while uploading the image");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while uploading the image",
+      });
     } finally {
       setUploading(false);
     }
@@ -118,13 +135,30 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       }
 
       if (result.error) {
-        alert(`Error saving project: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving project",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Project saved",
+          description: `Successfully ${
+            project ? "updated" : "created"
+          } project`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving project:", error);
-      alert("An error occurred while saving the project");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving the project",
+      });
     } finally {
       setSaving(false);
     }

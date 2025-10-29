@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import type { CertificationFormProps, CertificationFormData } from "./types";
 
 const CertificationForm: React.FC<CertificationFormProps> = ({
@@ -13,6 +14,7 @@ const CertificationForm: React.FC<CertificationFormProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<CertificationFormData>({
     name: certification?.name || "",
     issuing_organization: certification?.issuing_organization || "",
@@ -36,13 +38,30 @@ const CertificationForm: React.FC<CertificationFormProps> = ({
     try {
       const result = await onSave(formData);
       if (result.error) {
-        alert(`Error saving certification: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving certification",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Certification saved",
+          description: `Successfully ${
+            certification ? "updated" : "created"
+          } certification`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving certification:", error);
-      alert("An error occurred while saving");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving",
+      });
     } finally {
       setSaving(false);
     }

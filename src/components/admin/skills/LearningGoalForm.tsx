@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import type {
   LearningGoal,
   LearningGoalFormData,
@@ -41,6 +42,7 @@ const LearningGoalForm: React.FC<LearningGoalFormProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<LearningGoalFormData>({
     title: goal?.title || "",
     status: goal?.status || "learning",
@@ -72,13 +74,30 @@ const LearningGoalForm: React.FC<LearningGoalFormProps> = ({
       }
 
       if (result.error) {
-        alert(`Error saving learning goal: ${result.error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Error saving learning goal",
+          description: result.error.message,
+        });
       } else {
+        toast({
+          title: "Learning goal saved",
+          description: `Successfully ${
+            goal ? "updated" : "created"
+          } learning goal`,
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error saving learning goal:", error);
-      alert("An error occurred while saving the learning goal");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving the learning goal",
+      });
     } finally {
       setSaving(false);
     }
