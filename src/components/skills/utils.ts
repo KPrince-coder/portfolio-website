@@ -2,6 +2,25 @@
  * Utility functions for Skills component
  */
 
+import * as Icons from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+/**
+ * Get icon component by name
+ * Falls back to Briefcase icon if not found
+ *
+ * @param iconName - Name of the Lucide icon
+ * @returns Icon component
+ *
+ * @example
+ * const Icon = getIcon("Brain");
+ * return <Icon className="w-6 h-6" />;
+ */
+export const getIcon = (iconName: string): LucideIcon => {
+  const IconsMap = Icons as unknown as Record<string, LucideIcon>;
+  return IconsMap[iconName] || Icons.Briefcase;
+};
+
 /**
  * Splits a title string into main title and highlight
  * Intelligently finds the last word to use as highlight

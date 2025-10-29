@@ -15,6 +15,17 @@ const Skills: React.FC = () => {
   const { data, loading } = useSkillsData();
   const [activeCategory, setActiveCategory] = useState("all");
 
+  // Split title into main and highlight parts (must be before conditional return)
+  const fullTitle = data.profileData?.skills_title || "Technical Expertise";
+  const { title, titleHighlight } = useMemo(
+    () => splitTitle(fullTitle),
+    [fullTitle]
+  );
+
+  const description =
+    data.profileData?.skills_description ||
+    "A comprehensive toolkit for building intelligent systems, from data pipelines to user interfaces.";
+
   // Filter skills based on active category
   const filteredSkills = useMemo(() => {
     if (activeCategory === "all") {
@@ -35,17 +46,6 @@ const Skills: React.FC = () => {
       </section>
     );
   }
-
-  // Split title into main and highlight parts
-  const fullTitle = data.profileData?.skills_title || "Technical Expertise";
-  const { title, titleHighlight } = useMemo(
-    () => splitTitle(fullTitle),
-    [fullTitle]
-  );
-
-  const description =
-    data.profileData?.skills_description ||
-    "A comprehensive toolkit for building intelligent systems, from data pipelines to user interfaces.";
 
   return (
     <section
