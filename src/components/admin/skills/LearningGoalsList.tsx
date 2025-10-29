@@ -89,6 +89,7 @@ const LearningGoalsList: React.FC<LearningGoalsListProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handleDelete(goal.id, goal.title)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/50 hover:border-destructive"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
                 Delete

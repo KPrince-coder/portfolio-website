@@ -107,6 +107,7 @@ const SkillsList: React.FC<SkillsListProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(skill.id, skill.name)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/50 hover:border-destructive"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
                       Delete
