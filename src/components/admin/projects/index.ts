@@ -1,5 +1,6 @@
-// Main Component
+// Main Components
 export { default as ProjectsManagement } from "./ProjectsManagement";
+export { default as ProjectsManagementRouter } from "./ProjectsManagementRouter";
 
 // Section Components
 export * from "./sections";
