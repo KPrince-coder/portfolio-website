@@ -295,6 +295,72 @@ INSERT INTO public.technologies (name, label, icon, color, category, display_ord
   ('vercel', 'Vercel', 'Zap', 'text-accent', 'devops', 43)
 ON CONFLICT (name) DO NOTHING;
 
+-- -- Insert sample projects (optional - for testing/demo purposes)
+-- -- Note: These will only insert if categories exist
+-- DO $
+-- DECLARE
+--   web_category_id UUID;
+--   ai_category_id UUID;
+--   data_category_id UUID;
+-- BEGIN
+--   -- Get category IDs
+--   SELECT id INTO web_category_id FROM public.project_categories WHERE name = 'web' LIMIT 1;
+--   SELECT id INTO ai_category_id FROM public.project_categories WHERE name = 'ai-ml' LIMIT 1;
+--   SELECT id INTO data_category_id FROM public.project_categories WHERE name = 'data' LIMIT 1;
+  
+--   -- Insert sample projects if categories exist
+--   IF web_category_id IS NOT NULL THEN
+--     INSERT INTO public.projects (
+--       category_id, title, slug, description, long_description,
+--       status, is_featured, display_order, tags
+--     ) VALUES (
+--       web_category_id,
+--       'Portfolio Website',
+--       'portfolio-website',
+--       'A modern, responsive portfolio website built with React and TypeScript',
+--       'This portfolio website showcases my work and skills using cutting-edge web technologies. Features include dark mode, smooth animations, and a fully responsive design that works seamlessly across all devices.',
+--       'completed',
+--       true,
+--       1,
+--       ARRAY['react', 'typescript', 'tailwind']
+--     ) ON CONFLICT (slug) DO NOTHING;
+--   END IF;
+  
+--   IF ai_category_id IS NOT NULL THEN
+--     INSERT INTO public.projects (
+--       category_id, title, slug, description, long_description,
+--       status, is_featured, display_order, tags
+--     ) VALUES (
+--       ai_category_id,
+--       'AI Chat Assistant',
+--       'ai-chat-assistant',
+--       'An intelligent chatbot powered by machine learning and natural language processing',
+--       'Built using state-of-the-art language models, this chat assistant can understand context, maintain conversations, and provide helpful responses across various topics.',
+--       'in-progress',
+--       true,
+--       2,
+--       ARRAY['python', 'tensorflow', 'nlp']
+--     ) ON CONFLICT (slug) DO NOTHING;
+--   END IF;
+  
+--   IF data_category_id IS NOT NULL THEN
+--     INSERT INTO public.projects (
+--       category_id, title, slug, description, long_description,
+--       status, is_featured, display_order, tags
+--     ) VALUES (
+--       data_category_id,
+--       'Data Analytics Dashboard',
+--       'data-analytics-dashboard',
+--       'Real-time data visualization and analytics platform',
+--       'A comprehensive dashboard for visualizing complex datasets with interactive charts, real-time updates, and customizable views. Processes millions of data points efficiently.',
+--       'completed',
+--       false,
+--       3,
+--       ARRAY['python', 'postgresql', 'visualization']
+--     ) ON CONFLICT (slug) DO NOTHING;
+--   END IF;
+-- END $;
+
 -- =====================================================
 -- SECTION 13: Helper Views
 -- =====================================================
