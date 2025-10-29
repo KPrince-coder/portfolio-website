@@ -23,11 +23,14 @@ export const useSkillsData = () => {
     try {
       setLoading(true);
 
-      // Load profile skills data
-      const { data: profile } = await supabase
+      // Load profile skills data (get the first/primary profile)
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("skills_title, skills_description")
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      const profile = profileData?.[0] || null;
 
       // Load categories
       const { data: categoriesData } = await supabase

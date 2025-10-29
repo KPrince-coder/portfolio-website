@@ -14,15 +14,21 @@ export const useProfile = () => {
   const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
+      // Get the first/primary profile (for single-user portfolio)
       const { data, error } = await supabase
         .from("profiles")
         .select(
           "full_name, about_title, about_description, about_highlights, experiences, impact_metrics, philosophy_quote, philosophy_author, avatar_url, bio, location, hero_subtitle, website_url, github_url, linkedin_url, twitter_url"
         )
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
 
       if (error) throw error;
-      setProfile(data as ProfileData);
+
+      const profileData = data?.[0];
+      if (profileData) {
+        setProfile(profileData as ProfileData);
+      }
       setError(null);
     } catch (err) {
       console.error("Error loading profile:", err);

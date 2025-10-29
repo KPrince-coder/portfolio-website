@@ -14,15 +14,21 @@ export const useHeroData = () => {
   const loadHeroData = useCallback(async () => {
     try {
       setLoading(true);
+      // Get the first/primary profile (for single-user portfolio)
       const { data, error } = await supabase
         .from("profiles")
         .select(
           "full_name, hero_title, hero_subtitle, hero_tagline, avatar_url, github_url, linkedin_url, email, website_url, twitter_url"
         )
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
 
       if (error) throw error;
-      setHeroData(data as HeroData);
+
+      const profileData = data?.[0];
+      if (profileData) {
+        setHeroData(profileData as HeroData);
+      }
       setError(null);
     } catch (err) {
       console.error("Error loading hero data:", err);
