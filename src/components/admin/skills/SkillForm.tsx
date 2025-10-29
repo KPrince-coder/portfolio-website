@@ -43,10 +43,11 @@ const ICON_OPTIONS = [
 ];
 
 const COLOR_OPTIONS = [
-  { value: "text-secondary", label: "Secondary" },
-  { value: "text-accent", label: "Accent" },
-  { value: "text-success", label: "Success" },
-  { value: "text-warning", label: "Warning" },
+  { value: "text-secondary", label: "Secondary (Blue)" },
+  { value: "text-accent", label: "Accent (Pink)" },
+  { value: "text-success", label: "Success (Green)" },
+  { value: "text-warning", label: "Warning (Yellow)" },
+  { value: "text-neural", label: "Neural (Cyan)" },
 ];
 
 /**
