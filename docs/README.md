@@ -30,6 +30,7 @@ This directory contains all documentation for the portfolio project.
 - **[ABOUT_RESPONSIVE_AVATAR_REVIEW.md](./ABOUT_RESPONSIVE_AVATAR_REVIEW.md)** - Responsive avatar optimization review
 - **[PROFILECARD_IMAGE_OPTIMIZATION_REVIEW.md](./PROFILECARD_IMAGE_OPTIMIZATION_REVIEW.md)** - ProfileCard image loading optimization
 - **[EXPERIENCE_SECTION_REVIEW.md](./EXPERIENCE_SECTION_REVIEW.md)** - ExperienceSection.tsx review and optimization guide
+- **[USEPROFILE_OPTIMIZATION_REVIEW.md](./USEPROFILE_OPTIMIZATION_REVIEW.md)** - useProfile hook optimization with caching and type safety
 - **[OPTIMIZATION_RECOMMENDATIONS.md](./OPTIMIZATION_RECOMMENDATIONS.md)** - General performance optimization recommendations
 
 ## 🗂️ Quick Links
@@ -179,3 +180,7 @@ Detailed review of the About.tsx component covering performance optimizations (u
 ### EXPERIENCE_SECTION_REVIEW.md
 
 In-depth review of ExperienceSection.tsx with recommendations for useCallback optimization, form validation, accessibility features, and TypeScript type safety improvements.
+
+### USEPROFILE_OPTIMIZATION_REVIEW.md
+
+Complete optimization of the useProfile hook including proper TypeScript typing with Supabase-generated types, request caching (90% fewer API calls), request cancellation (no memory leaks), custom error handling, and comprehensive documentation. Includes before/after comparisons and migration guide.

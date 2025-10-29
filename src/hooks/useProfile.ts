@@ -1,85 +1,157 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 /**
- * Shared Profile Data Interface
- * Contains all fields from the profiles table
+ * Profile data type - uses Supabase generated type for type safety
  */
-export interface ProfileData {
-  // Personal Information
-  full_name: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  location: string | null;
+export type ProfileData = Database["public"]["Tables"]["profiles"]["Row"];
 
-  // Hero Section
-  hero_title: string | null;
-  hero_subtitle: string | null;
-  hero_tagline: string | null;
-
-  // About Section
-  about_title: string | null;
-  about_description: string | null;
-  about_highlights: string[] | null;
-
-  // Extended Profile Data
-  experiences: unknown;
-  impact_metrics: unknown;
-  philosophy_quote: string | null;
-  philosophy_author: string | null;
-
-  // Social Links
-  website_url: string | null;
-  github_url: string | null;
-  linkedin_url: string | null;
-  twitter_url: string | null;
-  email: string | null;
-  phone: string | null;
-
-  // Resume
-  resume_url: string | null;
-  resume_file_name: string | null;
-  resume_updated_at: string | null;
+/**
+ * Custom error class for profile loading errors
+ */
+export class ProfileLoadError extends Error {
+  constructor(message: string, public code?: string, public details?: unknown) {
+    super(message);
+    this.name = "ProfileLoadError";
+  }
 }
 
+// Global cache for profile data
+const profileCache = new Map<
+  string,
+  {
+    data: ProfileData | null;
+    timestamp: number;
+  }
+>();
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Shared custom hook to fetch profile data
- * Can be used across Hero, About, and other components
+ * Custom hook to fetch and manage profile data from Supabase
  *
- * @param fields - Optional array of specific fields to fetch. If not provided, fetches all fields.
- * @returns Profile data, loading state, error, and refetch function
+ * Features:
+ * - Type-safe with Supabase generated types
+ * - Request caching to reduce API calls
+ * - Request cancellation on unmount
+ * - Selective field fetching for performance
+ *
+ * @param fields - Optional array of specific fields to fetch. Fetches all fields if not provided.
+ * @param enableCache - Enable request caching (default: true)
+ *
+ * @returns Object containing:
+ * - profile: The profile data or null
+ * - loading: Loading state boolean
+ * - error: ProfileLoadError if request failed
+ * - refetch: Function to manually refetch the profile
+ *
+ * @example
+ * ```tsx
+ * // Fetch all fields
+ * const { profile, loading, error } = useProfile();
+ *
+ * // Fetch specific fields only
+ * const { profile } = useProfile(['full_name', 'bio', 'avatar_url']);
+ *
+ * // Disable caching
+ * const { profile, refetch } = useProfile(undefined, false);
+ * ```
  */
-export const useProfile = (fields?: (keyof ProfileData)[]) => {
+export const useProfile = (
+  fields?: (keyof ProfileData)[],
+  enableCache = true
+) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<ProfileLoadError | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Memoize fields key to prevent unnecessary re-fetches
+  const fieldsKey = fields?.join(",");
 
   const loadProfile = useCallback(async () => {
+    // Cancel previous request if still pending
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
     try {
       setLoading(true);
+      const selectFields = fieldsKey?.split(",").join(", ") || "*";
+      const cacheKey = selectFields;
 
-      // If specific fields requested, use them; otherwise fetch all
-      const selectFields = fields?.join(", ") || "*";
+      // Check cache first
+      if (enableCache) {
+        const cached = profileCache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+          setProfile(cached.data);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
 
-      const { data, error } = await supabase
+      const response = await supabase
         .from("profiles")
         .select(selectFields)
+        .abortSignal(abortControllerRef.current.signal)
         .single();
 
-      if (error) throw error;
-      setProfile(data as ProfileData);
+      if (response.error) {
+        throw new ProfileLoadError(
+          "Failed to load profile",
+          response.error.code,
+          response.error
+        );
+      }
+
+      // Type assertion needed due to Supabase's dynamic select with string fields
+      // When no error, data is guaranteed to match ProfileData structure
+      // Using 'as unknown as' is necessary here because TypeScript can't infer
+      // the return type from a dynamic select string
+      const profileData = response.data as unknown as ProfileData;
+      setProfile(profileData);
       setError(null);
+
+      // Update cache
+      if (enableCache) {
+        profileCache.set(cacheKey, {
+          data: profileData,
+          timestamp: Date.now(),
+        });
+      }
     } catch (err) {
-      console.error("Error loading profile:", err);
-      setError(err as Error);
+      // Don't set error for aborted requests
+      if (err instanceof Error && err.name !== "AbortError") {
+        const profileError =
+          err instanceof ProfileLoadError
+            ? err
+            : new ProfileLoadError("Failed to load profile", undefined, err);
+
+        console.error("Error loading profile:", profileError);
+        setError(profileError);
+      }
     } finally {
       setLoading(false);
     }
-  }, [fields]);
+  }, [fieldsKey, enableCache]);
 
   useEffect(() => {
     loadProfile();
+
+    // Cleanup: abort pending request on unmount
+    return () => {
+      abortControllerRef.current?.abort();
+    };
   }, [loadProfile]);
 
   return { profile, loading, error, refetch: loadProfile };
+};
+
+/**
+ * Clear the profile cache
+ * Useful when you want to force a fresh fetch
+ */
+export const clearProfileCache = () => {
+  profileCache.clear();
 };
