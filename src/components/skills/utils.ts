@@ -1,26 +1,42 @@
-import * as Icons from "lucide-react";
+/**
+ * Utility functions for Skills component
+ */
 
 /**
- * Get a Lucide icon component by name
- * Supports all 300+ icons from lucide-react
- * Falls back to Code icon if the specified icon is not found
+ * Splits a title string into main title and highlight
+ * Intelligently finds the last word to use as highlight
  *
- * @param iconName - The name of the Lucide icon (e.g., "Brain", "Database", "Code")
- * @returns The icon component
+ * @param fullTitle - The complete title string
+ * @returns Object with title and titleHighlight
  *
  * @example
- * ```tsx
- * const Icon = getIcon("Brain");
- * return <Icon className="w-6 h-6" />;
- * ```
+ * splitTitle("Technical Expertise")
+ * // Returns: { title: "Technical", titleHighlight: "Expertise" }
+ *
+ * splitTitle("My Amazing Skills")
+ * // Returns: { title: "My Amazing", titleHighlight: "Skills" }
+ *
+ * splitTitle("Skills")
+ * // Returns: { title: "Skills", titleHighlight: undefined }
  */
-export const getIcon = (
-  iconName: string
-): React.ComponentType<{ className?: string }> => {
-  const Icon = Icons[iconName as keyof typeof Icons] as React.ComponentType<{
-    className?: string;
-  }>;
+export const splitTitle = (
+  fullTitle: string
+): { title: string; titleHighlight?: string } => {
+  if (!fullTitle || typeof fullTitle !== "string") {
+    return { title: "Technical", titleHighlight: "Expertise" };
+  }
 
-  // Fallback to Code icon if the specified icon doesn't exist
-  return Icon || Icons.Code;
+  const trimmedTitle = fullTitle.trim();
+
+  // If title is a single word, return it as is
+  const words = trimmedTitle.split(/\s+/);
+  if (words.length === 1) {
+    return { title: trimmedTitle, titleHighlight: undefined };
+  }
+
+  // Split into main title (all but last word) and highlight (last word)
+  const titleHighlight = words[words.length - 1];
+  const title = words.slice(0, -1).join(" ");
+
+  return { title, titleHighlight };
 };

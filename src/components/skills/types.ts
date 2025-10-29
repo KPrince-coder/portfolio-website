@@ -269,9 +269,21 @@ export interface SkillsStats {
 
 /**
  * SkillsHeader Component Props
+ *
+ * @property {string} title - Main title text
+ * @property {string} [titleHighlight] - Optional highlighted portion of title (displayed in accent color)
+ * @property {string} description - Section description text
+ *
+ * @example
+ * <SkillsHeader
+ *   title="Technical"
+ *   titleHighlight="Expertise"
+ *   description="My skills and capabilities"
+ * />
  */
 export interface SkillsHeaderProps {
   title: string;
+  titleHighlight?: string;
   description: string;
 }
 

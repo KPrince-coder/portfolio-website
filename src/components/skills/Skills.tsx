@@ -5,6 +5,7 @@ import SkillsGrid from "./SkillsGrid";
 import LearningGoalsCard from "./LearningGoalsCard";
 import SkillsSkeleton from "./SkillsSkeleton";
 import { useSkillsData } from "./hooks/useSkillsData";
+import { splitTitle } from "./utils";
 
 /**
  * Skills Component
@@ -35,7 +36,13 @@ const Skills: React.FC = () => {
     );
   }
 
-  const title = data.profileData?.skills_title || "Technical";
+  // Split title into main and highlight parts
+  const fullTitle = data.profileData?.skills_title || "Technical Expertise";
+  const { title, titleHighlight } = useMemo(
+    () => splitTitle(fullTitle),
+    [fullTitle]
+  );
+
   const description =
     data.profileData?.skills_description ||
     "A comprehensive toolkit for building intelligent systems, from data pipelines to user interfaces.";
@@ -46,7 +53,11 @@ const Skills: React.FC = () => {
       className="py-20 bg-gradient-to-b from-background/50 to-background"
     >
       <div className="container mx-auto px-6">
-        <SkillsHeader title={title} description={description} />
+        <SkillsHeader
+          title={title}
+          titleHighlight={titleHighlight}
+          description={description}
+        />
 
         <CategoryFilter
           categories={data.categories}
