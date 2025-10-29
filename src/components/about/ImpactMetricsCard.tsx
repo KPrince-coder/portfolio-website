@@ -1,10 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { ImpactMetric } from "./types";
-
-interface ImpactMetricsCardProps {
-  metrics: ImpactMetric[];
-}
+import type { ImpactMetricsCardProps } from "./types";
 
 /**
  * ImpactMetricsCard Component

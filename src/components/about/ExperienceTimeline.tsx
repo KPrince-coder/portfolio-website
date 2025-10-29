@@ -1,11 +1,7 @@
 import React from "react";
 import { MapPin } from "lucide-react";
-import type { Experience } from "./types";
 import { getIcon } from "./utils/iconHelper";
-
-interface ExperienceTimelineProps {
-  experiences: Experience[];
-}
+import type { ExperienceTimelineProps } from "./types";
 
 /**
  * ExperienceTimeline Component

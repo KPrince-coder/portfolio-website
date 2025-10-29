@@ -30,3 +30,49 @@ export interface ProfileData {
   linkedin_url: string | null;
   twitter_url: string | null;
 }
+
+// ============================================================================
+// Component Props Interfaces
+// ============================================================================
+
+/**
+ * AboutHeader Component Props
+ */
+export interface AboutHeaderProps {
+  title: string;
+  fullName: string;
+  description: string;
+}
+
+/**
+ * ProfileCard Component Props
+ */
+export interface ProfileCardProps {
+  avatarUrl: string;
+  fullName: string;
+  location: string | null;
+  bio: string | null;
+  highlights: string[];
+}
+
+/**
+ * ExperienceTimeline Component Props
+ */
+export interface ExperienceTimelineProps {
+  experiences: Experience[];
+}
+
+/**
+ * ImpactMetricsCard Component Props
+ */
+export interface ImpactMetricsCardProps {
+  metrics: ImpactMetric[];
+}
+
+/**
+ * PhilosophyCard Component Props
+ */
+export interface PhilosophyCardProps {
+  quote: string;
+  author: string;
+}

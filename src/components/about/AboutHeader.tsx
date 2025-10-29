@@ -1,10 +1,5 @@
 import React from "react";
-
-interface AboutHeaderProps {
-  title: string;
-  fullName: string;
-  description: string;
-}
+import type { AboutHeaderProps } from "./types";
 
 /**
  * AboutHeader Component

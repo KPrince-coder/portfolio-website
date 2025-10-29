@@ -1,11 +1,7 @@
 import React from "react";
 import { Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface PhilosophyCardProps {
-  quote: string;
-  author: string;
-}
+import type { PhilosophyCardProps } from "./types";
 
 /**
  * PhilosophyCard Component

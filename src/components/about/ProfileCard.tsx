@@ -1,14 +1,7 @@
 import React from "react";
 import { User, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface ProfileCardProps {
-  avatarUrl: string;
-  fullName: string;
-  location: string | null;
-  bio: string | null;
-  highlights: string[];
-}
+import type { ProfileCardProps } from "./types";
 
 /**
  * ProfileCard Component
