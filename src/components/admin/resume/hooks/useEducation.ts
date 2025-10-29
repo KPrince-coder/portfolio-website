@@ -34,9 +34,18 @@ export const useEducation = () => {
 
   const createEducation = async (data: EducationFormData) => {
     try {
+      // Get the current user's ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { data: newEducation, error } = await db
         .from("resume_education")
-        .insert([data])
+        .insert([{ ...data, user_id: user.id }])
         .select()
         .single();
 

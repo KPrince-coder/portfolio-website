@@ -34,9 +34,18 @@ export const useWorkExperiences = () => {
 
   const createExperience = async (data: WorkExperienceFormData) => {
     try {
+      // Get the current user's ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { data: newExperience, error } = await db
         .from("resume_work_experiences")
-        .insert([data])
+        .insert([{ ...data, user_id: user.id }])
         .select()
         .single();
 

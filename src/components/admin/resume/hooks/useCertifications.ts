@@ -36,9 +36,18 @@ export const useCertifications = () => {
 
   const createCertification = async (data: CertificationFormData) => {
     try {
+      // Get the current user's ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const { data: newCertification, error } = await db
         .from("resume_certifications")
-        .insert([data])
+        .insert([{ ...data, user_id: user.id }])
         .select()
         .single();
 
