@@ -1,14 +1,13 @@
 import React from "react";
-import { Github, Linkedin, Mail, Globe, Twitter } from "lucide-react";
+import {
+  Mail,
+  Globe,
+  Github as GithubIcon,
+  Linkedin as LinkedinIcon,
+  Twitter as TwitterIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface SocialLinksProps {
-  githubUrl?: string | null;
-  linkedinUrl?: string | null;
-  email?: string | null;
-  websiteUrl?: string | null;
-  twitterUrl?: string | null;
-}
+import type { SocialLinksProps } from "./types";
 
 /**
  * SocialLinks Component
@@ -23,19 +22,19 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
 }) => {
   const links = [
     {
-      icon: Github,
+      icon: GithubIcon,
       url: githubUrl,
       label: "GitHub Profile",
     },
     {
-      icon: Linkedin,
+      icon: LinkedinIcon,
       url: linkedinUrl,
       label: "LinkedIn Profile",
     },
     {
-      icon: Twitter,
+      icon: TwitterIcon,
       url: twitterUrl,
-      label: "Twitter Profile",
+      label: "Twitter/X Profile",
     },
     {
       icon: Globe,
