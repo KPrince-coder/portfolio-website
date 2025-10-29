@@ -21,9 +21,12 @@ This directory contains all documentation for the portfolio project.
 
 - **[SUPABASE_MIGRATION_SUMMARY.md](./SUPABASE_MIGRATION_SUMMARY.md)** - Summary of Supabase project migration
 
-### Other Documentation
+### Code Reviews & Optimization
 
-- **[OPTIMIZATION_RECOMMENDATIONS.md](./OPTIMIZATION_RECOMMENDATIONS.md)** - Performance optimization recommendations
+- **[CODE_REVIEW_RECOMMENDATIONS.md](./CODE_REVIEW_RECOMMENDATIONS.md)** - Best practices and optimization recommendations
+- **[ABOUT_COMPONENT_REVIEW.md](./ABOUT_COMPONENT_REVIEW.md)** - About.tsx component review and optimization guide
+- **[EXPERIENCE_SECTION_REVIEW.md](./EXPERIENCE_SECTION_REVIEW.md)** - ExperienceSection.tsx review and optimization guide
+- **[OPTIMIZATION_RECOMMENDATIONS.md](./OPTIMIZATION_RECOMMENDATIONS.md)** - General performance optimization recommendations
 
 ## 🗂️ Quick Links
 
@@ -160,3 +163,15 @@ Summary of code refactoring changes and improvements made to the project.
 ### ORGANIZATION_SUMMARY.md
 
 Summary of how documentation was organized into the docs folder for better project structure.
+
+### CODE_REVIEW_RECOMMENDATIONS.md
+
+Comprehensive code review covering ProfileManagement, ProjectsManagement, BlogNavigation, and ExperienceSection components with performance, accessibility, and TypeScript improvements.
+
+### ABOUT_COMPONENT_REVIEW.md
+
+Detailed review of the About.tsx component covering performance optimizations (useCallback, useMemo, React.memo), accessibility improvements (ARIA labels, semantic HTML), and TypeScript best practices.
+
+### EXPERIENCE_SECTION_REVIEW.md
+
+In-depth review of ExperienceSection.tsx with recommendations for useCallback optimization, form validation, accessibility features, and TypeScript type safety improvements.

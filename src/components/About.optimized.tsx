@@ -26,9 +26,6 @@ interface ProfileData {
   impact_metrics: unknown;
   philosophy_quote: string | null;
   philosophy_author: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  location: string | null;
 }
 
 const About: React.FC = () => {
@@ -40,7 +37,7 @@ const About: React.FC = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select(
-          "full_name, about_title, about_description, about_highlights, experiences, impact_metrics, philosophy_quote, philosophy_author, avatar_url, bio, location"
+          "full_name, about_title, about_description, about_highlights, experiences, impact_metrics, philosophy_quote, philosophy_author"
         )
         .single();
 
@@ -98,26 +95,8 @@ const About: React.FC = () => {
     [profile?.full_name]
   );
 
-  const avatarUrl = useMemo(
-    () => profile?.avatar_url || null,
-    [profile?.avatar_url]
-  );
-
-  const bio = useMemo(() => profile?.bio || null, [profile?.bio]);
-
-  const location = useMemo(
-    () => profile?.location || null,
-    [profile?.location]
-  );
-
-  const highlights = useMemo(
-    () => profile?.about_highlights || [],
-    [profile?.about_highlights]
-  );
-
   const MapPin = Icons.MapPin;
   const Award = Icons.Award;
-  const User = Icons.User;
 
   if (loading) {
     return (
@@ -157,80 +136,6 @@ const About: React.FC = () => {
             {aboutDescription}
           </p>
         </header>
-
-        {/* Avatar and Bio Section */}
-        {avatarUrl && (
-          <div className="mb-16">
-            <Card className="card-neural neural-glow max-w-5xl mx-auto">
-              <CardContent className="p-0">
-                <div className="grid md:grid-cols-[300px_1fr] gap-0">
-                  {/* Avatar Side */}
-                  <div className="relative bg-gradient-to-br from-secondary/20 via-accent/20 to-neural/20 p-8 flex items-center justify-center">
-                    <div className="relative">
-                      {/* Decorative rings */}
-                      <div className="absolute inset-0 rounded-full bg-gradient-neural opacity-20 blur-xl animate-pulse"></div>
-                      <div className="absolute -inset-4 rounded-full border-2 border-secondary/30"></div>
-                      <div className="absolute -inset-8 rounded-full border border-accent/20"></div>
-
-                      {/* Avatar */}
-                      <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-background shadow-2xl">
-                        <img
-                          src={avatarUrl}
-                          alt={fullName}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Info Side */}
-                  <div className="p-8 flex flex-col justify-center">
-                    <div className="flex items-center space-x-2 mb-4">
-                      <User className="w-5 h-5 text-secondary" />
-                      <h3 className="text-2xl font-bold text-neural">
-                        {fullName}
-                      </h3>
-                    </div>
-
-                    {location && (
-                      <div className="flex items-center space-x-2 text-muted-foreground mb-4">
-                        <MapPin className="w-4 h-4" />
-                        <span>{location}</span>
-                      </div>
-                    )}
-
-                    {bio && (
-                      <p className="text-muted-foreground leading-relaxed mb-6">
-                        {bio}
-                      </p>
-                    )}
-
-                    {highlights && highlights.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-semibold text-foreground mb-3">
-                          Key Highlights
-                        </h4>
-                        <div className="grid gap-2">
-                          {highlights.slice(0, 4).map((highlight, index) => (
-                            <div
-                              key={index}
-                              className="flex items-start space-x-2"
-                            >
-                              <div className="w-1.5 h-1.5 rounded-full bg-secondary mt-2 flex-shrink-0"></div>
-                              <span className="text-sm text-muted-foreground">
-                                {highlight}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Experience Timeline */}
