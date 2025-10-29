@@ -110,15 +110,32 @@ END $$;
 -- =====================================================
 
 -- Add check constraint to ensure skills_title is not empty if set
-ALTER TABLE public.profiles
-ADD CONSTRAINT IF NOT EXISTS check_skills_title_not_empty 
-CHECK (skills_title IS NULL OR length(trim(skills_title)) > 0);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'check_skills_title_not_empty' 
+      AND conrelid = 'public.profiles'::regclass
+  ) THEN
+    ALTER TABLE public.profiles
+    ADD CONSTRAINT check_skills_title_not_empty 
+    CHECK (skills_title IS NULL OR length(trim(skills_title)) > 0);
+  END IF;
+END $$;
 
 -- Add check constraint to ensure skills_description is not empty if set
-ALTER TABLE public.profiles
-ADD CONSTRAINT IF NOT EXISTS check_skills_description_not_empty 
-CHECK (skills_description IS NULL OR length(trim(skills_description)) > 0);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'check_skills_description_not_empty' 
+      AND conrelid = 'public.profiles'::regclass
+  ) THEN
+    ALTER TABLE public.profiles
+    ADD CONSTRAINT check_skills_description_not_empty 
+    CHECK (skills_description IS NULL OR length(trim(skills_description)) > 0);
+  END IF;
+END $$;
 
 COMMENT ON CONSTRAINT check_skills_title_not_empty ON public.profiles IS 'Ensures skills title is not empty string';
 COMMENT ON CONSTRAINT check_skills_description_not_empty ON public.profiles IS 'Ensures skills description is not empty string';
-
