@@ -16,6 +16,8 @@ import {
   Award,
   Link as LinkIcon,
   Upload,
+  FolderKanban,
+  Code,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,11 +35,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [skillsExpanded, setSkillsExpanded] = useState(
     activeTab.startsWith("skills")
   );
+  const [projectsExpanded, setProjectsExpanded] = useState(
+    activeTab.startsWith("projects")
+  );
 
   const tabs: AdminTab[] = [
     { id: "overview", label: "Overview", icon: Shield },
     { id: "messages", label: "Messages", icon: Mail },
-    { id: "projects", label: "Projects", icon: Briefcase },
     { id: "posts", label: "Blog Posts", icon: FileText },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -60,6 +64,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: "skills-goals", label: "Learning Goals", icon: TrendingUp },
   ];
 
+  const projectsSubTabs = [
+    { id: "projects-header", label: "Projects Header", icon: FileText },
+    { id: "projects-categories", label: "Categories", icon: FolderKanban },
+    { id: "projects-list", label: "Projects", icon: Briefcase },
+    { id: "projects-technologies", label: "Technologies", icon: Code },
+  ];
+
   const handleProfileClick = useCallback(() => {
     setProfileExpanded(!profileExpanded);
     if (!profileExpanded) {
@@ -74,12 +85,21 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     }
   }, [skillsExpanded, onTabChange]);
 
+  const handleProjectsClick = useCallback(() => {
+    setProjectsExpanded(!projectsExpanded);
+    if (!projectsExpanded) {
+      onTabChange("projects-header");
+    }
+  }, [projectsExpanded, onTabChange]);
+
   const handleSubTabClick = useCallback(
     (subTabId: string) => {
       if (subTabId.startsWith("profile")) {
         setProfileExpanded(true);
       } else if (subTabId.startsWith("skills")) {
         setSkillsExpanded(true);
+      } else if (subTabId.startsWith("projects")) {
+        setProjectsExpanded(true);
       }
       onTabChange(subTabId);
     },
@@ -163,6 +183,41 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               {skillsExpanded && (
                 <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
                   {skillsSubTabs.map((subTab) => (
+                    <Button
+                      key={subTab.id}
+                      variant={activeTab === subTab.id ? "secondary" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                      onClick={() => handleSubTabClick(subTab.id)}
+                    >
+                      <subTab.icon className="w-3 h-3 mr-2" />
+                      {subTab.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Projects Section with Sub-tabs */}
+            <div className="space-y-1">
+              <Button
+                variant={activeTab.startsWith("projects") ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={handleProjectsClick}
+              >
+                <Briefcase className="w-4 h-4 mr-2" />
+                Projects
+                {projectsExpanded ? (
+                  <ChevronDown className="w-4 h-4 ml-auto" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                )}
+              </Button>
+
+              {/* Projects Sub-tabs */}
+              {projectsExpanded && (
+                <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
+                  {projectsSubTabs.map((subTab) => (
                     <Button
                       key={subTab.id}
                       variant={activeTab === subTab.id ? "secondary" : "ghost"}

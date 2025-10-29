@@ -640,22 +640,8 @@ const Admin: React.FC = () => {
               />
             )}
 
-            {activeTab === "projects" && (
-              <ProjectsManagement
-                projects={projects}
-                projectCategories={projectCategories}
-                projectSearchTerm={projectSearchTerm}
-                setProjectSearchTerm={setProjectSearchTerm}
-                projectCategoryFilter={projectCategoryFilter}
-                setProjectCategoryFilter={setProjectCategoryFilter}
-                projectStatusFilter={projectStatusFilter}
-                setProjectStatusFilter={setProjectStatusFilter}
-                projectPublishedFilter={projectPublishedFilter}
-                setProjectPublishedFilter={setProjectPublishedFilter}
-                projectFeaturedFilter={projectFeaturedFilter}
-                setProjectFeaturedFilter={setProjectFeaturedFilter}
-                refetchProjects={refetchProjects} // Pass the refetch function
-              />
+            {activeTab.startsWith("projects") && (
+              <ProjectsManagement activeTab={activeTab} />
             )}
 
             {activeTab.startsWith("skills") && (
