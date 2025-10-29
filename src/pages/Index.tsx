@@ -11,7 +11,11 @@ const Projects = lazy(() =>
     default: module.Projects,
   }))
 );
-const Resume = lazy(() => import("@/components/Resume"));
+const Resume = lazy(() =>
+  import("@/components/resume").then((module) => ({
+    default: module.Resume,
+  }))
+);
 const Contact = lazy(() => import("@/components/Contact"));
 
 const Index: React.FC = () => {
