@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Edit, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DestructiveButton } from "@/components/ui/destructive-button";
+import { useToast } from "@/hooks/use-toast";
 import type { SkillWithCategory } from "./types";
 
 interface SkillsListProps {
@@ -22,13 +34,38 @@ const SkillsList: React.FC<SkillsListProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
-      const { error } = await onDelete(id);
-      if (error) {
-        alert(`Error deleting skill: ${error.message}`);
-      }
+  const { toast } = useToast();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const handleDeleteClick = (id: string, name: string) => {
+    setSkillToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!skillToDelete) return;
+
+    const { error } = await onDelete(skillToDelete.id);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting skill",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Skill deleted",
+        description: `"${skillToDelete.name}" has been deleted successfully`,
+      });
     }
+
+    setDeleteDialogOpen(false);
+    setSkillToDelete(null);
   };
 
   if (loading) {
@@ -65,61 +102,86 @@ const SkillsList: React.FC<SkillsListProps> = ({
   }, {} as Record<string, SkillWithCategory[]>);
 
   return (
-    <div className="space-y-6">
-      {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-        <div key={category}>
-          <h3 className="text-xl font-semibold mb-4">{category}</h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {categorySkills.map((skill) => (
-              <Card
-                key={skill.id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-lg">{skill.name}</h4>
-                        {skill.is_featured && (
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        )}
+    <>
+      <div className="space-y-6">
+        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+          <div key={category}>
+            <h3 className="text-xl font-semibold mb-4">{category}</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {categorySkills.map((skill) => (
+                <Card
+                  key={skill.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-lg">
+                            {skill.name}
+                          </h4>
+                          {skill.is_featured && (
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="mb-2">
+                          {skill.proficiency}% Proficiency
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="mb-2">
-                        {skill.proficiency}% Proficiency
-                      </Badge>
                     </div>
-                  </div>
 
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {skill.description}
-                  </p>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      {skill.description}
+                    </p>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(skill)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(skill.id, skill.name)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/50 hover:border-destructive"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(skill)}
+                        aria-label={`Edit ${skill.name}`}
+                      >
+                        <Edit className="w-4 h-4 mr-1" aria-hidden="true" />
+                        Edit
+                      </Button>
+                      <DestructiveButton
+                        size="sm"
+                        onClick={() => handleDeleteClick(skill.id, skill.name)}
+                        aria-label={`Delete ${skill.name}`}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" aria-hidden="true" />
+                        Delete
+                      </DestructiveButton>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{skillToDelete?.name}"? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
