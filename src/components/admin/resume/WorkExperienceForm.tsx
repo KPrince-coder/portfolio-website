@@ -68,9 +68,7 @@ const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({
     setSaving(true);
 
     try {
-      const result = experience
-        ? await onSave(formData)
-        : await onSave(formData);
+      const result = await onSave(formData);
 
       if (result.error) {
         toast({
