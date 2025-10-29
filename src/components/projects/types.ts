@@ -62,6 +62,7 @@ export interface CategoryFilterProps {
  */
 export interface ProjectsGridProps {
   projects: ProjectWithCategory[];
+  onProjectClick?: (project: ProjectWithCategory) => void;
 }
 
 /**
@@ -69,4 +70,14 @@ export interface ProjectsGridProps {
  */
 export interface ProjectCardProps {
   project: ProjectWithCategory;
+  onProjectClick?: (project: ProjectWithCategory) => void;
+}
+
+/**
+ * ProjectDetailModal component props
+ */
+export interface ProjectDetailModalProps {
+  project: ProjectWithCategory | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }

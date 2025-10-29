@@ -8,8 +8,12 @@ import type { ProjectCardProps } from "./types";
 /**
  * ProjectCard Component
  * Displays a single project with image, title, description, and links
+ * Clickable to open detailed project modal
  */
-const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  onProjectClick,
+}) => {
   const statusColors = {
     completed: "bg-success/10 text-success border-success/20",
     "in-progress": "bg-warning/10 text-warning border-warning/20",
@@ -17,8 +21,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     archived: "bg-muted/10 text-muted-foreground border-muted/20",
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger modal if clicking on links
+    const target = e.target as HTMLElement;
+    if (target.closest("a, button")) {
+      return;
+    }
+    onProjectClick?.(project);
+  };
+
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 card-neural">
+    <Card
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 card-neural cursor-pointer"
+      onClick={handleCardClick}
+      role="article"
+      aria-label={`${project.title} project card. Click to view details.`}
+    >
       {/* Project Image */}
       {project.image_url && (
         <div className="relative h-48 overflow-hidden">

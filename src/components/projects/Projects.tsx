@@ -3,16 +3,34 @@ import { SectionHeader } from "@/components/ui/section-header";
 import CategoryFilter from "./CategoryFilter";
 import ProjectsGrid from "./ProjectsGrid";
 import ProjectsSkeleton from "./ProjectsSkeleton";
+import ProjectDetailModal from "./ProjectDetailModal";
 import { useProjectsData } from "./hooks/useProjectsData";
 import { splitTitle } from "./utils";
+import type { ProjectWithCategory } from "./types";
 
 /**
  * Projects Component
- * Main projects section displaying portfolio projects
+ * Main projects section displaying portfolio projects with detail modal
  */
 const Projects: React.FC = () => {
   const { data, loading } = useProjectsData();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedProject, setSelectedProject] =
+    useState<ProjectWithCategory | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleProjectClick = (project: ProjectWithCategory) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = (open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      // Delay clearing selected project for smooth animation
+      setTimeout(() => setSelectedProject(null), 200);
+    }
+  };
 
   // Split title into main and highlight parts
   const fullTitle = data.profileData?.projects_title || "Featured Projects";
@@ -66,7 +84,16 @@ const Projects: React.FC = () => {
           onCategoryChange={setActiveCategory}
         />
 
-        <ProjectsGrid projects={filteredProjects} />
+        <ProjectsGrid
+          projects={filteredProjects}
+          onProjectClick={handleProjectClick}
+        />
+
+        <ProjectDetailModal
+          project={selectedProject}
+          open={isModalOpen}
+          onOpenChange={handleModalClose}
+        />
       </div>
     </section>
   );

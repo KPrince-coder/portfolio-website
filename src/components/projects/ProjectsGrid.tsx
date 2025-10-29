@@ -7,7 +7,10 @@ import { groupProjectsByCategory } from "./utils";
  * ProjectsGrid Component
  * Displays projects in a responsive grid, grouped by category
  */
-const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
+const ProjectsGrid: React.FC<ProjectsGridProps> = ({
+  projects,
+  onProjectClick,
+}) => {
   if (projects.length === 0) {
     return (
       <div className="text-center py-12">
@@ -30,7 +33,11 @@ const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categoryProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onProjectClick={onProjectClick}
+              />
             ))}
           </div>
         </div>
