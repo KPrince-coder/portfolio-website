@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      learning_goals: {
+        Row: {
+          color: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          status: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           about_description: string | null
@@ -104,9 +137,106 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon: string
+          id: string
+          label: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon: string
+          id?: string
+          label: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          label?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skills: {
+        Row: {
+          category_id: string
+          color: string
+          created_at: string
+          description: string | null
+          display_order: number
+          icon: string
+          id: string
+          is_featured: boolean
+          name: string
+          proficiency: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon: string
+          id?: string
+          is_featured?: boolean
+          name: string
+          proficiency: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string
+          id?: string
+          is_featured?: boolean
+          name?: string
+          proficiency?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "skill_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      skills_with_categories: {
+        Row: {
+          category_icon: string | null
+          category_label: string | null
+          category_name: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string | null
+          is_featured: boolean | null
+          name: string | null
+          proficiency: number | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
