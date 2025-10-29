@@ -2,9 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Skill, SkillWithCategory } from "../types";
 
-// Type assertion for tables not yet in generated types
-const db = supabase;
-
 /**
  * Custom hook to fetch and manage skills data
  */
@@ -16,7 +13,7 @@ export const useSkills = () => {
   const loadSkills = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await db
+      const { data, error } = await supabase
         .from("skills_with_categories")
         .select("*")
         .order("display_order", { ascending: true });
@@ -35,7 +32,7 @@ export const useSkills = () => {
   const createSkill = useCallback(
     async (skillData: Omit<Skill, "id" | "created_at" | "updated_at">) => {
       try {
-        const { data, error } = await db
+        const { data, error } = await supabase
           .from("skills")
           .insert([skillData])
           .select()
@@ -55,7 +52,7 @@ export const useSkills = () => {
   const updateSkill = useCallback(
     async (id: string, skillData: Partial<Skill>) => {
       try {
-        const { data, error } = await db
+        const { data, error } = await supabase
           .from("skills")
           .update(skillData)
           .eq("id", id)
@@ -76,7 +73,7 @@ export const useSkills = () => {
   const deleteSkill = useCallback(
     async (id: string) => {
       try {
-        const { error } = await db.from("skills").delete().eq("id", id);
+        const { error } = await supabase.from("skills").delete().eq("id", id);
 
         if (error) throw error;
         await loadSkills();
