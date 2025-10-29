@@ -44,7 +44,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                     decoding="async"
                     width="384"
                     height="384"
-                    fetchPriority="low"
                   />
                 </div>
               </div>

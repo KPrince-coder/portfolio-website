@@ -28,6 +28,7 @@ This directory contains all documentation for the portfolio project.
 - **[ABOUT_INDEX_OPTIMIZATION.md](./ABOUT_INDEX_OPTIMIZATION.md)** - About index.ts barrel export optimization
 - **[ABOUT_OPTIMIZATION_APPLIED.md](./ABOUT_OPTIMIZATION_APPLIED.md)** - Applied optimizations to About component
 - **[ABOUT_RESPONSIVE_AVATAR_REVIEW.md](./ABOUT_RESPONSIVE_AVATAR_REVIEW.md)** - Responsive avatar optimization review
+- **[PROFILECARD_IMAGE_OPTIMIZATION_REVIEW.md](./PROFILECARD_IMAGE_OPTIMIZATION_REVIEW.md)** - ProfileCard image loading optimization
 - **[EXPERIENCE_SECTION_REVIEW.md](./EXPERIENCE_SECTION_REVIEW.md)** - ExperienceSection.tsx review and optimization guide
 - **[OPTIMIZATION_RECOMMENDATIONS.md](./OPTIMIZATION_RECOMMENDATIONS.md)** - General performance optimization recommendations
 
