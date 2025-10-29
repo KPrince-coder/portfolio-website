@@ -649,7 +649,9 @@ const Admin: React.FC = () => {
               <SkillsManagementRouter activeSubTab={activeTab} />
             )}
 
-            {activeTab.startsWith("resume") && <ResumeManagement />}
+            {activeTab.startsWith("resume") && (
+              <ResumeManagement activeTab={activeTab} />
+            )}
 
             {activeTab === "posts" && (
               <PlaceholderSection

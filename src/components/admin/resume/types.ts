@@ -156,6 +156,10 @@ export interface CertificationFormProps {
   ) => Promise<{ data: any; error: Error | null }>;
 }
 
+export interface ResumeManagementProps {
+  activeTab: string;
+}
+
 // =====================================================
 // Constants
 // =====================================================

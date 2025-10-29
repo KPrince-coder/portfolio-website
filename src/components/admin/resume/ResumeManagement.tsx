@@ -5,12 +5,13 @@ import {
   EducationSection,
   CertificationsSection,
 } from "./sections";
+import type { ResumeManagementProps } from "./types";
 
 /**
  * ResumeManagement Component
  * Main component for managing resume data including work experiences, education, and certifications
  */
-const ResumeManagement: React.FC = () => {
+const ResumeManagement: React.FC<ResumeManagementProps> = ({ activeTab }) => {
   return (
     <div className="space-y-8">
       <div>
@@ -21,10 +22,10 @@ const ResumeManagement: React.FC = () => {
         </p>
       </div>
 
-      <ResumeHeaderSection />
-      <WorkExperiencesSection />
-      <EducationSection />
-      <CertificationsSection />
+      {activeTab === "resume-header" && <ResumeHeaderSection />}
+      {activeTab === "resume-experiences" && <WorkExperiencesSection />}
+      {activeTab === "resume-education" && <EducationSection />}
+      {activeTab === "resume-certifications" && <CertificationsSection />}
     </div>
   );
 };
