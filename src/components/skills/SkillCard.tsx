@@ -1,6 +1,6 @@
 import React from "react";
-import * as Icons from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getIcon } from "./utils";
 import type { Skill } from "./types";
 
 interface SkillCardProps {
@@ -13,13 +13,6 @@ interface SkillCardProps {
  * Displays an individual skill with proficiency bar and details
  */
 const SkillCard: React.FC<SkillCardProps> = ({ skill, index }) => {
-  const getIcon = (iconName: string) => {
-    const Icon = Icons[iconName as keyof typeof Icons] as React.ComponentType<{
-      className?: string;
-    }>;
-    return Icon || Icons.Code;
-  };
-
   const SkillIcon = getIcon(skill.icon);
 
   return (

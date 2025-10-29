@@ -1,22 +1,11 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { STATUS_LABELS, STATUS_COLORS } from "./types";
 import type { LearningGoal } from "./types";
 
 interface LearningGoalsCardProps {
   goals: LearningGoal[];
 }
-
-const STATUS_LABELS = {
-  learning: "Currently learning",
-  exploring: "Exploring",
-  researching: "Researching",
-};
-
-const STATUS_COLORS = {
-  learning: "text-secondary",
-  exploring: "text-accent",
-  researching: "text-success",
-};
 
 /**
  * LearningGoalsCard Component

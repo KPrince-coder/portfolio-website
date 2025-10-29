@@ -8,28 +8,19 @@
  */
 
 // ============================================================================
-// Icon and Color Types (Strict Type Safety)
+// Icon and Color Types
 // ============================================================================
 
 /**
- * Available Lucide icon names for skills and categories
+ * Icon Name Type
+ * Supports all 300+ Lucide icons dynamically
+ * The icon name is stored as a string in the database and resolved at runtime
+ * Falls back to "Code" icon if the specified icon is not found
+ *
+ * @see src/lib/icons.ts for the complete list of available icons
+ * @see src/components/skills/utils.ts for the getIcon() helper function
  */
-export type IconName =
-  | "Brain"
-  | "Database"
-  | "Smartphone"
-  | "Code"
-  | "Briefcase"
-  | "Award"
-  | "Star"
-  | "Zap"
-  | "Rocket"
-  | "Target"
-  | "Layers"
-  | "Package"
-  | "Terminal"
-  | "Globe"
-  | "Cpu";
+export type IconName = string;
 
 /**
  * Available Tailwind color classes for skills
@@ -127,6 +118,66 @@ export interface SkillsData {
   learningGoals: LearningGoal[];
   profileData: ProfileSkillsData | null;
 }
+
+// ============================================================================
+// Learning Goal Status Configuration
+// ============================================================================
+
+/**
+ * Status labels for learning goals
+ * Immutable configuration for display text
+ */
+export const STATUS_LABELS = {
+  learning: "Currently learning",
+  exploring: "Exploring",
+  researching: "Researching",
+} as const satisfies Record<LearningGoalStatus, string>;
+
+/**
+ * Status colors for learning goals
+ * Maps status to Tailwind color classes
+ */
+export const STATUS_COLORS = {
+  learning: "text-secondary",
+  exploring: "text-accent",
+  researching: "text-success",
+} as const satisfies Record<LearningGoalStatus, ColorClass>;
+
+/**
+ * Status icons for learning goals
+ * Maps status to Lucide icon names
+ */
+export const STATUS_ICONS = {
+  learning: "BookOpen",
+  exploring: "Compass",
+  researching: "Search",
+} as const satisfies Record<LearningGoalStatus, string>;
+
+/**
+ * Complete status configuration
+ * Single source of truth for all status-related display properties
+ *
+ * @example
+ * const config = STATUS_CONFIG[goal.status];
+ * <Badge className={config.color}>{config.label}</Badge>
+ */
+export const STATUS_CONFIG = {
+  learning: {
+    label: STATUS_LABELS.learning,
+    color: STATUS_COLORS.learning,
+    icon: STATUS_ICONS.learning,
+  },
+  exploring: {
+    label: STATUS_LABELS.exploring,
+    color: STATUS_COLORS.exploring,
+    icon: STATUS_ICONS.exploring,
+  },
+  researching: {
+    label: STATUS_LABELS.researching,
+    color: STATUS_COLORS.researching,
+    icon: STATUS_ICONS.researching,
+  },
+} as const;
 
 // ============================================================================
 // Form Data Types (for Admin Components)

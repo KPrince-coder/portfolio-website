@@ -1,6 +1,6 @@
 import React from "react";
-import * as Icons from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getIcon } from "./utils";
 import type { SkillCategory } from "./types";
 
 interface CategoryFilterProps {
@@ -18,13 +18,6 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
-  const getIcon = (iconName: string) => {
-    const Icon = Icons[iconName as keyof typeof Icons] as React.ComponentType<{
-      className?: string;
-    }>;
-    return Icon || Icons.Code;
-  };
-
   return (
     <div className="flex flex-wrap justify-center gap-4 mb-12">
       {categories.map((category) => {

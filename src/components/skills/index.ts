@@ -6,4 +6,5 @@ export { default as SkillsGrid } from "./SkillsGrid";
 export { default as LearningGoalsCard } from "./LearningGoalsCard";
 export { default as SkillsSkeleton } from "./SkillsSkeleton";
 export * from "./types";
+export * from "./utils";
 export * from "./hooks/useSkillsData";
