@@ -39,7 +39,7 @@ const SkillsHeaderSection: React.FC = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("skills_title, skills_description")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .single();
 
       if (error) throw error;
@@ -80,7 +80,7 @@ const SkillsHeaderSection: React.FC = () => {
           skills_title: formData.skills_title,
           skills_description: formData.skills_description,
         })
-        .eq("id", user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
