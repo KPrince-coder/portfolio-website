@@ -69,6 +69,8 @@ export type Database = {
           philosophy_author: string | null
           philosophy_quote: string | null
           phone: string | null
+          projects_description: string | null
+          projects_title: string | null
           resume_file_name: string | null
           resume_updated_at: string | null
           resume_url: string | null
@@ -100,6 +102,8 @@ export type Database = {
           philosophy_author?: string | null
           philosophy_quote?: string | null
           phone?: string | null
+          projects_description?: string | null
+          projects_title?: string | null
           resume_file_name?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
@@ -131,6 +135,8 @@ export type Database = {
           philosophy_author?: string | null
           philosophy_quote?: string | null
           phone?: string | null
+          projects_description?: string | null
+          projects_title?: string | null
           resume_file_name?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
@@ -142,6 +148,172 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      project_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          display_order: number
+          icon: string
+          id: string
+          is_active: boolean
+          label: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_technologies: {
+        Row: {
+          created_at: string
+          project_id: string
+          technology_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          technology_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          technology_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_technologies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_technologies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_technologies_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_tech_count"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_technologies_technology_id_fkey"
+            columns: ["technology_id"]
+            isOneToOne: false
+            referencedRelation: "technologies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          category_id: string
+          created_at: string
+          demo_url: string | null
+          description: string
+          display_order: number
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          long_description: string | null
+          slug: string
+          stars: number | null
+          start_date: string | null
+          status: string
+          tags: string[] | null
+          technologies: string[]
+          title: string
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          demo_url?: string | null
+          description: string
+          display_order?: number
+          end_date?: string | null
+          forks?: number | null
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          long_description?: string | null
+          slug: string
+          stars?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: string[] | null
+          technologies?: string[]
+          title: string
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          demo_url?: string | null
+          description?: string
+          display_order?: number
+          end_date?: string | null
+          forks?: number | null
+          github_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          long_description?: string | null
+          slug?: string
+          stars?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: string[] | null
+          technologies?: string[]
+          title?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "project_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_categories: {
         Row: {
@@ -229,8 +401,120 @@ export type Database = {
           },
         ]
       }
+      technologies: {
+        Row: {
+          category: string | null
+          color: string
+          created_at: string
+          display_order: number
+          icon: string
+          id: string
+          is_active: boolean
+          label: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          color?: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
+      projects_with_categories: {
+        Row: {
+          category_color: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_label: string | null
+          category_name: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string | null
+          image_url: string | null
+          is_featured: boolean | null
+          long_description: string | null
+          slug: string | null
+          stars: number | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          technologies: string[] | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "project_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects_with_tech_count: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string | null
+          image_url: string | null
+          is_featured: boolean | null
+          long_description: string | null
+          slug: string | null
+          stars: number | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          technologies: string[] | null
+          technology_count: number | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "project_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills_section_settings: {
         Row: {
           id: string | null
@@ -273,6 +557,114 @@ export type Database = {
     }
     Functions: {
       get_active_categories_count: { Args: never; Returns: number }
+      get_featured_projects: {
+        Args: { limit_count?: number }
+        Returns: {
+          category_color: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_label: string | null
+          category_name: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string | null
+          image_url: string | null
+          is_featured: boolean | null
+          long_description: string | null
+          slug: string | null
+          stars: number | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          technologies: string[] | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "projects_with_categories"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_projects_by_category: {
+        Args: { category_name: string }
+        Returns: {
+          category_color: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_label: string | null
+          category_name: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string | null
+          image_url: string | null
+          is_featured: boolean | null
+          long_description: string | null
+          slug: string | null
+          stars: number | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          technologies: string[] | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "projects_with_categories"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      search_projects: {
+        Args: { search_term: string }
+        Returns: {
+          category_color: string | null
+          category_icon: string | null
+          category_id: string | null
+          category_label: string | null
+          category_name: string | null
+          created_at: string | null
+          demo_url: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          forks: number | null
+          github_url: string | null
+          id: string | null
+          image_url: string | null
+          is_featured: boolean | null
+          long_description: string | null
+          slug: string | null
+          stars: number | null
+          start_date: string | null
+          status: string | null
+          tags: string[] | null
+          technologies: string[] | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "projects_with_categories"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never
