@@ -96,23 +96,12 @@ export interface SkillsListProps {
 
 /**
  * SkillForm Component Props
- * Uses discriminated union for type-safe create/update operations
  */
-export type SkillFormProps =
-  | {
-      mode: "create";
-      skill: null;
-      onClose: () => void;
-      onSave: (
-        data: Omit<Skill, "id" | "created_at" | "updated_at">
-      ) => Promise<Result<Skill>>;
-    }
-  | {
-      mode: "edit";
-      skill: Skill;
-      onClose: () => void;
-      onSave: (id: string, data: Partial<Skill>) => Promise<Result<Skill>>;
-    };
+export interface SkillFormProps {
+  skill?: Skill | null;
+  onClose: () => void;
+  onSave: (data: any) => Promise<Result<Skill>>;
+}
 
 /**
  * LearningGoalsList Component Props
@@ -126,23 +115,9 @@ export interface LearningGoalsListProps {
 
 /**
  * LearningGoalForm Component Props
- * Uses discriminated union for type-safe create/update operations
  */
-export type LearningGoalFormProps =
-  | {
-      mode: "create";
-      goal: null;
-      onClose: () => void;
-      onSave: (
-        data: Omit<LearningGoal, "id" | "created_at" | "updated_at">
-      ) => Promise<Result<LearningGoal>>;
-    }
-  | {
-      mode: "edit";
-      goal: LearningGoal;
-      onClose: () => void;
-      onSave: (
-        id: string,
-        data: Partial<LearningGoal>
-      ) => Promise<Result<LearningGoal>>;
-    };
+export interface LearningGoalFormProps {
+  goal?: LearningGoal | null;
+  onClose: () => void;
+  onSave: (data: any) => Promise<Result<LearningGoal>>;
+}

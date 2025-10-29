@@ -41,22 +41,11 @@ const SkillsListSection: React.FC = () => {
     setEditingSkill(null);
   };
 
-  const handleSave = async (
-    ...args: any[]
-  ): Promise<{ data: any; error: Error | null }> => {
-    try {
-      let result;
-      if (editingSkill) {
-        result = await updateSkill(args[0], args[1]);
-      } else {
-        result = await createSkill(args[0]);
-      }
-      handleClose();
-      return result;
-    } catch (error) {
-      console.error("Error saving skill:", error);
-      return { data: null, error: error as Error };
+  const handleSave = async (data: any) => {
+    if (editingSkill) {
+      return await updateSkill(editingSkill.id, data);
     }
+    return await createSkill(data);
   };
 
   // Filter skills based on search and filters

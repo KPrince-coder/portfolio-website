@@ -50,21 +50,7 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose, onSave }) => {
     setSaving(true);
 
     try {
-      let result: { data: any; error: Error | null };
-      if (skill) {
-        result = await (
-          onSave as (
-            id: string,
-            data: Partial<Skill>
-          ) => Promise<{ data: any; error: Error | null }>
-        )(skill.id, formData);
-      } else {
-        result = await (
-          onSave as (
-            data: Omit<Skill, "id" | "created_at" | "updated_at">
-          ) => Promise<{ data: any; error: Error | null }>
-        )(formData);
-      }
+      const result = await onSave(formData);
 
       if (result.error) {
         toast({

@@ -26,22 +26,11 @@ const LearningGoalsSection: React.FC = () => {
     setEditingGoal(null);
   };
 
-  const handleSave = async (
-    ...args: any[]
-  ): Promise<{ data: any; error: Error | null }> => {
-    try {
-      let result;
-      if (editingGoal) {
-        result = await updateGoal(args[0], args[1]);
-      } else {
-        result = await createGoal(args[0]);
-      }
-      handleClose();
-      return result;
-    } catch (error) {
-      console.error("Error saving goal:", error);
-      return { data: null, error: error as Error };
+  const handleSave = async (data: any) => {
+    if (editingGoal) {
+      return await updateGoal(editingGoal.id, data);
     }
+    return await createGoal(data);
   };
 
   return (

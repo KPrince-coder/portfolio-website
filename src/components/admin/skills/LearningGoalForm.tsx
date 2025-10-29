@@ -57,21 +57,7 @@ const LearningGoalForm: React.FC<LearningGoalFormProps> = ({
     setSaving(true);
 
     try {
-      let result: { data: any; error: Error | null };
-      if (goal) {
-        result = await (
-          onSave as (
-            id: string,
-            data: Partial<LearningGoal>
-          ) => Promise<{ data: any; error: Error | null }>
-        )(goal.id, formData);
-      } else {
-        result = await (
-          onSave as (
-            data: Omit<LearningGoal, "id" | "created_at" | "updated_at">
-          ) => Promise<{ data: any; error: Error | null }>
-        )(formData);
-      }
+      const result = await onSave(formData);
 
       if (result.error) {
         toast({
