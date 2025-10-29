@@ -4,6 +4,8 @@
 **File:** `src/pages/Index.tsx`  
 **Status:** ✅ Optimized with Performance & SEO Improvements
 
+> **📋 Note:** For the latest comprehensive review including the unused `useEffect` fix and additional recommendations, see [INDEX_PAGE_COMPREHENSIVE_REVIEW.md](./INDEX_PAGE_COMPREHENSIVE_REVIEW.md)
+
 ## Summary
 
 The Index page has been optimized with lazy loading, proper imports, and SEO enhancements. The import change from default to named import for Projects component has been successfully applied, and critical performance optimizations have been implemented.
