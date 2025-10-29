@@ -36,7 +36,14 @@ const CertificationForm: React.FC<CertificationFormProps> = ({
     setSaving(true);
 
     try {
-      const result = await onSave(formData);
+      // Sanitize data: convert empty strings to null for date fields
+      const sanitizedData = {
+        ...formData,
+        issue_date: formData.issue_date || null,
+        expiry_date: formData.expiry_date || null,
+      };
+
+      const result = await onSave(sanitizedData);
       if (result.error) {
         toast({
           variant: "destructive",

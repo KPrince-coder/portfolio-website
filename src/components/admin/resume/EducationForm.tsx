@@ -57,7 +57,14 @@ const EducationForm: React.FC<EducationFormProps> = ({
     setSaving(true);
 
     try {
-      const result = await onSave(formData);
+      // Sanitize data: convert empty strings to null for date fields
+      const sanitizedData = {
+        ...formData,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+      };
+
+      const result = await onSave(sanitizedData);
       if (result.error) {
         toast({
           variant: "destructive",

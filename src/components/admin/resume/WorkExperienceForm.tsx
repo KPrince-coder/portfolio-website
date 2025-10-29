@@ -68,7 +68,13 @@ const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({
     setSaving(true);
 
     try {
-      const result = await onSave(formData);
+      // Sanitize data: convert empty strings to null for date fields
+      const sanitizedData = {
+        ...formData,
+        end_date: formData.end_date || null,
+      };
+
+      const result = await onSave(sanitizedData);
 
       if (result.error) {
         toast({
