@@ -72,6 +72,8 @@ export type Database = {
           resume_file_name: string | null
           resume_updated_at: string | null
           resume_url: string | null
+          skills_description: string | null
+          skills_title: string | null
           twitter_url: string | null
           updated_at: string
           user_id: string
@@ -101,6 +103,8 @@ export type Database = {
           resume_file_name?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
+          skills_description?: string | null
+          skills_title?: string | null
           twitter_url?: string | null
           updated_at?: string
           user_id: string
@@ -130,6 +134,8 @@ export type Database = {
           resume_file_name?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
+          skills_description?: string | null
+          skills_title?: string | null
           twitter_url?: string | null
           updated_at?: string
           user_id?: string
@@ -140,27 +146,33 @@ export type Database = {
       skill_categories: {
         Row: {
           created_at: string
+          description: string | null
           display_order: number
           icon: string
           id: string
+          is_active: boolean
           label: string
           name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          description?: string | null
           display_order?: number
           icon: string
           id?: string
+          is_active?: boolean
           label: string
           name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          description?: string | null
           display_order?: number
           icon?: string
           id?: string
+          is_active?: boolean
           label?: string
           name?: string
           updated_at?: string
@@ -219,6 +231,27 @@ export type Database = {
       }
     }
     Views: {
+      skills_section_settings: {
+        Row: {
+          id: string | null
+          skills_description: string | null
+          skills_title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string | null
+          skills_description?: string | null
+          skills_title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string | null
+          skills_description?: string | null
+          skills_title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       skills_with_categories: {
         Row: {
           category_icon: string | null
@@ -239,7 +272,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_active_categories_count: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
