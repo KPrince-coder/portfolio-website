@@ -12,13 +12,19 @@ const CategoryFilter: React.FC<CategoryFilterProps> = React.memo(
     // Memoize the All icon to prevent re-creation on every render
     const AllIcon = useMemo(() => getIcon("Grid"), []);
 
+    // Filter out the "all" category from database (we render it manually)
+    const filteredCategories = useMemo(
+      () => categories.filter((cat) => cat.name !== "all" && cat.id !== "all"),
+      [categories]
+    );
+
     // Memoize category icons to prevent repeated getIcon calls
     const categoryIcons = useMemo(() => {
-      return categories.reduce((acc, category) => {
+      return filteredCategories.reduce((acc, category) => {
         acc[category.id] = getIcon(category.icon);
         return acc;
       }, {} as Record<string, React.ComponentType<any>>);
-    }, [categories]);
+    }, [filteredCategories]);
 
     // Memoize click handler to prevent function recreation
     const handleCategoryChange = useCallback(
@@ -49,7 +55,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = React.memo(
         </Button>
 
         {/* Category Buttons */}
-        {categories.map((category) => {
+        {filteredCategories.map((category) => {
           const CategoryIcon = categoryIcons[category.id];
           return (
             <Button
