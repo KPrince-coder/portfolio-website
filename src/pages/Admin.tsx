@@ -9,6 +9,7 @@ import {
   ContactMessages,
   ProjectsManagement,
   ProfileManagement,
+  ResumeManagement,
   PlaceholderSection,
   MessageReply,
   MessageStats,
@@ -647,6 +648,8 @@ const Admin: React.FC = () => {
             {activeTab.startsWith("skills") && (
               <SkillsManagementRouter activeSubTab={activeTab} />
             )}
+
+            {activeTab.startsWith("resume") && <ResumeManagement />}
 
             {activeTab === "posts" && (
               <PlaceholderSection

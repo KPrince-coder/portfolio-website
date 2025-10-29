@@ -18,6 +18,7 @@ import {
   Upload,
   FolderKanban,
   Code,
+  GraduationCap,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   );
   const [projectsExpanded, setProjectsExpanded] = useState(
     activeTab.startsWith("projects")
+  );
+  const [resumeExpanded, setResumeExpanded] = useState(
+    activeTab.startsWith("resume")
   );
 
   const tabs: AdminTab[] = [
@@ -71,6 +75,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: "projects-technologies", label: "Technologies", icon: Code },
   ];
 
+  const resumeSubTabs = [
+    { id: "resume-header", label: "Resume Header", icon: FileText },
+    {
+      id: "resume-experiences",
+      label: "Work Experiences",
+      icon: BriefcaseIcon,
+    },
+    { id: "resume-education", label: "Education", icon: GraduationCap },
+    { id: "resume-certifications", label: "Certifications", icon: Award },
+  ];
+
   const handleProfileClick = useCallback(() => {
     setProfileExpanded(!profileExpanded);
     if (!profileExpanded) {
@@ -92,6 +107,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     }
   }, [projectsExpanded, onTabChange]);
 
+  const handleResumeClick = useCallback(() => {
+    setResumeExpanded(!resumeExpanded);
+    if (!resumeExpanded) {
+      onTabChange("resume-header");
+    }
+  }, [resumeExpanded, onTabChange]);
+
   const handleSubTabClick = useCallback(
     (subTabId: string) => {
       if (subTabId.startsWith("profile")) {
@@ -100,6 +122,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         setSkillsExpanded(true);
       } else if (subTabId.startsWith("projects")) {
         setProjectsExpanded(true);
+      } else if (subTabId.startsWith("resume")) {
+        setResumeExpanded(true);
       }
       onTabChange(subTabId);
     },
@@ -218,6 +242,41 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               {projectsExpanded && (
                 <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
                   {projectsSubTabs.map((subTab) => (
+                    <Button
+                      key={subTab.id}
+                      variant={activeTab === subTab.id ? "secondary" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                      onClick={() => handleSubTabClick(subTab.id)}
+                    >
+                      <subTab.icon className="w-3 h-3 mr-2" />
+                      {subTab.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Resume Section with Sub-tabs */}
+            <div className="space-y-1">
+              <Button
+                variant={activeTab.startsWith("resume") ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={handleResumeClick}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Resume
+                {resumeExpanded ? (
+                  <ChevronDown className="w-4 h-4 ml-auto" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                )}
+              </Button>
+
+              {/* Resume Sub-tabs */}
+              {resumeExpanded && (
+                <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
+                  {resumeSubTabs.map((subTab) => (
                     <Button
                       key={subTab.id}
                       variant={activeTab === subTab.id ? "secondary" : "ghost"}

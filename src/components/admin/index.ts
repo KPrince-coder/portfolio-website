@@ -6,6 +6,7 @@ export { default as ContactMessages } from "./ContactMessages";
 export { ProfileManagement } from "./profile";
 export { SkillsManagement } from "./skills";
 export { ProjectsManagement } from "./projects";
+export { ResumeManagement } from "./resume";
 export { default as PlaceholderSection } from "./PlaceholderSection";
 export { default as MessageReply } from "./MessageReply";
 export { default as MessageStats } from "./MessageStats";
