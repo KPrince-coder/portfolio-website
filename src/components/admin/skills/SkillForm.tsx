@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IconPicker } from "@/components/ui/icon-picker";
 import { useSkillCategories } from "./hooks/useSkillCategories";
 import type { Skill, SkillFormData } from "./types";
 
@@ -28,19 +29,6 @@ interface SkillFormProps {
         data: Omit<Skill, "id" | "created_at" | "updated_at">
       ) => Promise<{ data: any; error: Error | null }>);
 }
-
-const ICON_OPTIONS = [
-  "Brain",
-  "Database",
-  "Code",
-  "Smartphone",
-  "Cloud",
-  "BarChart3",
-  "Zap",
-  "Shield",
-  "Cpu",
-  "GitBranch",
-];
 
 const COLOR_OPTIONS = [
   { value: "text-secondary", label: "Secondary (Blue)" },
@@ -188,26 +176,14 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose, onSave }) => {
             </div>
 
             {/* Icon */}
-            <div className="space-y-2">
-              <Label htmlFor="icon">Icon</Label>
-              <Select
-                value={formData.icon}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, icon: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ICON_OPTIONS.map((icon) => (
-                    <SelectItem key={icon} value={icon}>
-                      {icon}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <IconPicker
+              value={formData.icon}
+              onValueChange={(value) =>
+                setFormData({ ...formData, icon: value })
+              }
+              label="Icon"
+              id="icon"
+            />
 
             {/* Color */}
             <div className="space-y-2">

@@ -73,3 +73,45 @@ const handleDeleteClick = (id: string, name: string) => {
 - Consistent UX across all delete operations
 - Centralized error handling
 - Easy to maintain and update
+
+### IconPicker
+
+A searchable dropdown component for selecting Lucide icons. Provides a visual preview of icons and supports real-time search filtering.
+
+**Features:**
+
+- Search functionality to filter through 300+ Lucide icons
+- Visual icon preview in dropdown and selected value
+- Consistent interface across all icon selection needs
+- Type-safe with full TypeScript support
+
+**Props:**
+
+- `value` - Currently selected icon name
+- `onValueChange` - Callback when icon selection changes
+- `label` - Optional label for the picker
+- `id` - Optional HTML id attribute
+- `placeholder` - Optional placeholder text (default: "Select an icon")
+
+**Usage:**
+
+```tsx
+import { IconPicker } from "@/components/ui/icon-picker";
+
+const [iconName, setIconName] = useState("Code");
+
+<IconPicker
+  value={iconName}
+  onValueChange={setIconName}
+  label="Choose Icon"
+  id="category-icon"
+/>
+```
+
+**Benefits:**
+
+- Reusable across skills, categories, projects, and profile sections
+- Searchable interface for quick icon discovery
+- Visual feedback with icon previews
+- Consistent UX for all icon selections
+- Eliminates hardcoded icon lists in individual components

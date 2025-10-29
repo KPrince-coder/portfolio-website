@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { DestructiveButton } from "@/components/ui/destructive-button";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import { IconPicker } from "@/components/ui/icon-picker";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSkillCategories } from "../hooks/useSkillCategories";
@@ -176,20 +177,18 @@ const SkillsCategoriesSection: React.FC = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="new-icon">Icon Name</Label>
-                <Input
-                  id="new-icon"
-                  value={newCategoryForm.icon}
-                  onChange={(e) =>
-                    setNewCategoryForm({
-                      ...newCategoryForm,
-                      icon: e.target.value,
-                    })
-                  }
-                  placeholder="e.g., Code, Database, Cloud"
-                />
-              </div>
+              <IconPicker
+                value={newCategoryForm.icon}
+                onValueChange={(value) =>
+                  setNewCategoryForm({
+                    ...newCategoryForm,
+                    icon: value,
+                  })
+                }
+                label="Icon"
+                id="new-icon"
+                placeholder="Select an icon"
+              />
 
               <div className="space-y-2">
                 <Label htmlFor="new-order">Display Order</Label>
