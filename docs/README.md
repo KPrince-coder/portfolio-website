@@ -24,6 +24,7 @@ This directory contains all documentation for the portfolio project.
 ### Code Reviews & Optimization
 
 - **[CODE_REVIEW_RECOMMENDATIONS.md](./CODE_REVIEW_RECOMMENDATIONS.md)** - Best practices and optimization recommendations
+- **[INDEX_PAGE_OPTIMIZATION.md](./INDEX_PAGE_OPTIMIZATION.md)** - Index.tsx lazy loading, SEO, and performance optimization
 - **[ABOUT_COMPONENT_REVIEW.md](./ABOUT_COMPONENT_REVIEW.md)** - About.tsx component review and optimization guide
 - **[ABOUT_INDEX_OPTIMIZATION.md](./ABOUT_INDEX_OPTIMIZATION.md)** - About index.ts barrel export optimization
 - **[ABOUT_OPTIMIZATION_APPLIED.md](./ABOUT_OPTIMIZATION_APPLIED.md)** - Applied optimizations to About component
