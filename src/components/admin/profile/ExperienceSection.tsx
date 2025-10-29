@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { IconPicker } from "@/components/ui/icon-picker";
 import { Database } from "@/integrations/supabase/types";
 
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
@@ -45,19 +46,6 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   });
 
   const experiences = (formData.experiences as unknown as Experience[]) || [];
-
-  const iconOptions = [
-    "Brain",
-    "Database",
-    "Smartphone",
-    "Code",
-    "Briefcase",
-    "Award",
-    "Star",
-    "Zap",
-    "Rocket",
-    "Target",
-  ];
 
   const colorOptions = [
     { value: "text-secondary", label: "Secondary (Blue)" },
@@ -236,26 +224,14 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           </div>
 
           <div className="grid md:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="exp_icon">Icon</Label>
-              <Select
-                value={newExperience.icon}
-                onValueChange={(value) =>
-                  setNewExperience({ ...newExperience, icon: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {iconOptions.map((icon) => (
-                    <SelectItem key={icon} value={icon}>
-                      {icon}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <IconPicker
+              value={newExperience.icon}
+              onValueChange={(value) =>
+                setNewExperience({ ...newExperience, icon: value })
+              }
+              label="Icon"
+              id="exp_icon"
+            />
             <div>
               <Label htmlFor="exp_color">Color</Label>
               <Select
