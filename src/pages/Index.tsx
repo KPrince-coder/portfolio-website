@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense } from "react";
 import ParticleSystem from "@/components/ParticleSystem";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/hero";
@@ -15,20 +15,6 @@ const Resume = lazy(() => import("@/components/Resume"));
 const Contact = lazy(() => import("@/components/Contact"));
 
 const Index: React.FC = () => {
-  // Set page metadata for SEO
-  useEffect(() => {
-    document.title = "Alex Neural - AI Engineer & Data Scientist | Portfolio";
-
-    // Update meta description if it exists
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        "content",
-        "Portfolio of Alex Neural - AI Engineer, Data Scientist, and Full-Stack Developer specializing in machine learning, data engineering, and scalable web applications."
-      );
-    }
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Particle Background */}
@@ -40,19 +26,12 @@ const Index: React.FC = () => {
       {/* Main Content */}
       <main>
         <Hero />
-        <Suspense
-          fallback={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          }
-        >
-          <About />
-          <Skills />
-          <Projects />
-          <Resume />
-          <Contact />
-        </Suspense>
+        <About />
+        <Skills />
+        <Projects />
+        <Resume />
+
+        <Contact />
       </main>
 
       {/* Footer */}
