@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AdminSidebarProps, AdminTab } from "./types";
 import { useAdminLayout } from "./AdminLayout";
+import { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 import { cn } from "@/lib/utils";
 
 /**
@@ -453,6 +454,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   return (
     <>
+      {/* Mobile Backdrop */}
+      <MobileSidebarBackdrop
+        visible={sidebarOpen && showMobileVariant}
+        onClick={closeMobileSidebar}
+      />
+
       {/* Desktop Sidebar */}
       <aside
         ref={sidebarRef}
