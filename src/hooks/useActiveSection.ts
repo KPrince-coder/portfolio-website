@@ -16,6 +16,12 @@ export const useActiveSection = (
 
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
+      // Check if we're at the very top of the page
+      if (window.scrollY < 100) {
+        setActiveSection("");
+        return;
+      }
+
       // Find the section with the highest intersection ratio
       const visibleSections = entries
         .filter((entry) => entry.isIntersecting)
@@ -25,6 +31,9 @@ export const useActiveSection = (
         const mostVisible = visibleSections[0];
         const sectionId = mostVisible.target.id;
         setActiveSection(sectionId);
+      } else {
+        // Clear active section when no sections are visible
+        setActiveSection("");
       }
     },
     []
@@ -50,9 +59,19 @@ export const useActiveSection = (
 
     sections.forEach((section) => observer.observe(section));
 
+    // Add scroll listener to detect when at top
+    const handleScroll = () => {
+      if (window.scrollY < 100) {
+        setActiveSection("");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     // Cleanup
     return () => {
       sections.forEach((section) => observer.unobserve(section));
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [sectionIds, handleIntersection, options]);
 
