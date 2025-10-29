@@ -37,10 +37,77 @@ We're using a **modular migration approach** where each major feature has its ow
 - Complete social media integration
 - Public portfolio display with private admin editing
 
+### 20241028000002_profiles_extended.sql
+
+**Date:** October 28, 2024  
+**Status:** ✅ Ready to apply  
+**Description:** Extended profile fields for philosophy, experiences, and impact metrics
+
+**Adds:**
+
+- Philosophy section (quote and author)
+- Professional experiences array
+- Impact metrics array
+- Skills section header fields
+
+### 20241028000003_skills.sql
+
+**Date:** October 28, 2024  
+**Status:** ✅ Ready to apply  
+**Description:** Technical skills management system
+
+**Creates:**
+
+- `skill_categories` table
+- `skills` table with proficiency levels
+- `learning_goals` table
+- RLS policies and indexes
+- Helper views and functions
+
+### 20241028000004_skills_extended.sql
+
+**Date:** October 28, 2024  
+**Status:** ✅ Ready to apply  
+**Description:** Extended skills features and seed data
+
+**Adds:**
+
+- Seed data for skill categories
+- Helper functions for skill management
+- Additional indexes for performance
+
+### 20241028000005_projects.sql
+
+**Date:** October 28, 2024  
+**Status:** ✅ Ready to apply  
+**Description:** Portfolio projects management system
+
+**Creates:**
+
+- `project_categories` table
+- `projects` table with full project details
+- `technologies` table for tech stack
+- `project_technologies` junction table
+- Storage bucket for project images
+- Helper views (projects_with_categories, projects_with_tech_count)
+- Helper functions (get_featured_projects, get_projects_by_category, search_projects)
+- RLS policies and indexes
+- Seed data for common categories and technologies
+
+**Features:**
+
+- Project categorization (Web, Mobile, AI/ML, Data, DevOps, Open Source)
+- Technology tagging with many-to-many relationships
+- Project status tracking (completed, in-progress, planned, archived)
+- Featured projects support
+- GitHub integration (stars, forks)
+- Demo and repository links
+- Image upload support
+- Search functionality
+- Slug-based URLs
+
 ### Upcoming Migrations (Not Yet Created)
 
-- **skills.sql** - Technical skills and proficiencies
-- **projects.sql** - Portfolio projects management
 - **blog.sql** - Blog posts and content
 - **contact.sql** - Contact form and messaging system
 - **settings.sql** - Site configuration and branding
