@@ -3,18 +3,8 @@ import { Edit, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { DestructiveButton } from "@/components/ui/destructive-button";
-import { useToast } from "@/hooks/use-toast";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import type { SkillWithCategory } from "./types";
 
 interface SkillsListProps {
@@ -34,7 +24,6 @@ const SkillsList: React.FC<SkillsListProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [skillToDelete, setSkillToDelete] = useState<{
     id: string;
@@ -44,28 +33,6 @@ const SkillsList: React.FC<SkillsListProps> = ({
   const handleDeleteClick = (id: string, name: string) => {
     setSkillToDelete({ id, name });
     setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!skillToDelete) return;
-
-    const { error } = await onDelete(skillToDelete.id);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting skill",
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: "Skill deleted",
-        description: `"${skillToDelete.name}" has been deleted successfully`,
-      });
-    }
-
-    setDeleteDialogOpen(false);
-    setSkillToDelete(null);
   };
 
   if (loading) {
@@ -161,26 +128,16 @@ const SkillsList: React.FC<SkillsListProps> = ({
         ))}
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Skill</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{skillToDelete?.name}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {skillToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Skill"
+          itemName={skillToDelete.name}
+          itemType="skill"
+          onConfirm={async () => await onDelete(skillToDelete.id)}
+        />
+      )}
     </>
   );
 };

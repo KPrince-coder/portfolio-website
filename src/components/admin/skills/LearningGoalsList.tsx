@@ -3,18 +3,8 @@ import { Edit, Trash2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { DestructiveButton } from "@/components/ui/destructive-button";
-import { useToast } from "@/hooks/use-toast";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import type { LearningGoal } from "./types";
 
 interface LearningGoalsListProps {
@@ -40,7 +30,6 @@ const LearningGoalsList: React.FC<LearningGoalsListProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [goalToDelete, setGoalToDelete] = useState<{
     id: string;
@@ -50,28 +39,6 @@ const LearningGoalsList: React.FC<LearningGoalsListProps> = ({
   const handleDeleteClick = (id: string, title: string) => {
     setGoalToDelete({ id, title });
     setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!goalToDelete) return;
-
-    const { error } = await onDelete(goalToDelete.id);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting learning goal",
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: "Learning goal deleted",
-        description: `"${goalToDelete.title}" has been deleted successfully`,
-      });
-    }
-
-    setDeleteDialogOpen(false);
-    setGoalToDelete(null);
   };
 
   if (loading) {
@@ -142,26 +109,16 @@ const LearningGoalsList: React.FC<LearningGoalsListProps> = ({
         ))}
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Learning Goal</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{goalToDelete?.title}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {goalToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Learning Goal"
+          itemName={goalToDelete.title}
+          itemType="learning goal"
+          onConfirm={async () => await onDelete(goalToDelete.id)}
+        />
+      )}
     </>
   );
 };

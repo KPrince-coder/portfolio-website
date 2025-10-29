@@ -5,16 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { DestructiveButton } from "@/components/ui/destructive-button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSkillCategories } from "../hooks/useSkillCategories";
@@ -121,28 +112,6 @@ const SkillsCategoriesSection: React.FC = () => {
   const handleDeleteClick = (id: string, label: string) => {
     setCategoryToDelete({ id, label });
     setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!categoryToDelete) return;
-
-    const { error } = await deleteCategory(categoryToDelete.id);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting category",
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: "Category deleted",
-        description: `"${categoryToDelete.label}" has been deleted successfully`,
-      });
-    }
-
-    setDeleteDialogOpen(false);
-    setCategoryToDelete(null);
   };
 
   if (loading) {
@@ -341,26 +310,16 @@ const SkillsCategoriesSection: React.FC = () => {
           ))}
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Category</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{categoryToDelete?.label}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {categoryToDelete && (
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Category"
+          itemName={categoryToDelete.label}
+          itemType="category"
+          onConfirm={async () => await deleteCategory(categoryToDelete.id)}
+        />
+      )}
     </div>
   );
 };
