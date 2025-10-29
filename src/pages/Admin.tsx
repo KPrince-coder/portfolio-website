@@ -622,7 +622,9 @@ const Admin: React.FC = () => {
               </div>
             )}
 
-            {activeTab === "profile" && <ProfileManagement />}
+            {activeTab.startsWith("profile") && (
+              <ProfileManagement activeSubTab={activeTab} />
+            )}
 
             {activeTab === "messages" && (
               <ContactMessages

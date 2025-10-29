@@ -17,7 +17,13 @@ type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 
-const ProfileManagement: React.FC = () => {
+interface ProfileManagementProps {
+  activeSubTab?: string;
+}
+
+const ProfileManagement: React.FC<ProfileManagementProps> = ({
+  activeSubTab = "profile-personal",
+}) => {
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -135,46 +141,102 @@ const ProfileManagement: React.FC = () => {
     );
   }
 
+  const getSectionTitle = () => {
+    switch (activeSubTab) {
+      case "profile-personal":
+        return "Personal Information";
+      case "profile-hero":
+        return "Hero Section";
+      case "profile-about":
+        return "About Section";
+      case "profile-experience":
+        return "Professional Journey";
+      case "profile-metrics":
+        return "Impact Metrics";
+      case "profile-philosophy":
+        return "Philosophy";
+      case "profile-social":
+        return "Social Links";
+      case "profile-resume":
+        return "Resume";
+      default:
+        return "Profile Management";
+    }
+  };
+
+  const renderSection = () => {
+    switch (activeSubTab) {
+      case "profile-personal":
+        return (
+          <PersonalInfoSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      case "profile-hero":
+        return (
+          <HeroSection formData={formData} onInputChange={handleInputChange} />
+        );
+      case "profile-about":
+        return (
+          <AboutSection formData={formData} onInputChange={handleInputChange} />
+        );
+      case "profile-experience":
+        return (
+          <ExperienceSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      case "profile-metrics":
+        return (
+          <ImpactMetricsSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      case "profile-philosophy":
+        return (
+          <PhilosophySection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      case "profile-social":
+        return (
+          <SocialLinksSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      case "profile-resume":
+        return (
+          <ResumeSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+      default:
+        return (
+          <PersonalInfoSection
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="heading-lg">Profile Management</h2>
+        <h2 className="heading-lg">{getSectionTitle()}</h2>
         <Button onClick={handleSave} disabled={saving} className="neural-glow">
           <Save className="w-4 h-4 mr-2" />
-          {saving ? "Saving..." : "Save Profile"}
+          {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
-      <PersonalInfoSection
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
-
-      <HeroSection formData={formData} onInputChange={handleInputChange} />
-
-      <AboutSection formData={formData} onInputChange={handleInputChange} />
-
-      <ExperienceSection
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
-
-      <ImpactMetricsSection
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
-
-      <PhilosophySection
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
-
-      <SocialLinksSection
-        formData={formData}
-        onInputChange={handleInputChange}
-      />
-
-      <ResumeSection formData={formData} onInputChange={handleInputChange} />
+      {renderSection()}
 
       <div className="flex justify-end">
         <Button
