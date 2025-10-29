@@ -27,11 +27,18 @@ const SkillsHeaderSection: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // For now, use default values since these fields don't exist in profiles yet
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("skills_title, skills_description")
+        .single();
+
+      if (error) throw error;
+
       setFormData({
-        skills_title: "Technical Expertise",
+        skills_title: data.skills_title || "Technical Expertise",
         skills_description:
-          "A comprehensive overview of my technical skills and proficiency levels",
+          data.skills_description ||
+          "A comprehensive toolkit for building intelligent systems, from data pipelines to user interfaces. Each skill represents hundreds of hours of hands-on experience and continuous learning.",
       });
     } catch (error) {
       console.error("Error loading skills header:", error);
@@ -48,8 +55,25 @@ const SkillsHeaderSection: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: Add skills_title and skills_description columns to profiles table
-      // For now, just show success message
+      // Get the current user's profile ID
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          skills_title: formData.skills_title,
+          skills_description: formData.skills_description,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
       toast({
         title: "Skills header updated",
         description: "Your changes have been saved successfully",
@@ -59,7 +83,10 @@ const SkillsHeaderSection: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error saving",
-        description: "Failed to save skills header information",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save skills header information",
       });
     } finally {
       setSaving(false);
