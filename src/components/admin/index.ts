@@ -1,6 +1,7 @@
 export { default as AdminAuth } from "./AdminAuth";
 export { default as AdminHeader } from "./AdminHeader";
 export { default as AdminSidebar } from "./AdminSidebar";
+export { AdminLayout, useAdminLayout } from "./AdminLayout";
 export { default as AdminDashboard } from "./AdminDashboard";
 export { default as ContactMessages } from "./ContactMessages";
 export { ProfileManagement } from "./profile";
