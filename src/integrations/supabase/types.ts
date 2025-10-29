@@ -69,17 +69,23 @@ export type Database = {
           philosophy_author: string | null
           philosophy_quote: string | null
           phone: string | null
+          projects_completed: number | null
           projects_description: string | null
           projects_title: string | null
+          resume_description: string | null
           resume_file_name: string | null
+          resume_title: string | null
           resume_updated_at: string | null
           resume_url: string | null
+          show_resume_stats: boolean | null
           skills_description: string | null
           skills_title: string | null
+          technologies_mastered: number | null
           twitter_url: string | null
           updated_at: string
           user_id: string
           website_url: string | null
+          years_of_experience: number | null
         }
         Insert: {
           about_description?: string | null
@@ -102,17 +108,23 @@ export type Database = {
           philosophy_author?: string | null
           philosophy_quote?: string | null
           phone?: string | null
+          projects_completed?: number | null
           projects_description?: string | null
           projects_title?: string | null
+          resume_description?: string | null
           resume_file_name?: string | null
+          resume_title?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
+          show_resume_stats?: boolean | null
           skills_description?: string | null
           skills_title?: string | null
+          technologies_mastered?: number | null
           twitter_url?: string | null
           updated_at?: string
           user_id: string
           website_url?: string | null
+          years_of_experience?: number | null
         }
         Update: {
           about_description?: string | null
@@ -135,17 +147,23 @@ export type Database = {
           philosophy_author?: string | null
           philosophy_quote?: string | null
           phone?: string | null
+          projects_completed?: number | null
           projects_description?: string | null
           projects_title?: string | null
+          resume_description?: string | null
           resume_file_name?: string | null
+          resume_title?: string | null
           resume_updated_at?: string | null
           resume_url?: string | null
+          show_resume_stats?: boolean | null
           skills_description?: string | null
           skills_title?: string | null
+          technologies_mastered?: number | null
           twitter_url?: string | null
           updated_at?: string
           user_id?: string
           website_url?: string | null
+          years_of_experience?: number | null
         }
         Relationships: []
       }
@@ -314,6 +332,186 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      resume_certifications: {
+        Row: {
+          created_at: string
+          credential_id: string | null
+          credential_url: string | null
+          description: string | null
+          display_order: number | null
+          does_not_expire: boolean | null
+          expiry_date: string | null
+          id: string
+          is_visible: boolean | null
+          issue_date: string | null
+          issuing_organization: string
+          logo_url: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          display_order?: number | null
+          does_not_expire?: boolean | null
+          expiry_date?: string | null
+          id?: string
+          is_visible?: boolean | null
+          issue_date?: string | null
+          issuing_organization: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          display_order?: number | null
+          does_not_expire?: boolean | null
+          expiry_date?: string | null
+          id?: string
+          is_visible?: boolean | null
+          issue_date?: string | null
+          issuing_organization?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resume_education: {
+        Row: {
+          activities: string[] | null
+          created_at: string
+          degree: string
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          field_of_study: string | null
+          gpa: string | null
+          grade: string | null
+          id: string
+          is_visible: boolean | null
+          location: string | null
+          school: string
+          school_logo_url: string | null
+          school_url: string | null
+          start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activities?: string[] | null
+          created_at?: string
+          degree: string
+          description?: string | null
+          display_order?: number | null
+          end_date?: string | null
+          field_of_study?: string | null
+          gpa?: string | null
+          grade?: string | null
+          id?: string
+          is_visible?: boolean | null
+          location?: string | null
+          school: string
+          school_logo_url?: string | null
+          school_url?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activities?: string[] | null
+          created_at?: string
+          degree?: string
+          description?: string | null
+          display_order?: number | null
+          end_date?: string | null
+          field_of_study?: string | null
+          gpa?: string | null
+          grade?: string | null
+          id?: string
+          is_visible?: boolean | null
+          location?: string | null
+          school?: string
+          school_logo_url?: string | null
+          school_url?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resume_work_experiences: {
+        Row: {
+          achievements: string[] | null
+          company: string
+          company_logo_url: string | null
+          company_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          employment_type: string | null
+          end_date: string | null
+          id: string
+          is_current: boolean | null
+          is_featured: boolean | null
+          is_visible: boolean | null
+          location: string | null
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achievements?: string[] | null
+          company: string
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achievements?: string[] | null
+          company?: string
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       skill_categories: {
         Row: {
@@ -514,6 +712,264 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      resume_active_certifications: {
+        Row: {
+          created_at: string | null
+          credential_id: string | null
+          credential_url: string | null
+          description: string | null
+          display_order: number | null
+          does_not_expire: boolean | null
+          expiry_date: string | null
+          id: string | null
+          is_active: boolean | null
+          is_visible: boolean | null
+          issue_date: string | null
+          issuing_organization: string | null
+          logo_url: string | null
+          name: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          display_order?: number | null
+          does_not_expire?: boolean | null
+          expiry_date?: string | null
+          id?: string | null
+          is_active?: never
+          is_visible?: boolean | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          logo_url?: string | null
+          name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          display_order?: number | null
+          does_not_expire?: boolean | null
+          expiry_date?: string | null
+          id?: string | null
+          is_active?: never
+          is_visible?: boolean | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          logo_url?: string | null
+          name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      resume_current_work_experience: {
+        Row: {
+          achievements: string[] | null
+          company: string | null
+          company_logo_url: string | null
+          company_url: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          employment_type: string | null
+          end_date: string | null
+          id: string | null
+          is_current: boolean | null
+          is_featured: boolean | null
+          is_visible: boolean | null
+          location: string | null
+          start_date: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          years_in_role: number | null
+        }
+        Insert: {
+          achievements?: string[] | null
+          company?: string | null
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_in_role?: never
+        }
+        Update: {
+          achievements?: string[] | null
+          company?: string | null
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_in_role?: never
+        }
+        Relationships: []
+      }
+      resume_education_with_period: {
+        Row: {
+          activities: string[] | null
+          created_at: string | null
+          degree: string | null
+          description: string | null
+          display_order: number | null
+          end_date: string | null
+          field_of_study: string | null
+          gpa: string | null
+          grade: string | null
+          id: string | null
+          is_visible: boolean | null
+          location: string | null
+          period: string | null
+          school: string | null
+          school_logo_url: string | null
+          school_url: string | null
+          start_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activities?: string[] | null
+          created_at?: string | null
+          degree?: string | null
+          description?: string | null
+          display_order?: number | null
+          end_date?: string | null
+          field_of_study?: string | null
+          gpa?: string | null
+          grade?: string | null
+          id?: string | null
+          is_visible?: boolean | null
+          location?: string | null
+          period?: never
+          school?: string | null
+          school_logo_url?: string | null
+          school_url?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activities?: string[] | null
+          created_at?: string | null
+          degree?: string | null
+          description?: string | null
+          display_order?: number | null
+          end_date?: string | null
+          field_of_study?: string | null
+          gpa?: string | null
+          grade?: string | null
+          id?: string | null
+          is_visible?: boolean | null
+          location?: string | null
+          period?: never
+          school?: string | null
+          school_logo_url?: string | null
+          school_url?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      resume_work_experiences_with_duration: {
+        Row: {
+          achievements: string[] | null
+          company: string | null
+          company_logo_url: string | null
+          company_url: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          employment_type: string | null
+          end_date: string | null
+          id: string | null
+          is_current: boolean | null
+          is_featured: boolean | null
+          is_visible: boolean | null
+          location: string | null
+          months_duration: number | null
+          period: string | null
+          start_date: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievements?: string[] | null
+          company?: string | null
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          months_duration?: never
+          period?: never
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievements?: string[] | null
+          company?: string | null
+          company_logo_url?: string | null
+          company_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          is_featured?: boolean | null
+          is_visible?: boolean | null
+          location?: string | null
+          months_duration?: never
+          period?: never
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       skills_section_settings: {
         Row: {
