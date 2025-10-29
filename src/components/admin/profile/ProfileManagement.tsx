@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
-import PersonalInfoSection from "./PersonalInfoSection.tsx";
-import HeroSection from "./HeroSection.tsx";
-import AboutSection from "./AboutSection.tsx";
-import SocialLinksSection from "./SocialLinksSection.tsx";
-import ResumeSection from "./ResumeSection.tsx";
-import ExperienceSection from "./ExperienceSection.tsx";
-import ImpactMetricsSection from "./ImpactMetricsSection.tsx";
-import PhilosophySection from "./PhilosophySection.tsx";
+import {
+  PersonalInfoSection,
+  HeroSection,
+  AboutSection,
+  SocialLinksSection,
+  ResumeSection,
+  ExperienceSection,
+  ImpactMetricsSection,
+  PhilosophySection,
+} from "./sections";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

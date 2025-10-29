@@ -9,10 +9,20 @@ admin/profile/
 ├── hooks/                    # Custom hooks
 │   ├── useProfile.ts        # Profile data management hook
 │   └── index.ts            # Hook exports
+├── sections/                 # Section components
+│   ├── PersonalInfoSection.tsx
+│   ├── HeroSection.tsx
+│   ├── AboutSection.tsx
+│   ├── PhilosophySection.tsx
+│   ├── SocialLinksSection.tsx
+│   ├── ExperienceSection.tsx
+│   ├── ImpactMetricsSection.tsx
+│   ├── ResumeSection.tsx
+│   └── index.ts            # Section exports
 ├── types.ts                 # TypeScript type definitions
 ├── index.ts                 # Main exports
 ├── ProfileManagement.tsx    # Main profile management component
-└── [Section Components]     # Individual section components
+└── README.md               # This file
 ```
 
 ## Components
