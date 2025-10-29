@@ -3,10 +3,7 @@ import SkillsHeaderSection from "./sections/SkillsHeaderSection";
 import SkillsCategoriesSection from "./sections/SkillsCategoriesSection";
 import SkillsListSection from "./sections/SkillsListSection";
 import LearningGoalsSection from "./sections/LearningGoalsSection";
-
-interface SkillsManagementRouterProps {
-  activeSubTab: string;
-}
+import type { SkillsManagementRouterProps } from "./types";
 
 /**
  * SkillsManagementRouter Component

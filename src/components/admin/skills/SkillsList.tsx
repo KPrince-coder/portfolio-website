@@ -5,14 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DestructiveButton } from "@/components/ui/destructive-button";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
-import type { SkillWithCategory } from "./types";
-
-interface SkillsListProps {
-  skills: SkillWithCategory[];
-  loading: boolean;
-  onEdit: (skill: SkillWithCategory) => void;
-  onDelete: (id: string) => Promise<{ error: Error | null }>;
-}
+import type { SkillWithCategory, SkillsListProps } from "./types";
 
 /**
  * SkillsList Component

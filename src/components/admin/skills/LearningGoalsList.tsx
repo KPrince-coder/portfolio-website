@@ -5,14 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DestructiveButton } from "@/components/ui/destructive-button";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
-import type { LearningGoal } from "./types";
-
-interface LearningGoalsListProps {
-  goals: LearningGoal[];
-  loading: boolean;
-  onEdit: (goal: LearningGoal) => void;
-  onDelete: (id: string) => Promise<{ error: Error | null }>;
-}
+import type { LearningGoal, LearningGoalsListProps } from "./types";
 
 const STATUS_LABELS = {
   learning: "Learning",

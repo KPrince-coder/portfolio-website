@@ -15,20 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconPicker } from "@/components/ui/icon-picker";
 import { useSkillCategories } from "./hooks/useSkillCategories";
-import type { Skill, SkillFormData } from "./types";
-
-interface SkillFormProps {
-  skill: Skill | null;
-  onClose: () => void;
-  onSave:
-    | ((
-        id: string,
-        data: Partial<Skill>
-      ) => Promise<{ data: any; error: Error | null }>)
-    | ((
-        data: Omit<Skill, "id" | "created_at" | "updated_at">
-      ) => Promise<{ data: any; error: Error | null }>);
-}
+import type { Skill, SkillFormData, SkillFormProps } from "./types";
 
 const COLOR_OPTIONS = [
   { value: "text-secondary", label: "Secondary (Blue)" },

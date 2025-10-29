@@ -12,20 +12,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { LearningGoal, LearningGoalFormData } from "./types";
-
-interface LearningGoalFormProps {
-  goal: LearningGoal | null;
-  onClose: () => void;
-  onSave:
-    | ((
-        id: string,
-        data: Partial<LearningGoal>
-      ) => Promise<{ data: any; error: Error | null }>)
-    | ((
-        data: Omit<LearningGoal, "id" | "created_at" | "updated_at">
-      ) => Promise<{ data: any; error: Error | null }>);
-}
+import type {
+  LearningGoal,
+  LearningGoalFormData,
+  LearningGoalFormProps,
+} from "./types";
 
 const STATUS_OPTIONS = [
   { value: "learning", label: "Learning" },
