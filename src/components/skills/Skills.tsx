@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import SkillsHeader from "./SkillsHeader";
+import { SectionHeader } from "@/components/ui/section-header";
 import CategoryFilter from "./CategoryFilter";
 import SkillsGrid from "./SkillsGrid";
 import LearningGoalsCard from "./LearningGoalsCard";
@@ -53,7 +53,7 @@ const Skills: React.FC = () => {
       className="py-20 bg-gradient-to-b from-background/50 to-background"
     >
       <div className="container mx-auto px-6">
-        <SkillsHeader
+        <SectionHeader
           title={title}
           titleHighlight={titleHighlight}
           description={description}
