@@ -262,3 +262,46 @@ export interface SkillsStats {
   categoriesCount: number;
   activeGoalsCount: number;
 }
+
+// ============================================================================
+// Component Props Interfaces
+// ============================================================================
+
+/**
+ * SkillsHeader Component Props
+ */
+export interface SkillsHeaderProps {
+  title: string;
+  description: string;
+}
+
+/**
+ * CategoryFilter Component Props
+ */
+export interface CategoryFilterProps {
+  categories: SkillCategory[];
+  activeCategory: string;
+  onCategoryChange: (categoryId: string) => void;
+}
+
+/**
+ * SkillCard Component Props
+ */
+export interface SkillCardProps {
+  skill: Skill;
+  index: number;
+}
+
+/**
+ * SkillsGrid Component Props
+ */
+export interface SkillsGridProps {
+  skills: Skill[];
+}
+
+/**
+ * LearningGoalsCard Component Props
+ */
+export interface LearningGoalsCardProps {
+  goals: LearningGoal[];
+}

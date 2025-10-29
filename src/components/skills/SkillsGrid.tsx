@@ -1,10 +1,6 @@
 import React from "react";
 import SkillCard from "./SkillCard";
-import type { Skill } from "./types";
-
-interface SkillsGridProps {
-  skills: Skill[];
-}
+import type { SkillsGridProps } from "./types";
 
 /**
  * SkillsGrid Component

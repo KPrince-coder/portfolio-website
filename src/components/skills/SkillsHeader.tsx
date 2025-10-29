@@ -1,9 +1,5 @@
 import React from "react";
-
-interface SkillsHeaderProps {
-  title: string;
-  description: string;
-}
+import type { SkillsHeaderProps } from "./types";
 
 /**
  * SkillsHeader Component

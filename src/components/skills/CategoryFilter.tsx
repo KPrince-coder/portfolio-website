@@ -1,13 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "./utils";
-import type { SkillCategory } from "./types";
-
-interface CategoryFilterProps {
-  categories: SkillCategory[];
-  activeCategory: string;
-  onCategoryChange: (categoryId: string) => void;
-}
+import type { CategoryFilterProps } from "./types";
 
 /**
  * CategoryFilter Component

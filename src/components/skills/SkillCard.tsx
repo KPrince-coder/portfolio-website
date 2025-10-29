@@ -1,12 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getIcon } from "./utils";
-import type { Skill } from "./types";
-
-interface SkillCardProps {
-  skill: Skill;
-  index: number;
-}
+import type { SkillCardProps } from "./types";
 
 /**
  * SkillCard Component

@@ -1,11 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { STATUS_LABELS, STATUS_COLORS } from "./types";
-import type { LearningGoal } from "./types";
-
-interface LearningGoalsCardProps {
-  goals: LearningGoal[];
-}
+import type { LearningGoalsCardProps } from "./types";
 
 /**
  * LearningGoalsCard Component
