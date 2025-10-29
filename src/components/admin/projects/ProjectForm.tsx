@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Upload, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -411,9 +411,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                   id="start_date"
                   type="date"
                   value={formData.start_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, start_date: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newStartDate = e.target.value;
+                    setFormData((prev) => {
+                      // If end date exists and is earlier than new start date, clear it
+                      if (prev.end_date && newStartDate > prev.end_date) {
+                        return {
+                          ...prev,
+                          start_date: newStartDate,
+                          end_date: "",
+                        };
+                      }
+                      return { ...prev, start_date: newStartDate };
+                    });
+                  }}
                 />
               </div>
 
@@ -427,6 +438,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, end_date: e.target.value })
                   }
+                  min={formData.start_date || undefined}
                 />
               </div>
             </div>

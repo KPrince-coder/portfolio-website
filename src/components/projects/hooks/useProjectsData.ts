@@ -36,6 +36,7 @@ export const useProjectsData = () => {
             db
               .from("projects_with_categories")
               .select("*")
+              .eq("status", "completed") // Only show completed projects
               .order("display_order", { ascending: true })
               .then((res: any) => {
                 // If view doesn't exist, try the projects table directly
@@ -51,6 +52,7 @@ export const useProjectsData = () => {
                       category:project_categories(name, label, icon, color)
                     `
                     )
+                    .eq("status", "completed") // Only show completed projects
                     .order("display_order", { ascending: true });
                 }
                 return res;
