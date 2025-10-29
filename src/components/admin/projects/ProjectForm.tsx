@@ -113,8 +113,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     setSaving(true);
 
     try {
-      const dataToSave = {
+      // Sanitize data: convert empty strings to null for UUID fields
+      const sanitizedData = {
         ...formData,
+        category_id: formData.category_id || null,
         technologies: selectedTechs,
         slug:
           formData.slug || formData.title.toLowerCase().replace(/\s+/g, "-"),
@@ -127,11 +129,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             id: string,
             data: Partial<Project>
           ) => Promise<{ data: any; error: Error | null }>
-        )(project.id, dataToSave);
+        )(project.id, sanitizedData);
       } else {
         result = await (
           onSave as (data: any) => Promise<{ data: any; error: Error | null }>
-        )(dataToSave);
+        )(sanitizedData);
       }
 
       if (result.error) {
