@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Shield,
   Mail,
@@ -30,12 +30,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [profileExpanded, setProfileExpanded] = useState(
     activeTab.startsWith("profile")
   );
+  const [skillsExpanded, setSkillsExpanded] = useState(
+    activeTab.startsWith("skills")
+  );
 
   const tabs: AdminTab[] = [
     { id: "overview", label: "Overview", icon: Shield },
     { id: "messages", label: "Messages", icon: Mail },
     { id: "projects", label: "Projects", icon: Briefcase },
-    { id: "skills", label: "Skills", icon: Award },
     { id: "posts", label: "Blog Posts", icon: FileText },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -51,17 +53,38 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: "profile-resume", label: "Resume", icon: Upload },
   ];
 
-  const handleProfileClick = () => {
+  const skillsSubTabs = [
+    { id: "skills-header", label: "Skills Header", icon: FileText },
+    { id: "skills-categories", label: "Categories", icon: Briefcase },
+    { id: "skills-list", label: "Skills", icon: Award },
+    { id: "skills-goals", label: "Learning Goals", icon: TrendingUp },
+  ];
+
+  const handleProfileClick = useCallback(() => {
     setProfileExpanded(!profileExpanded);
     if (!profileExpanded) {
       onTabChange("profile-personal");
     }
-  };
+  }, [profileExpanded, onTabChange]);
 
-  const handleSubTabClick = (subTabId: string) => {
-    setProfileExpanded(true);
-    onTabChange(subTabId);
-  };
+  const handleSkillsClick = useCallback(() => {
+    setSkillsExpanded(!skillsExpanded);
+    if (!skillsExpanded) {
+      onTabChange("skills-header");
+    }
+  }, [skillsExpanded, onTabChange]);
+
+  const handleSubTabClick = useCallback(
+    (subTabId: string) => {
+      if (subTabId.startsWith("profile")) {
+        setProfileExpanded(true);
+      } else if (subTabId.startsWith("skills")) {
+        setSkillsExpanded(true);
+      }
+      onTabChange(subTabId);
+    },
+    [onTabChange]
+  );
 
   return (
     <div className="lg:col-span-1">
@@ -101,10 +124,45 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 )}
               </Button>
 
-              {/* Sub-tabs */}
+              {/* Profile Sub-tabs */}
               {profileExpanded && (
                 <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
                   {profileSubTabs.map((subTab) => (
+                    <Button
+                      key={subTab.id}
+                      variant={activeTab === subTab.id ? "secondary" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                      onClick={() => handleSubTabClick(subTab.id)}
+                    >
+                      <subTab.icon className="w-3 h-3 mr-2" />
+                      {subTab.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Skills Section with Sub-tabs */}
+            <div className="space-y-1">
+              <Button
+                variant={activeTab.startsWith("skills") ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={handleSkillsClick}
+              >
+                <Award className="w-4 h-4 mr-2" />
+                Skills
+                {skillsExpanded ? (
+                  <ChevronDown className="w-4 h-4 ml-auto" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                )}
+              </Button>
+
+              {/* Skills Sub-tabs */}
+              {skillsExpanded && (
+                <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
+                  {skillsSubTabs.map((subTab) => (
                     <Button
                       key={subTab.id}
                       variant={activeTab === subTab.id ? "secondary" : "ghost"}

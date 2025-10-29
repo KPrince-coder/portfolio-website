@@ -9,7 +9,6 @@ import {
   ContactMessages,
   ProjectsManagement,
   ProfileManagement,
-  SkillsManagement,
   PlaceholderSection,
   MessageReply,
   MessageStats,
@@ -17,6 +16,7 @@ import {
   User,
   ContactMessage,
 } from "@/components/admin";
+import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
 import { Database } from "@/integrations/supabase/types";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
@@ -658,7 +658,9 @@ const Admin: React.FC = () => {
               />
             )}
 
-            {activeTab === "skills" && <SkillsManagement />}
+            {activeTab.startsWith("skills") && (
+              <SkillsManagementRouter activeSubTab={activeTab} />
+            )}
 
             {activeTab === "posts" && (
               <PlaceholderSection
