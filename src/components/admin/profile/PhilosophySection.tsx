@@ -4,14 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Database } from "@/integrations/supabase/types";
-
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
-
-interface PhilosophySectionProps {
-  formData: Partial<ProfileUpdate>;
-  onInputChange: (field: keyof ProfileUpdate, value: any) => void;
-}
+import type { PhilosophySectionProps } from "./types";
 
 const PhilosophySection: React.FC<PhilosophySectionProps> = ({
   formData,

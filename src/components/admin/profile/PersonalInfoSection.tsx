@@ -6,14 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Database } from "@/integrations/supabase/types";
-
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
-
-interface PersonalInfoSectionProps {
-  formData: Partial<ProfileUpdate>;
-  onInputChange: (field: keyof ProfileUpdate, value: any) => void;
-}
+import type { PersonalInfoSectionProps } from "./types";
 
 const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   formData,

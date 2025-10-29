@@ -6,14 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Database } from "@/integrations/supabase/types";
-
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
-
-interface ResumeSectionProps {
-  formData: Partial<ProfileUpdate>;
-  onInputChange: (field: keyof ProfileUpdate, value: any) => void;
-}
+import type { ResumeSectionProps } from "./types";
 
 const ResumeSection: React.FC<ResumeSectionProps> = ({
   formData,

@@ -13,23 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IconPicker } from "@/components/ui/icon-picker";
-import { Database } from "@/integrations/supabase/types";
-
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
-
-interface Experience {
-  year: string;
-  title: string;
-  company: string;
-  description: string;
-  icon: string;
-  color: string;
-}
-
-interface ExperienceSectionProps {
-  formData: Partial<ProfileUpdate>;
-  onInputChange: (field: keyof ProfileUpdate, value: any) => void;
-}
+import type { Experience, ExperienceSectionProps } from "./types";
 
 const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   formData,
