@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Skill, SkillWithCategory } from "../types";
 
 // Type assertion for tables not yet in generated types
-const db = supabase as any;
+const db = supabase;
 
 /**
  * Custom hook to fetch and manage skills data

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,13 +19,27 @@ import type { Skill, SkillFormData } from "./types";
 interface SkillFormProps {
   skill: Skill | null;
   onClose: () => void;
-  onSave: (id: string, data: Partial<Skill>) => Promise<{ data: any; error: Error | null }> | 
-          (data: Omit<Skill, "id" | "created_at" | "updated_at">) => Promise<{ data: any; error: Error | null }>;
+  onSave:
+    | ((
+        id: string,
+        data: Partial<Skill>
+      ) => Promise<{ data: any; error: Error | null }>)
+    | ((
+        data: Omit<Skill, "id" | "created_at" | "updated_at">
+      ) => Promise<{ data: any; error: Error | null }>);
 }
 
 const ICON_OPTIONS = [
-  "Brain", "Database", "Code", "Smartphone", "Cloud", "BarChart3",
-  "Zap", "Shield", "Cpu", "GitBranch"
+  "Brain",
+  "Database",
+  "Code",
+  "Smartphone",
+  "Cloud",
+  "BarChart3",
+  "Zap",
+  "Shield",
+  "Cpu",
+  "GitBranch",
 ];
 
 const COLOR_OPTIONS = [
@@ -58,11 +72,20 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose, onSave }) => {
     setSaving(true);
 
     try {
-      let result;
+      let result: { data: any; error: Error | null };
       if (skill) {
-        result = await (onSave as (id: string, data: Partial<Skill>) => Promise<{ data: any; error: Error | null }>)(skill.id, formData);
+        result = await (
+          onSave as (
+            id: string,
+            data: Partial<Skill>
+          ) => Promise<{ data: any; error: Error | null }>
+        )(skill.id, formData);
       } else {
-        result = await (onSave as (data: Omit<Skill, "id" | "created_at" | "updated_at">) => Promise<{ data: any; error: Error | null }>)(formData as any);
+        result = await (
+          onSave as (
+            data: Omit<Skill, "id" | "created_at" | "updated_at">
+          ) => Promise<{ data: any; error: Error | null }>
+        )(formData);
       }
 
       if (result.error) {

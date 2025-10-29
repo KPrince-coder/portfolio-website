@@ -5,6 +5,7 @@ export { default as AdminDashboard } from "./AdminDashboard";
 export { default as ContactMessages } from "./ContactMessages";
 export { default as ProjectsManagement } from "./ProjectsManagement";
 export { ProfileManagement } from "./profile";
+export { SkillsManagement } from "./skills";
 export { default as PlaceholderSection } from "./PlaceholderSection";
 export { default as MessageReply } from "./MessageReply";
 export { default as MessageStats } from "./MessageStats";

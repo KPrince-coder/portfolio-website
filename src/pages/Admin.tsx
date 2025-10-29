@@ -9,6 +9,7 @@ import {
   ContactMessages,
   ProjectsManagement,
   ProfileManagement,
+  SkillsManagement,
   PlaceholderSection,
   MessageReply,
   MessageStats,
@@ -656,6 +657,8 @@ const Admin: React.FC = () => {
                 refetchProjects={refetchProjects} // Pass the refetch function
               />
             )}
+
+            {activeTab === "skills" && <SkillsManagement />}
 
             {activeTab === "posts" && (
               <PlaceholderSection

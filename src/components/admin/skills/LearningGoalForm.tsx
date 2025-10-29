@@ -17,8 +17,14 @@ import type { LearningGoal, LearningGoalFormData } from "./types";
 interface LearningGoalFormProps {
   goal: LearningGoal | null;
   onClose: () => void;
-  onSave: (id: string, data: Partial<LearningGoal>) => Promise<{ data: any; error: Error | null }> | 
-          (data: Omit<LearningGoal, "id" | "created_at" | "updated_at">) => Promise<{ data: any; error: Error | null }>;
+  onSave:
+    | ((
+        id: string,
+        data: Partial<LearningGoal>
+      ) => Promise<{ data: any; error: Error | null }>)
+    | ((
+        data: Omit<LearningGoal, "id" | "created_at" | "updated_at">
+      ) => Promise<{ data: any; error: Error | null }>);
 }
 
 const STATUS_OPTIONS = [
@@ -56,11 +62,20 @@ const LearningGoalForm: React.FC<LearningGoalFormProps> = ({
     setSaving(true);
 
     try {
-      let result;
+      let result: { data: any; error: Error | null };
       if (goal) {
-        result = await (onSave as (id: string, data: Partial<LearningGoal>) => Promise<{ data: any; error: Error | null }>)(goal.id, formData);
+        result = await (
+          onSave as (
+            id: string,
+            data: Partial<LearningGoal>
+          ) => Promise<{ data: any; error: Error | null }>
+        )(goal.id, formData);
       } else {
-        result = await (onSave as (data: Omit<LearningGoal, "id" | "created_at" | "updated_at">) => Promise<{ data: any; error: Error | null }>)(formData as any);
+        result = await (
+          onSave as (
+            data: Omit<LearningGoal, "id" | "created_at" | "updated_at">
+          ) => Promise<{ data: any; error: Error | null }>
+        )(formData);
       }
 
       if (result.error) {
@@ -108,9 +123,9 @@ const LearningGoalForm: React.FC<LearningGoalFormProps> = ({
               <Label htmlFor="status">Status *</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: "learning" | "exploring" | "researching") =>
-                  setFormData({ ...formData, status: value })
-                }
+                onValueChange={(
+                  value: "learning" | "exploring" | "researching"
+                ) => setFormData({ ...formData, status: value })}
               >
                 <SelectTrigger>
                   <SelectValue />

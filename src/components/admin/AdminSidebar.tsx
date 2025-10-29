@@ -35,6 +35,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     { id: "overview", label: "Overview", icon: Shield },
     { id: "messages", label: "Messages", icon: Mail },
     { id: "projects", label: "Projects", icon: Briefcase },
+    { id: "skills", label: "Skills", icon: Award },
     { id: "posts", label: "Blog Posts", icon: FileText },
     { id: "settings", label: "Settings", icon: Settings },
   ];

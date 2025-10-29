@@ -87,7 +87,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 value={newHighlight}
                 onChange={(e) => setNewHighlight(e.target.value)}
                 placeholder="Add a highlight..."
-                onKeyPress={(e) => e.key === "Enter" && handleAddHighlight()}
+                onKeyDown={(e) => e.key === "Enter" && handleAddHighlight()}
               />
               <Button size="sm" onClick={handleAddHighlight}>
                 <Plus className="w-4 h-4 mr-1" />
