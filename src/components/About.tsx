@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import * as Icons from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import AboutSkeleton from "@/components/skeletons/AboutSkeleton";
 
 interface Experience {
   year: string;
@@ -125,25 +126,7 @@ const About: React.FC = () => {
   const User = Icons.User;
 
   if (loading) {
-    return (
-      <section
-        id="about"
-        className="py-20 bg-gradient-to-b from-background to-background/50"
-      >
-        <div className="container mx-auto px-6">
-          <div
-            className="flex items-center justify-center py-20"
-            role="status"
-            aria-live="polite"
-          >
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-              <p className="text-muted-foreground">Loading about section...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
+    return <AboutSkeleton />;
   }
 
   // Structured data for SEO
