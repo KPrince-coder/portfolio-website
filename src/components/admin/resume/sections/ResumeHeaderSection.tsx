@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,35 +6,121 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProfile } from "@/components/admin/profile/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResumeHeaderSection: React.FC = () => {
-  const { profile, updateProfile } = useProfile();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    resume_title: profile?.resume_title || "Professional Resume",
-    resume_description: profile?.resume_description || "",
-    years_of_experience: profile?.years_of_experience || 0,
-    projects_completed: profile?.projects_completed || 0,
-    technologies_mastered: profile?.technologies_mastered || 0,
-    show_resume_stats: profile?.show_resume_stats ?? true,
+    resume_title: "Professional Resume",
+    resume_description: "",
+    years_of_experience: 0,
+    projects_completed: 0,
+    technologies_mastered: 0,
+    show_resume_stats: true,
   });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select(
+          "resume_title, resume_description, years_of_experience, projects_completed, technologies_mastered, show_resume_stats"
+        )
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      setFormData({
+        resume_title: data.resume_title || "Professional Resume",
+        resume_description: data.resume_description || "",
+        years_of_experience: data.years_of_experience || 0,
+        projects_completed: data.projects_completed || 0,
+        technologies_mastered: data.technologies_mastered || 0,
+        show_resume_stats: data.show_resume_stats ?? true,
+      });
+    } catch (error) {
+      console.error("Error loading resume header:", error);
+      toast({
+        variant: "destructive",
+        title: "Error loading data",
+        description: "Failed to load resume header information",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { error } = await updateProfile(formData);
-      if (error) {
-        alert(`Error saving resume header: ${error.message}`);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("User not authenticated");
       }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          resume_title: formData.resume_title,
+          resume_description: formData.resume_description,
+          years_of_experience: formData.years_of_experience,
+          projects_completed: formData.projects_completed,
+          technologies_mastered: formData.technologies_mastered,
+          show_resume_stats: formData.show_resume_stats,
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Resume header updated",
+        description: "Your changes have been saved successfully",
+      });
     } catch (error) {
       console.error("Error saving resume header:", error);
-      alert("An error occurred while saving");
+      toast({
+        variant: "destructive",
+        title: "Error saving",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save resume header information",
+      });
     } finally {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card>
