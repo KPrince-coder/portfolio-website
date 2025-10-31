@@ -1,25 +1,26 @@
--- ============================================================================
+-- =====================================================
 -- Blog System Migration
+-- Complete blog system with posts, categories, tags, SEO, and image management
 -- Created: October 31, 2025
--- Description: Complete blog system with posts, categories, tags, SEO, and image management
 -- Reference: docs/BLOG_FEATURE_ANALYSIS.md
--- ============================================================================
+-- =====================================================
 
 -- Enable UUID extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ============================================================================
--- ENUMS
--- ============================================================================
+-- =====================================================
+-- SECTION 1: ENUMS
+-- =====================================================
 
 -- Post status enum
 CREATE TYPE blog_post_status AS ENUM ('draft', 'published', 'scheduled', 'archived');
 
--- ============================================================================
--- TABLES
--- ============================================================================
+-- =====================================================
+-- SECTION 2: TABLES
+-- =====================================================
 
--- 1. Blog Categories Table
+-- =====================================================
+-- SECTION 2.1: Blog Categories Table
 -- Broad topics for organizing posts
 CREATE TABLE blog_categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -33,8 +34,10 @@ CREATE TABLE blog_categories (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 2. Blog Tags Table
+-- =====================================================
+-- SECTION 2.2: Blog Tags Table
 -- Specific keywords for discovery
+-- =====================================================
 CREATE TABLE blog_tags (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL UNIQUE,
@@ -44,8 +47,10 @@ CREATE TABLE blog_tags (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 3. Blog Posts Table
--- Main content table
+-- =====================================================
+-- SECTION 2.3: Blog Posts Table
+-- Main content table with status workflow
+-- =====================================================
 CREATE TABLE blog_posts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -75,8 +80,10 @@ CREATE TABLE blog_posts (
   )
 );
 
--- 4. Blog Post Categories Junction Table
+-- =====================================================
+-- SECTION 2.4: Blog Post Categories Junction Table
 -- Many-to-many relationship between posts and categories
+-- =====================================================
 CREATE TABLE blog_post_categories (
   post_id UUID NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
   category_id UUID NOT NULL REFERENCES blog_categories(id) ON DELETE CASCADE,
@@ -85,8 +92,10 @@ CREATE TABLE blog_post_categories (
   PRIMARY KEY (post_id, category_id)
 );
 
--- 5. Blog Post Tags Junction Table
+-- =====================================================
+-- SECTION 2.5: Blog Post Tags Junction Table
 -- Many-to-many relationship between posts and tags
+-- =====================================================
 CREATE TABLE blog_post_tags (
   post_id UUID NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
   tag_id UUID NOT NULL REFERENCES blog_tags(id) ON DELETE CASCADE,
@@ -95,8 +104,10 @@ CREATE TABLE blog_post_tags (
   PRIMARY KEY (post_id, tag_id)
 );
 
--- 6. Blog SEO Metadata Table
+-- =====================================================
+-- SECTION 2.6: Blog SEO Metadata Table
 -- SEO optimization data for each post
+-- =====================================================
 CREATE TABLE blog_seo_metadata (
   post_id UUID PRIMARY KEY REFERENCES blog_posts(id) ON DELETE CASCADE,
   meta_title TEXT, -- Custom SEO title (defaults to post title)
@@ -109,8 +120,10 @@ CREATE TABLE blog_seo_metadata (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 7. Blog Images Table
+-- =====================================================
+-- SECTION 2.7: Blog Images Table
 -- Image management with automatic optimization tracking
+-- =====================================================
 CREATE TABLE blog_images (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   post_id UUID REFERENCES blog_posts(id) ON DELETE SET NULL, -- Nullable for reusable images
@@ -135,9 +148,10 @@ CREATE TABLE blog_images (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ============================================================================
--- INDEXES
--- ============================================================================
+-- =====================================================
+-- SECTION 3: INDEXES
+-- Performance optimization indexes
+-- =====================================================
 
 -- Blog Posts Indexes
 CREATE INDEX idx_blog_posts_user_id ON blog_posts(user_id);
@@ -172,9 +186,14 @@ CREATE INDEX idx_blog_images_post_id ON blog_images(post_id);
 CREATE INDEX idx_blog_images_uploaded_by ON blog_images(uploaded_by);
 CREATE INDEX idx_blog_images_is_featured ON blog_images(is_featured) WHERE is_featured = true;
 
--- ============================================================================
--- FUNCTIONS
--- ============================================================================
+-- =====================================================
+-- SECTION 4: FUNCTIONS AND TRIGGERS (Task 1.4)
+-- Database automation helpers
+-- =====================================================
+
+-- =====================================================
+-- SECTION 4.1: Utility Functions
+-- =====================================================
 
 -- Function: Generate URL-friendly slug from text
 CREATE OR REPLACE FUNCTION generate_slug(text_input TEXT)
@@ -291,9 +310,140 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ============================================================================
--- TRIGGERS
--- ============================================================================
+-- Function: Increment post view count
+CREATE OR REPLACE FUNCTION increment_post_view_count(post_id_param UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE blog_posts
+  SET view_count = view_count + 1
+  WHERE id = post_id_param;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function: Get posts with category and tag info (helper for queries)
+CREATE OR REPLACE FUNCTION get_post_with_relations(post_slug_param TEXT)
+RETURNS TABLE (
+  id UUID,
+  user_id UUID,
+  title TEXT,
+  slug TEXT,
+  excerpt TEXT,
+  content TEXT,
+  featured_image TEXT,
+  status blog_post_status,
+  published_at TIMESTAMPTZ,
+  view_count INTEGER,
+  read_time_minutes INTEGER,
+  comments_enabled BOOLEAN,
+  is_featured BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  categories JSONB,
+  tags JSONB,
+  seo_metadata JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id,
+    p.user_id,
+    p.title,
+    p.slug,
+    p.excerpt,
+    p.content,
+    p.featured_image,
+    p.status,
+    p.published_at,
+    p.view_count,
+    p.read_time_minutes,
+    p.comments_enabled,
+    p.is_featured,
+    p.created_at,
+    p.updated_at,
+    -- Aggregate categories as JSONB array
+    COALESCE(
+      (SELECT jsonb_agg(jsonb_build_object(
+        'id', c.id,
+        'name', c.name,
+        'slug', c.slug,
+        'color', c.color
+      ))
+      FROM blog_categories c
+      INNER JOIN blog_post_categories pc ON pc.category_id = c.id
+      WHERE pc.post_id = p.id),
+      '[]'::jsonb
+    ) as categories,
+    -- Aggregate tags as JSONB array
+    COALESCE(
+      (SELECT jsonb_agg(jsonb_build_object(
+        'id', t.id,
+        'name', t.name,
+        'slug', t.slug
+      ))
+      FROM blog_tags t
+      INNER JOIN blog_post_tags pt ON pt.tag_id = t.id
+      WHERE pt.post_id = p.id),
+      '[]'::jsonb
+    ) as tags,
+    -- Get SEO metadata as JSONB object
+    COALESCE(
+      (SELECT jsonb_build_object(
+        'meta_title', s.meta_title,
+        'meta_description', s.meta_description,
+        'og_image', s.og_image,
+        'keywords', s.keywords,
+        'canonical_url', s.canonical_url,
+        'robots_meta', s.robots_meta
+      )
+      FROM blog_seo_metadata s
+      WHERE s.post_id = p.id),
+      '{}'::jsonb
+    ) as seo_metadata
+  FROM blog_posts p
+  WHERE p.slug = post_slug_param;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function: Search posts by keyword (full-text search)
+CREATE OR REPLACE FUNCTION search_blog_posts(search_query TEXT)
+RETURNS TABLE (
+  id UUID,
+  title TEXT,
+  slug TEXT,
+  excerpt TEXT,
+  featured_image TEXT,
+  published_at TIMESTAMPTZ,
+  view_count INTEGER,
+  read_time_minutes INTEGER,
+  rank REAL
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id,
+    p.title,
+    p.slug,
+    p.excerpt,
+    p.featured_image,
+    p.published_at,
+    p.view_count,
+    p.read_time_minutes,
+    ts_rank(
+      to_tsvector('english', p.title || ' ' || COALESCE(p.excerpt, '') || ' ' || p.content),
+      plainto_tsquery('english', search_query)
+    ) as rank
+  FROM blog_posts p
+  WHERE 
+    p.status = 'published'
+    AND to_tsvector('english', p.title || ' ' || COALESCE(p.excerpt, '') || ' ' || p.content) @@ plainto_tsquery('english', search_query)
+  ORDER BY rank DESC, p.published_at DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =====================================================
+-- SECTION 4.2: Triggers
+-- Automatic data management
+-- =====================================================
 
 -- Update updated_at timestamp triggers
 CREATE TRIGGER update_blog_categories_updated_at
@@ -351,9 +501,10 @@ CREATE TRIGGER decrement_tag_usage_on_delete
   FOR EACH ROW
   EXECUTE FUNCTION decrement_tag_usage();
 
--- ============================================================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================================================
+-- =====================================================
+-- SECTION 5: ROW LEVEL SECURITY (Task 1.2)
+-- Security policies for data access control
+-- =====================================================
 
 -- Enable RLS on all tables
 ALTER TABLE blog_categories ENABLE ROW LEVEL SECURITY;
@@ -364,9 +515,9 @@ ALTER TABLE blog_post_tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_seo_metadata ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_images ENABLE ROW LEVEL SECURITY;
 
--- ============================================================================
--- RLS POLICIES - Blog Categories
--- ============================================================================
+-- =====================================================
+-- SECTION 5.1: RLS Policies - Blog Categories
+-- =====================================================
 
 -- Public can view all categories
 CREATE POLICY "Public can view categories"
@@ -388,9 +539,9 @@ CREATE POLICY "Authenticated users can delete categories"
   ON blog_categories FOR DELETE
   USING (auth.role() = 'authenticated');
 
--- ============================================================================
--- RLS POLICIES - Blog Tags
--- ============================================================================
+-- =====================================================
+-- SECTION 5.2: RLS Policies - Blog Tags
+-- =====================================================
 
 -- Public can view all tags
 CREATE POLICY "Public can view tags"
@@ -412,9 +563,9 @@ CREATE POLICY "Authenticated users can delete tags"
   ON blog_tags FOR DELETE
   USING (auth.role() = 'authenticated');
 
--- ============================================================================
--- RLS POLICIES - Blog Posts
--- ============================================================================
+-- =====================================================
+-- SECTION 5.3: RLS Policies - Blog Posts
+-- =====================================================
 
 -- Public can view published posts
 CREATE POLICY "Public can view published posts"
@@ -441,9 +592,9 @@ CREATE POLICY "Authors can delete own posts"
   ON blog_posts FOR DELETE
   USING (auth.uid() = user_id);
 
--- ============================================================================
--- RLS POLICIES - Blog Post Categories Junction
--- ============================================================================
+-- =====================================================
+-- SECTION 5.4: RLS Policies - Blog Post Categories Junction
+-- =====================================================
 
 -- Public can view post-category relationships for published posts
 CREATE POLICY "Public can view post categories"
@@ -467,9 +618,9 @@ CREATE POLICY "Authors can manage own post categories"
     )
   );
 
--- ============================================================================
--- RLS POLICIES - Blog Post Tags Junction
--- ============================================================================
+-- =====================================================
+-- SECTION 5.5: RLS Policies - Blog Post Tags Junction
+-- =====================================================
 
 -- Public can view post-tag relationships for published posts
 CREATE POLICY "Public can view post tags"
@@ -493,9 +644,9 @@ CREATE POLICY "Authors can manage own post tags"
     )
   );
 
--- ============================================================================
--- RLS POLICIES - Blog SEO Metadata
--- ============================================================================
+-- =====================================================
+-- SECTION 5.6: RLS Policies - Blog SEO Metadata
+-- =====================================================
 
 -- Public can view SEO metadata for published posts
 CREATE POLICY "Public can view SEO metadata"
@@ -519,9 +670,9 @@ CREATE POLICY "Authors can manage own SEO metadata"
     )
   );
 
--- ============================================================================
--- RLS POLICIES - Blog Images
--- ============================================================================
+-- =====================================================
+-- SECTION 5.7: RLS Policies - Blog Images
+-- =====================================================
 
 -- Public can view all images (they're in public storage anyway)
 CREATE POLICY "Public can view images"
@@ -543,9 +694,60 @@ CREATE POLICY "Users can delete own images"
   ON blog_images FOR DELETE
   USING (auth.uid() = uploaded_by);
 
--- ============================================================================
--- INITIAL DATA (Optional)
--- ============================================================================
+-- =====================================================
+-- SECTION 6: STORAGE BUCKET SETUP (Task 1.3)
+-- Supabase Storage configuration for blog images
+-- =====================================================
+
+-- Note: Storage buckets are typically created via Supabase Dashboard or API
+-- This section documents the required setup
+
+-- Create blog-images storage bucket (run via Dashboard or API)
+-- INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+-- VALUES (
+--   'blog-images',
+--   'blog-images',
+--   true,
+--   52428800, -- 50MB limit
+--   ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+-- );
+
+-- Storage bucket policies (apply after bucket creation)
+-- These policies control who can upload, update, and delete images
+
+-- Public read access to all images
+CREATE POLICY IF NOT EXISTS "Public can view blog images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'blog-images');
+
+-- Authenticated users can upload images
+CREATE POLICY IF NOT EXISTS "Authenticated users can upload blog images"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'blog-images' 
+  AND auth.role() = 'authenticated'
+);
+
+-- Users can update their own uploaded images
+CREATE POLICY IF NOT EXISTS "Users can update own blog images"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'blog-images' 
+  AND auth.uid() = owner
+);
+
+-- Users can delete their own uploaded images
+CREATE POLICY IF NOT EXISTS "Users can delete own blog images"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'blog-images' 
+  AND auth.uid() = owner
+);
+
+-- =====================================================
+-- SECTION 7: INITIAL DATA
+-- Default categories and tags
+-- =====================================================
 
 -- Insert default categories
 INSERT INTO blog_categories (name, slug, description, color, icon, display_order) VALUES
@@ -568,9 +770,10 @@ INSERT INTO blog_tags (name, slug) VALUES
   ('SEO', 'seo'),
   ('Best Practices', 'best-practices');
 
--- ============================================================================
--- COMMENTS
--- ============================================================================
+-- =====================================================
+-- SECTION 8: TABLE COMMENTS
+-- Documentation for database schema
+-- =====================================================
 
 COMMENT ON TABLE blog_categories IS 'Blog post categories for broad topic organization';
 COMMENT ON TABLE blog_tags IS 'Blog post tags for specific keyword tagging';
@@ -580,14 +783,18 @@ COMMENT ON TABLE blog_post_tags IS 'Many-to-many relationship between posts and 
 COMMENT ON TABLE blog_seo_metadata IS 'SEO optimization metadata for blog posts';
 COMMENT ON TABLE blog_images IS 'Image management with automatic optimization tracking';
 
--- ============================================================================
+-- =====================================================
 -- MIGRATION COMPLETE
--- ============================================================================
+-- =====================================================
 
--- Migration completed successfully
+-- ✅ Task 1.1: Database tables created (7 tables)
+-- ✅ Task 1.2: RLS policies applied (20+ policies)
+-- ✅ Task 1.3: Storage bucket policies defined
+-- ✅ Task 1.4: Functions and triggers created
+
 -- Next steps:
--- 1. Create Supabase Storage bucket 'blog-images' via dashboard or API
--- 2. Set bucket to public access
--- 3. Configure storage policies for blog-images bucket
--- 4. Test all tables and policies
--- 5. Begin implementing blog services and UI
+-- 1. Apply this migration to your database
+-- 2. Create 'blog-images' storage bucket via Supabase Dashboard
+-- 3. Verify all tables, indexes, and policies
+-- 4. Test with sample data
+-- 5. Begin implementing blog services (Task 2+)
