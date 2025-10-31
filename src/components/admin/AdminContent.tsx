@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   AdminHeader,
   AdminSidebar,
@@ -9,6 +9,7 @@ import {
   ProjectsManagement,
   ProfileManagement,
   ResumeManagement,
+  SettingsManagement,
   PlaceholderSection,
   MessageReply,
   MessageStats,
@@ -16,6 +17,8 @@ import {
   User,
   ContactMessage,
 } from "@/components/admin";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
 import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
@@ -97,6 +100,18 @@ export const AdminContent: React.FC<AdminContentProps> = ({
   onCloseReplyModal,
 }) => {
   const { sidebarCollapsed, isDesktop } = useAdminLayout();
+  const [fullUser, setFullUser] = useState<SupabaseUser | null>(null);
+
+  // Fetch full user data for settings
+  useEffect(() => {
+    const fetchFullUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setFullUser(data.user);
+      }
+    };
+    fetchFullUser();
+  }, []);
 
   // Calculate left margin based on sidebar state
   // Memoized to prevent recreation on every render
@@ -179,11 +194,8 @@ export const AdminContent: React.FC<AdminContentProps> = ({
             />
           )}
 
-          {activeTab === "settings" && (
-            <PlaceholderSection
-              title="Site Settings"
-              description="Site settings"
-            />
+          {activeTab === "settings" && fullUser && (
+            <SettingsManagement user={fullUser} />
           )}
         </div>
       </main>

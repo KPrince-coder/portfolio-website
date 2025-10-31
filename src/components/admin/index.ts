@@ -12,6 +12,7 @@ export { ProfileManagement } from "./profile";
 export { SkillsManagement } from "./skills";
 export { ProjectsManagement } from "./projects";
 export { ResumeManagement } from "./resume";
+export { SettingsManagement } from "./settings";
 export { default as PlaceholderSection } from "./PlaceholderSection";
 export { default as MessageReply } from "./MessageReply";
 export { default as MessageStats } from "./MessageStats";
