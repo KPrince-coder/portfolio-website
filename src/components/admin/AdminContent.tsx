@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   AdminHeader,
   AdminSidebar,
@@ -18,6 +18,7 @@ import {
 } from "@/components/admin";
 import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
 import { Database } from "@/integrations/supabase/types";
+import { cn } from "@/lib/utils";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 
@@ -95,83 +96,97 @@ export const AdminContent: React.FC<AdminContentProps> = ({
   onSaveDraft,
   onCloseReplyModal,
 }) => {
+  const { sidebarCollapsed, isDesktop } = useAdminLayout();
+
+  // Calculate left margin based on sidebar state
+  // Memoized to prevent recreation on every render
+  const mainContentClasses = useMemo(() => {
+    const baseClasses = "pt-16 min-h-[calc(100vh-4rem)]";
+
+    if (!isDesktop) {
+      // Mobile/Tablet: no left margin (sidebar is overlay)
+      return baseClasses;
+    }
+
+    // Desktop: add left margin for fixed sidebar with smooth transitions
+    return cn(
+      baseClasses,
+      "transition-all duration-300 ease-in-out",
+      "will-change-[margin]", // Hint to browser for optimization
+      "transform-gpu", // Force GPU acceleration for smoother animations
+      sidebarCollapsed ? "ml-20" : "ml-72" // 80px collapsed, 288px expanded
+    );
+  }, [isDesktop, sidebarCollapsed]);
+
   return (
     <>
       <SkipToContent />
       <AdminHeader user={user} onSignOut={onSignOut} />
+      <AdminSidebar
+        activeTab={activeTab}
+        unreadMessages={unreadMessages}
+        onTabChange={onTabChange}
+      />
 
-      {/* Desktop: Flex layout with sidebar and content side by side */}
-      <div className="flex min-h-screen pt-16">
-        <AdminSidebar
-          activeTab={activeTab}
-          unreadMessages={unreadMessages}
-          onTabChange={onTabChange}
-        />
-
-        {/* Main Content - grows to fill remaining space */}
-        <main
-          id="main-content"
-          className="flex-1 min-h-screen overflow-auto"
-          role="main"
-        >
-          <div className="container mx-auto px-4 sm:px-6 py-8">
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                <MessageStats {...messageStats} />
-                <ProjectStats {...projectStats} />
-                <AdminDashboard
-                  contactMessages={contactMessages}
-                  projects={projects}
-                  unreadMessages={unreadMessages}
-                />
-              </div>
-            )}
-
-            {activeTab.startsWith("profile") && (
-              <ProfileManagement activeSubTab={activeTab} />
-            )}
-
-            {activeTab === "messages" && (
-              <ContactMessages
+      {/* Main Content with responsive left margin */}
+      <main id="main-content" className={mainContentClasses} role="main">
+        <div className="container mx-auto px-4 sm:px-6 py-8">
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              <MessageStats {...messageStats} />
+              <ProjectStats {...projectStats} />
+              <AdminDashboard
                 contactMessages={contactMessages}
-                onMarkAsRead={onMarkAsRead}
-                onBulkAction={onBulkAction}
-                onDeleteMessage={onDeleteMessage}
-                onReplyToMessage={onReplyToMessage}
-                onUpdateStatus={onUpdateStatus}
-                onUpdatePriority={onUpdatePriority}
-                loading={messagesLoading}
+                projects={projects}
+                unreadMessages={unreadMessages}
               />
-            )}
+            </div>
+          )}
 
-            {activeTab.startsWith("projects") && (
-              <ProjectsManagement activeTab={activeTab} />
-            )}
+          {activeTab.startsWith("profile") && (
+            <ProfileManagement activeSubTab={activeTab} />
+          )}
 
-            {activeTab.startsWith("skills") && (
-              <SkillsManagementRouter activeSubTab={activeTab} />
-            )}
+          {activeTab === "messages" && (
+            <ContactMessages
+              contactMessages={contactMessages}
+              onMarkAsRead={onMarkAsRead}
+              onBulkAction={onBulkAction}
+              onDeleteMessage={onDeleteMessage}
+              onReplyToMessage={onReplyToMessage}
+              onUpdateStatus={onUpdateStatus}
+              onUpdatePriority={onUpdatePriority}
+              loading={messagesLoading}
+            />
+          )}
 
-            {activeTab.startsWith("resume") && (
-              <ResumeManagement activeTab={activeTab} />
-            )}
+          {activeTab.startsWith("projects") && (
+            <ProjectsManagement activeTab={activeTab} />
+          )}
 
-            {activeTab === "posts" && (
-              <PlaceholderSection
-                title="Blog Posts"
-                description="Blog management"
-              />
-            )}
+          {activeTab.startsWith("skills") && (
+            <SkillsManagementRouter activeSubTab={activeTab} />
+          )}
 
-            {activeTab === "settings" && (
-              <PlaceholderSection
-                title="Site Settings"
-                description="Site settings"
-              />
-            )}
-          </div>
-        </main>
-      </div>
+          {activeTab.startsWith("resume") && (
+            <ResumeManagement activeTab={activeTab} />
+          )}
+
+          {activeTab === "posts" && (
+            <PlaceholderSection
+              title="Blog Posts"
+              description="Blog management"
+            />
+          )}
+
+          {activeTab === "settings" && (
+            <PlaceholderSection
+              title="Site Settings"
+              description="Site settings"
+            />
+          )}
+        </div>
+      </main>
 
       {/* Message Reply Modal */}
       {showReplyModal && selectedMessage && (
