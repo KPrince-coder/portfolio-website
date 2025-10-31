@@ -5,8 +5,8 @@
 -- Reference: docs/BLOG_FEATURE_ANALYSIS.md
 -- =====================================================
 
--- Enable UUID extension if not already enabled
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() which is built-in to PostgreSQL 13+
+-- No extension needed
 
 -- =====================================================
 -- SECTION 1: ENUMS
@@ -23,7 +23,7 @@ CREATE TYPE blog_post_status AS ENUM ('draft', 'published', 'scheduled', 'archiv
 -- SECTION 2.1: Blog Categories Table
 -- Broad topics for organizing posts
 CREATE TABLE blog_categories (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
   description TEXT,
@@ -39,7 +39,7 @@ CREATE TABLE blog_categories (
 -- Specific keywords for discovery
 -- =====================================================
 CREATE TABLE blog_tags (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
   usage_count INTEGER DEFAULT 0, -- How many posts use this tag
@@ -52,7 +52,7 @@ CREATE TABLE blog_tags (
 -- Main content table with status workflow
 -- =====================================================
 CREATE TABLE blog_posts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -125,7 +125,7 @@ CREATE TABLE blog_seo_metadata (
 -- Image management with automatic optimization tracking
 -- =====================================================
 CREATE TABLE blog_images (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id UUID REFERENCES blog_posts(id) ON DELETE SET NULL, -- Nullable for reusable images
   original_url TEXT NOT NULL, -- Original source (local or external)
   storage_path TEXT NOT NULL, -- Path in Supabase Storage
@@ -699,50 +699,48 @@ CREATE POLICY "Users can delete own images"
 -- Supabase Storage configuration for blog images
 -- =====================================================
 
--- Note: Storage buckets are typically created via Supabase Dashboard or API
--- This section documents the required setup
+-- Create storage bucket for blog images
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'blog-images',
+  'blog-images',
+  true, -- Public bucket so images can be displayed
+  52428800, -- 50MB limit
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']
+) ON CONFLICT (id) DO NOTHING;
 
--- Create blog-images storage bucket (run via Dashboard or API)
--- INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
--- VALUES (
---   'blog-images',
---   'blog-images',
---   true,
---   52428800, -- 50MB limit
---   ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
--- );
+-- =====================================================
+-- SECTION 6.1: Storage Policies for Blog Images
+-- =====================================================
 
--- Storage bucket policies (apply after bucket creation)
--- These policies control who can upload, update, and delete images
+-- Public read access to all blog images
+CREATE POLICY "Public can view blog images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'blog-images');
 
--- Public read access to all images
-CREATE POLICY IF NOT EXISTS "Public can view blog images"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'blog-images');
+-- Authenticated users can upload blog images
+CREATE POLICY "Authenticated users can upload blog images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'blog-images' 
+    AND auth.role() = 'authenticated'
+  );
 
--- Authenticated users can upload images
-CREATE POLICY IF NOT EXISTS "Authenticated users can upload blog images"
-ON storage.objects FOR INSERT
-WITH CHECK (
-  bucket_id = 'blog-images' 
-  AND auth.role() = 'authenticated'
-);
+-- Authenticated users can update blog images
+CREATE POLICY "Authenticated users can update blog images"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'blog-images' 
+    AND auth.role() = 'authenticated'
+  );
 
--- Users can update their own uploaded images
-CREATE POLICY IF NOT EXISTS "Users can update own blog images"
-ON storage.objects FOR UPDATE
-USING (
-  bucket_id = 'blog-images' 
-  AND auth.uid() = owner
-);
-
--- Users can delete their own uploaded images
-CREATE POLICY IF NOT EXISTS "Users can delete own blog images"
-ON storage.objects FOR DELETE
-USING (
-  bucket_id = 'blog-images' 
-  AND auth.uid() = owner
-);
+-- Authenticated users can delete blog images
+CREATE POLICY "Authenticated users can delete blog images"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'blog-images' 
+    AND auth.role() = 'authenticated'
+  );
 
 -- =====================================================
 -- SECTION 7: INITIAL DATA
