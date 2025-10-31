@@ -11,7 +11,13 @@
  * @module blog/MarkdownEditor
  */
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   Bold,
   Italic,
@@ -23,14 +29,11 @@ import {
   Link,
   Image,
   Code,
-  Eye,
-  EyeOff,
   Maximize2,
   Minimize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -70,6 +73,20 @@ export function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [view, setView] = useState<"edit" | "preview" | "split">("split");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [previewValue, setPreviewValue] = useState(value);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // ============================================================================
+  // DEBOUNCED PREVIEW
+  // ============================================================================
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPreviewValue(value);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [value]);
 
   // ============================================================================
   // MARKDOWN HELPERS
@@ -77,9 +94,7 @@ export function MarkdownEditor({
 
   const insertMarkdown = useCallback(
     (before: string, after: string = "", placeholder: string = "") => {
-      const textarea = document.querySelector(
-        "textarea"
-      ) as HTMLTextAreaElement;
+      const textarea = textareaRef.current;
       if (!textarea) return;
 
       const start = textarea.selectionStart;
@@ -96,15 +111,47 @@ export function MarkdownEditor({
 
       onChange(newValue);
 
-      // Set cursor position
-      setTimeout(() => {
-        const newCursorPos = start + before.length + textToInsert.length;
+      // Set cursor position with better focus management
+      requestAnimationFrame(() => {
         textarea.focus();
+        const newCursorPos = start + before.length + textToInsert.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
-      }, 0);
+      });
     },
     [value, onChange]
   );
+
+  // ============================================================================
+  // KEYBOARD SHORTCUTS
+  // ============================================================================
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + B = Bold
+      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+        e.preventDefault();
+        insertMarkdown("**", "**", "bold text");
+      }
+
+      // Ctrl/Cmd + I = Italic
+      if ((e.ctrlKey || e.metaKey) && e.key === "i") {
+        e.preventDefault();
+        insertMarkdown("*", "*", "italic text");
+      }
+
+      // Ctrl/Cmd + K = Link
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        insertMarkdown("[", "](url)", "link text");
+      }
+    };
+
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.addEventListener("keydown", handleKeyDown);
+      return () => textarea.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [insertMarkdown]);
 
   // ============================================================================
   // TOOLBAR ACTIONS
@@ -190,9 +237,10 @@ export function MarkdownEditor({
             size="sm"
             onClick={button.action}
             title={button.label}
+            aria-label={button.label}
             className="h-8 w-8 p-0"
           >
-            <button.icon className="h-4 w-4" />
+            <button.icon className="h-4 w-4" aria-hidden="true" />
           </Button>
           {button.separator && <div className="h-6 w-px bg-border mx-1" />}
         </React.Fragment>
@@ -252,6 +300,7 @@ export function MarkdownEditor({
   const renderEditor = () => (
     <div className="relative flex-1">
       <Textarea
+        ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -264,39 +313,46 @@ export function MarkdownEditor({
     </div>
   );
 
-  const renderPreview = () => (
-    <div
-      className="prose prose-sm max-w-none p-4 overflow-auto"
-      style={{
-        minHeight: isFullscreen ? "80vh" : minHeight,
-        maxHeight: isFullscreen ? "80vh" : maxHeight,
-      }}
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code({ className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || "");
-            return match ? (
-              <SyntaxHighlighter
-                style={vscDarkPlus as any}
-                language={match[1]}
-                PreTag="div"
-              >
-                {String(children).replace(/\n$/, "")}
-              </SyntaxHighlighter>
-            ) : (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
-          },
+  // Memoized preview component for better performance
+  const MarkdownPreview = useMemo(
+    () => (
+      <div
+        className="prose prose-sm max-w-none p-4 overflow-auto"
+        style={{
+          minHeight: isFullscreen ? "80vh" : minHeight,
+          maxHeight: isFullscreen ? "80vh" : maxHeight,
         }}
       >
-        {value || "*No content yet. Start writing to see the preview.*"}
-      </ReactMarkdown>
-    </div>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code({ className, children, ...props }: any) {
+              const match = /language-(\w+)/.exec(className || "");
+              return match ? (
+                <SyntaxHighlighter
+                  style={vscDarkPlus as any}
+                  language={match[1]}
+                  PreTag="div"
+                >
+                  {String(children).replace(/\n$/, "")}
+                </SyntaxHighlighter>
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {previewValue ||
+            "*No content yet. Start writing to see the preview.*"}
+        </ReactMarkdown>
+      </div>
+    ),
+    [previewValue, isFullscreen, minHeight, maxHeight]
   );
+
+  const renderPreview = () => MarkdownPreview;
 
   // ============================================================================
   // RENDER
