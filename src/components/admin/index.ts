@@ -2,6 +2,7 @@ export { default as AdminAuth } from "./AdminAuth";
 export { default as AdminHeader } from "./AdminHeader";
 export { default as AdminSidebar } from "./AdminSidebar";
 export { AdminLayout, useAdminLayout } from "./AdminLayout";
+export { AdminContent } from "./AdminContent";
 export { SidebarItem } from "./SidebarItem";
 export { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 export { SkipToContent } from "./SkipToContent";
