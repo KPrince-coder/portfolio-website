@@ -216,12 +216,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     "transform-gpu",
     "flex-shrink-0",
     "h-screen sticky top-16", // Sticky positioning from below header
-    sidebarCollapsed ? "w-16" : "w-64" // 256px expanded, 64px collapsed
+    sidebarCollapsed ? "w-20" : "w-72" // 288px expanded, 80px collapsed (increased)
   );
 
   // Mobile sidebar classes - fixed overlay
   const mobileClasses = cn(
-    "fixed top-0 bottom-0 left-0 z-[60] w-64",
+    "fixed top-0 bottom-0 left-0 z-[60] w-72",
     "bg-background border-r border-border shadow-xl",
     "transform transition-transform duration-300 ease-in-out",
     "lg:hidden flex flex-col",
@@ -236,41 +236,27 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       key={tab.id}
       variant={activeTab === tab.id ? "default" : "ghost"}
       className={cn(
-        "w-full transition-colors duration-200",
+        "w-full transition-colors duration-200 relative",
         "hover:scale-100", // Override default hover scale
-        sidebarCollapsed && isDesktop ? "justify-center px-0" : "justify-start"
+        sidebarCollapsed && isDesktop ? "justify-center px-2" : "justify-start"
       )}
       onClick={() => handleTabClick(tab.id)}
       title={sidebarCollapsed && isDesktop ? tab.label : undefined}
     >
-      <tab.icon
-        className={cn(
-          "w-4 h-4 flex-shrink-0",
-          !sidebarCollapsed || !isDesktop ? "mr-2" : ""
-        )}
-      />
-      <span
-        className={cn(
-          "transition-opacity duration-200",
-          sidebarCollapsed && isDesktop
-            ? "opacity-0 w-0 overflow-hidden"
-            : "opacity-100"
-        )}
-      >
-        {tab.label}
-      </span>
-      {tab.id === "messages" && unreadMessages > 0 && (
-        <Badge
-          variant="accent"
-          className={cn(
-            "ml-auto transition-opacity duration-200",
-            sidebarCollapsed && isDesktop
-              ? "opacity-0 w-0 overflow-hidden"
-              : "opacity-100"
+      {sidebarCollapsed && isDesktop ? (
+        // Collapsed state - icon only, perfectly centered
+        <tab.icon className="w-5 h-5 flex-shrink-0" />
+      ) : (
+        // Expanded state - icon + label + badge
+        <>
+          <tab.icon className="w-4 h-4 flex-shrink-0 mr-2" />
+          <span className="flex-1 text-left">{tab.label}</span>
+          {tab.id === "messages" && unreadMessages > 0 && (
+            <Badge variant="accent" className="ml-auto">
+              {unreadMessages}
+            </Badge>
           )}
-        >
-          {unreadMessages}
-        </Badge>
+        </>
       )}
     </Button>
   );
@@ -291,39 +277,31 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <Button
           variant={isActive ? "default" : "ghost"}
           className={cn(
-            "w-full transition-colors duration-200",
+            "w-full transition-colors duration-200 relative",
             "hover:scale-100", // Override default hover scale
             sidebarCollapsed && isDesktop
-              ? "justify-center px-0"
+              ? "justify-center px-2"
               : "justify-start"
           )}
           onClick={onClick}
           title={sidebarCollapsed && isDesktop ? label : undefined}
         >
-          <Icon
-            className={cn(
-              "w-4 h-4 flex-shrink-0",
-              !sidebarCollapsed || !isDesktop ? "mr-2" : ""
-            )}
-          />
-          <span
-            className={cn(
-              "transition-opacity duration-200 flex-1 text-left",
-              sidebarCollapsed && isDesktop
-                ? "opacity-0 w-0 overflow-hidden"
-                : "opacity-100"
-            )}
-          >
-            {label}
-          </span>
-          {(!sidebarCollapsed || !isDesktop) && (
-            <span className="ml-auto">
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </span>
+          {sidebarCollapsed && isDesktop ? (
+            // Collapsed state - icon only, perfectly centered
+            <Icon className="w-5 h-5 flex-shrink-0" />
+          ) : (
+            // Expanded state - icon + label + chevron
+            <>
+              <Icon className="w-4 h-4 flex-shrink-0 mr-2" />
+              <span className="flex-1 text-left">{label}</span>
+              <span className="ml-auto">
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </span>
+            </>
           )}
         </Button>
 
