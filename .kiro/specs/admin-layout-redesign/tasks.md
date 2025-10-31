@@ -28,7 +28,8 @@
   - Use CSS transforms and will-change for GPU acceleration
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.2, 4.6, 4.7, 7.1, 7.2, 9.1, 9.2, 10.1, 10.2, 10.4_
 
-- [ ] 4. Create SidebarItem component with collapse support
+- [x] 4. Create SidebarItem component with collapse support
+
   - Create `src/components/admin/SidebarItem.tsx` for individual navigation items
   - Implement icon display (always visible) and label display (fades with collapse state)
   - Add tooltip component that shows label when sidebar is collapsed

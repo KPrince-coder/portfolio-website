@@ -95,95 +95,83 @@ export const AdminContent: React.FC<AdminContentProps> = ({
   onSaveDraft,
   onCloseReplyModal,
 }) => {
-  const { sidebarCollapsed, isDesktop, isMobile, isTablet } = useAdminLayout();
-
-  // Calculate responsive margins based on sidebar state
-  const getMainContentClasses = () => {
-    const baseClasses =
-      "pt-16 min-h-screen transition-all duration-300 ease-in-out";
-
-    if (isMobile || isTablet) {
-      // Mobile: no left margin
-      return `${baseClasses} ml-0`;
-    }
-
-    // Desktop: adjust margin based on sidebar state
-    if (sidebarCollapsed) {
-      return `${baseClasses} lg:ml-16`; // 64px collapsed
-    }
-
-    return `${baseClasses} lg:ml-70`; // 280px expanded
-  };
-
   return (
     <>
       <SkipToContent />
       <AdminHeader user={user} onSignOut={onSignOut} />
-      <AdminSidebar
-        activeTab={activeTab}
-        unreadMessages={unreadMessages}
-        onTabChange={onTabChange}
-      />
 
-      {/* Main Content with responsive margins */}
-      <main id="main-content" className={getMainContentClasses()} role="main">
-        <div className="container mx-auto px-4 sm:px-6 py-8">
-          {activeTab === "overview" && (
-            <div className="space-y-6">
-              <MessageStats {...messageStats} />
-              <ProjectStats {...projectStats} />
-              <AdminDashboard
+      {/* Desktop: Flex layout with sidebar and content side by side */}
+      <div className="flex min-h-screen pt-16">
+        <AdminSidebar
+          activeTab={activeTab}
+          unreadMessages={unreadMessages}
+          onTabChange={onTabChange}
+        />
+
+        {/* Main Content - grows to fill remaining space */}
+        <main
+          id="main-content"
+          className="flex-1 min-h-screen overflow-auto"
+          role="main"
+        >
+          <div className="container mx-auto px-4 sm:px-6 py-8">
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                <MessageStats {...messageStats} />
+                <ProjectStats {...projectStats} />
+                <AdminDashboard
+                  contactMessages={contactMessages}
+                  projects={projects}
+                  unreadMessages={unreadMessages}
+                />
+              </div>
+            )}
+
+            {activeTab.startsWith("profile") && (
+              <ProfileManagement activeSubTab={activeTab} />
+            )}
+
+            {activeTab === "messages" && (
+              <ContactMessages
                 contactMessages={contactMessages}
-                projects={projects}
-                unreadMessages={unreadMessages}
+                onMarkAsRead={onMarkAsRead}
+                onBulkAction={onBulkAction}
+                onDeleteMessage={onDeleteMessage}
+                onReplyToMessage={onReplyToMessage}
+                onUpdateStatus={onUpdateStatus}
+                onUpdatePriority={onUpdatePriority}
+                loading={messagesLoading}
               />
-            </div>
-          )}
+            )}
 
-          {activeTab.startsWith("profile") && (
-            <ProfileManagement activeSubTab={activeTab} />
-          )}
+            {activeTab.startsWith("projects") && (
+              <ProjectsManagement activeTab={activeTab} />
+            )}
 
-          {activeTab === "messages" && (
-            <ContactMessages
-              contactMessages={contactMessages}
-              onMarkAsRead={onMarkAsRead}
-              onBulkAction={onBulkAction}
-              onDeleteMessage={onDeleteMessage}
-              onReplyToMessage={onReplyToMessage}
-              onUpdateStatus={onUpdateStatus}
-              onUpdatePriority={onUpdatePriority}
-              loading={messagesLoading}
-            />
-          )}
+            {activeTab.startsWith("skills") && (
+              <SkillsManagementRouter activeSubTab={activeTab} />
+            )}
 
-          {activeTab.startsWith("projects") && (
-            <ProjectsManagement activeTab={activeTab} />
-          )}
+            {activeTab.startsWith("resume") && (
+              <ResumeManagement activeTab={activeTab} />
+            )}
 
-          {activeTab.startsWith("skills") && (
-            <SkillsManagementRouter activeSubTab={activeTab} />
-          )}
+            {activeTab === "posts" && (
+              <PlaceholderSection
+                title="Blog Posts"
+                description="Blog management"
+              />
+            )}
 
-          {activeTab.startsWith("resume") && (
-            <ResumeManagement activeTab={activeTab} />
-          )}
-
-          {activeTab === "posts" && (
-            <PlaceholderSection
-              title="Blog Posts"
-              description="Blog management"
-            />
-          )}
-
-          {activeTab === "settings" && (
-            <PlaceholderSection
-              title="Site Settings"
-              description="Site settings"
-            />
-          )}
-        </div>
-      </main>
+            {activeTab === "settings" && (
+              <PlaceholderSection
+                title="Site Settings"
+                description="Site settings"
+              />
+            )}
+          </div>
+        </main>
+      </div>
 
       {/* Message Reply Modal */}
       {showReplyModal && selectedMessage && (

@@ -207,20 +207,21 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   // Determine if we're showing mobile or desktop variant
   const showMobileVariant = isMobile || isTablet;
 
-  // Desktop sidebar classes
+  // Desktop sidebar classes - side by side, not fixed
   const desktopClasses = cn(
-    "fixed left-0 top-16 bottom-0 z-40",
     "bg-background border-r border-border",
     "transition-all duration-300 ease-in-out",
     "hidden lg:flex flex-col",
     "will-change-[width]",
     "transform-gpu",
-    sidebarCollapsed ? "w-16" : "w-70"
+    "flex-shrink-0",
+    "h-screen sticky top-16", // Sticky positioning from below header
+    sidebarCollapsed ? "w-16" : "w-64" // 256px expanded, 64px collapsed
   );
 
-  // Mobile sidebar classes
+  // Mobile sidebar classes - fixed overlay
   const mobileClasses = cn(
-    "fixed top-0 bottom-0 left-0 z-[60] w-70",
+    "fixed top-0 bottom-0 left-0 z-[60] w-64",
     "bg-background border-r border-border shadow-xl",
     "transform transition-transform duration-300 ease-in-out",
     "lg:hidden flex flex-col",
