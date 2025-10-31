@@ -236,8 +236,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       key={tab.id}
       variant={activeTab === tab.id ? "default" : "ghost"}
       className={cn(
-        "w-full transition-colors duration-200 relative",
-        "hover:scale-100", // Override default hover scale
+        "w-full transition-all duration-200 relative",
+        "hover:scale-100 hover:translate-x-1 hover:brightness-110", // Subtle hover effect
         sidebarCollapsed && isDesktop ? "justify-center px-2" : "justify-start"
       )}
       onClick={() => handleTabClick(tab.id)}
@@ -277,8 +277,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <Button
           variant={isActive ? "default" : "ghost"}
           className={cn(
-            "w-full transition-colors duration-200 relative",
-            "hover:scale-100", // Override default hover scale
+            "w-full transition-all duration-200 relative",
+            "hover:scale-100 hover:translate-x-1 hover:brightness-110", // Subtle hover effect
             sidebarCollapsed && isDesktop
               ? "justify-center px-2"
               : "justify-start"
@@ -313,7 +313,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 key={subTab.id}
                 variant={activeTab === subTab.id ? "secondary" : "ghost"}
                 size="sm"
-                className="w-full justify-start text-sm hover:scale-100"
+                className="w-full justify-start text-sm transition-all duration-200 hover:scale-100 hover:translate-x-1 hover:brightness-110"
                 onClick={() => handleSubTabClick(subTab.id)}
               >
                 <subTab.icon className="w-3 h-3 mr-2 flex-shrink-0" />
