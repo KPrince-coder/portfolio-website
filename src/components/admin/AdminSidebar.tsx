@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useReducer, useCallback, useRef, useEffect } from "react";
 import {
   Shield,
   Mail,
@@ -9,17 +9,6 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-  UserCircle,
-  Sparkles,
-  FileUser,
-  Briefcase as BriefcaseIcon,
-  TrendingUp,
-  Award,
-  Link as LinkIcon,
-  Upload,
-  FolderKanban,
-  Code,
-  GraduationCap,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +18,46 @@ import { AdminSidebarProps, AdminTab } from "./types";
 import { useAdminLayout } from "./AdminLayout";
 import { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 import { cn } from "@/lib/utils";
+import {
+  MAIN_TABS,
+  PROFILE_SUB_TABS,
+  SKILLS_SUB_TABS,
+  PROJECTS_SUB_TABS,
+  RESUME_SUB_TABS,
+  MOBILE_SIDEBAR_CLOSE_DELAY,
+} from "./AdminSidebar.constants";
+
+// ============================================================================
+// State Management - Reducer for expandable sections
+// ============================================================================
+
+type SectionState = {
+  profile: boolean;
+  skills: boolean;
+  projects: boolean;
+  resume: boolean;
+};
+
+type SectionAction =
+  | { type: "TOGGLE"; section: keyof SectionState }
+  | { type: "EXPAND"; section: keyof SectionState }
+  | { type: "COLLAPSE_ALL" };
+
+const sectionReducer = (
+  state: SectionState,
+  action: SectionAction
+): SectionState => {
+  switch (action.type) {
+    case "TOGGLE":
+      return { ...state, [action.section]: !state[action.section] };
+    case "EXPAND":
+      return { ...state, [action.section]: true };
+    case "COLLAPSE_ALL":
+      return { profile: false, skills: false, projects: false, resume: false };
+    default:
+      return state;
+  }
+};
 
 /**
  * AdminSidebar - Collapsible navigation sidebar with responsive behavior
@@ -39,242 +68,150 @@ import { cn } from "@/lib/utils";
  * - Internal scrolling using ScrollArea component
  * - Smooth animations with GPU acceleration
  * - Nested navigation with expandable sections
+ * - Optimized with React.memo, useReducer, and memoized callbacks
  *
  * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6,
  *               4.2, 4.6, 4.7, 7.1, 7.2, 9.1, 9.2, 10.1, 10.2, 10.4
  */
-const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  activeTab,
-  unreadMessages,
-  onTabChange,
-}) => {
-  const {
-    sidebarCollapsed,
-    toggleSidebar,
-    sidebarOpen,
-    closeMobileSidebar,
-    isMobile,
-    isTablet,
-    isDesktop,
-  } = useAdminLayout();
+const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
+  ({ activeTab, unreadMessages, onTabChange }) => {
+    const {
+      sidebarCollapsed,
+      toggleSidebar,
+      sidebarOpen,
+      closeMobileSidebar,
+      isMobile,
+      isTablet,
+      isDesktop,
+    } = useAdminLayout();
 
-  const sidebarRef = useRef<HTMLElement>(null);
+    const sidebarRef = useRef<HTMLElement>(null);
 
-  // Local state for expandable sections
-  const [profileExpanded, setProfileExpanded] = useState(
-    activeTab.startsWith("profile")
-  );
-  const [skillsExpanded, setSkillsExpanded] = useState(
-    activeTab.startsWith("skills")
-  );
-  const [projectsExpanded, setProjectsExpanded] = useState(
-    activeTab.startsWith("projects")
-  );
-  const [resumeExpanded, setResumeExpanded] = useState(
-    activeTab.startsWith("resume")
-  );
+    // Consolidated state for expandable sections using useReducer
+    const [expandedSections, dispatch] = useReducer(sectionReducer, {
+      profile: activeTab.startsWith("profile"),
+      skills: activeTab.startsWith("skills"),
+      projects: activeTab.startsWith("projects"),
+      resume: activeTab.startsWith("resume"),
+    });
 
-  // Navigation items configuration
-  const tabs: AdminTab[] = [
-    { id: "overview", label: "Overview", icon: Shield },
-    { id: "messages", label: "Messages", icon: Mail },
-    { id: "posts", label: "Blog Posts", icon: FileText },
-    { id: "settings", label: "Settings", icon: Settings },
-  ];
-
-  const profileSubTabs = [
-    { id: "profile-personal", label: "Personal Info", icon: UserCircle },
-    { id: "profile-hero", label: "Hero Section", icon: Sparkles },
-    { id: "profile-about", label: "About Section", icon: FileUser },
-    { id: "profile-experience", label: "Experience", icon: BriefcaseIcon },
-    { id: "profile-metrics", label: "Impact Metrics", icon: TrendingUp },
-    { id: "profile-philosophy", label: "Philosophy", icon: Award },
-    { id: "profile-social", label: "Social Links", icon: LinkIcon },
-    { id: "profile-resume", label: "Resume", icon: Upload },
-  ];
-
-  const skillsSubTabs = [
-    { id: "skills-header", label: "Skills Header", icon: FileText },
-    { id: "skills-categories", label: "Categories", icon: Briefcase },
-    { id: "skills-list", label: "Skills", icon: Award },
-    { id: "skills-goals", label: "Learning Goals", icon: TrendingUp },
-  ];
-
-  const projectsSubTabs = [
-    { id: "projects-header", label: "Projects Header", icon: FileText },
-    { id: "projects-categories", label: "Categories", icon: FolderKanban },
-    { id: "projects-list", label: "Projects", icon: Briefcase },
-    { id: "projects-technologies", label: "Technologies", icon: Code },
-  ];
-
-  const resumeSubTabs = [
-    { id: "resume-header", label: "Resume Header", icon: FileText },
-    {
-      id: "resume-experiences",
-      label: "Work Experiences",
-      icon: BriefcaseIcon,
-    },
-    { id: "resume-education", label: "Education", icon: GraduationCap },
-    { id: "resume-certifications", label: "Certifications", icon: Award },
-  ];
-
-  // Event handlers
-  const handleProfileClick = useCallback(() => {
-    setProfileExpanded(!profileExpanded);
-    if (!profileExpanded) {
-      onTabChange("profile-personal");
-    }
-  }, [profileExpanded, onTabChange]);
-
-  const handleSkillsClick = useCallback(() => {
-    setSkillsExpanded(!skillsExpanded);
-    if (!skillsExpanded) {
-      onTabChange("skills-header");
-    }
-  }, [skillsExpanded, onTabChange]);
-
-  const handleProjectsClick = useCallback(() => {
-    setProjectsExpanded(!projectsExpanded);
-    if (!projectsExpanded) {
-      onTabChange("projects-header");
-    }
-  }, [projectsExpanded, onTabChange]);
-
-  const handleResumeClick = useCallback(() => {
-    setResumeExpanded(!resumeExpanded);
-    if (!resumeExpanded) {
-      onTabChange("resume-header");
-    }
-  }, [resumeExpanded, onTabChange]);
-
-  const handleSubTabClick = useCallback(
-    (subTabId: string) => {
-      if (subTabId.startsWith("profile")) {
-        setProfileExpanded(true);
-      } else if (subTabId.startsWith("skills")) {
-        setSkillsExpanded(true);
-      } else if (subTabId.startsWith("projects")) {
-        setProjectsExpanded(true);
-      } else if (subTabId.startsWith("resume")) {
-        setResumeExpanded(true);
+    // Memoized event handlers
+    const handleProfileClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "profile" });
+      if (!expandedSections.profile) {
+        onTabChange("profile-personal");
       }
-      onTabChange(subTabId);
+    }, [expandedSections.profile, onTabChange]);
 
-      // Close mobile sidebar after navigation
-      if (isMobile || isTablet) {
-        closeMobileSidebar();
+    const handleSkillsClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "skills" });
+      if (!expandedSections.skills) {
+        onTabChange("skills-header");
       }
-    },
-    [onTabChange, isMobile, isTablet, closeMobileSidebar]
-  );
+    }, [expandedSections.skills, onTabChange]);
 
-  const handleTabClick = useCallback(
-    (tabId: string) => {
-      onTabChange(tabId);
-
-      // Close mobile sidebar after navigation
-      if (isMobile || isTablet) {
-        closeMobileSidebar();
+    const handleProjectsClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "projects" });
+      if (!expandedSections.projects) {
+        onTabChange("projects-header");
       }
-    },
-    [onTabChange, isMobile, isTablet, closeMobileSidebar]
-  );
+    }, [expandedSections.projects, onTabChange]);
 
-  // Handle clicks outside sidebar on mobile
-  useEffect(() => {
-    if (!sidebarOpen || isDesktop) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
-        closeMobileSidebar();
+    const handleResumeClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "resume" });
+      if (!expandedSections.resume) {
+        onTabChange("resume-header");
       }
-    };
+    }, [expandedSections.resume, onTabChange]);
 
-    // Add slight delay to prevent immediate closing
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
+    const handleSubTabClick = useCallback(
+      (subTabId: string) => {
+        if (subTabId.startsWith("profile")) {
+          dispatch({ type: "EXPAND", section: "profile" });
+        } else if (subTabId.startsWith("skills")) {
+          dispatch({ type: "EXPAND", section: "skills" });
+        } else if (subTabId.startsWith("projects")) {
+          dispatch({ type: "EXPAND", section: "projects" });
+        } else if (subTabId.startsWith("resume")) {
+          dispatch({ type: "EXPAND", section: "resume" });
+        }
+        onTabChange(subTabId);
 
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [sidebarOpen, isDesktop, closeMobileSidebar]);
+        // Close mobile sidebar after navigation
+        if (isMobile || isTablet) {
+          closeMobileSidebar();
+        }
+      },
+      [onTabChange, isMobile, isTablet, closeMobileSidebar]
+    );
 
-  // Determine if we're showing mobile or desktop variant
-  const showMobileVariant = isMobile || isTablet;
+    const handleTabClick = useCallback(
+      (tabId: string) => {
+        onTabChange(tabId);
 
-  // Desktop sidebar classes - fixed position
-  const desktopClasses = cn(
-    "bg-background border-r border-border",
-    "transition-all duration-300 ease-in-out",
-    "hidden lg:flex flex-col",
-    "will-change-[width]",
-    "transform-gpu",
-    "fixed left-0 top-16 bottom-0 z-40", // Fixed positioning from below header
-    sidebarCollapsed ? "w-20" : "w-72" // 288px expanded, 80px collapsed (increased)
-  );
+        // Close mobile sidebar after navigation
+        if (isMobile || isTablet) {
+          closeMobileSidebar();
+        }
+      },
+      [onTabChange, isMobile, isTablet, closeMobileSidebar]
+    );
 
-  // Mobile sidebar classes - fixed overlay
-  const mobileClasses = cn(
-    "fixed top-0 bottom-0 left-0 z-[60] w-72",
-    "bg-background border-r border-border shadow-xl",
-    "transform transition-transform duration-300 ease-in-out",
-    "lg:hidden flex flex-col",
-    "will-change-transform",
-    "transform-gpu",
-    sidebarOpen ? "translate-x-0" : "-translate-x-full"
-  );
+    // Handle clicks outside sidebar on mobile
+    useEffect(() => {
+      if (!sidebarOpen || isDesktop) return;
 
-  // Render navigation button
-  const renderNavButton = (tab: AdminTab) => (
-    <Button
-      key={tab.id}
-      variant={activeTab === tab.id ? "default" : "ghost"}
-      className={cn(
-        "w-full transition-all duration-200 relative",
-        "hover:scale-100 hover:translate-x-1 hover:brightness-110", // Subtle hover effect
-        sidebarCollapsed && isDesktop ? "justify-center px-2" : "justify-start"
-      )}
-      onClick={() => handleTabClick(tab.id)}
-      title={sidebarCollapsed && isDesktop ? tab.label : undefined}
-    >
-      {sidebarCollapsed && isDesktop ? (
-        // Collapsed state - icon only, perfectly centered
-        <tab.icon className="w-5 h-5 flex-shrink-0" />
-      ) : (
-        // Expanded state - icon + label + badge
-        <>
-          <tab.icon className="w-4 h-4 flex-shrink-0 mr-2" />
-          <span className="flex-1 text-left">{tab.label}</span>
-          {tab.id === "messages" && unreadMessages > 0 && (
-            <Badge variant="accent" className="ml-auto">
-              {unreadMessages}
-            </Badge>
-          )}
-        </>
-      )}
-    </Button>
-  );
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          sidebarRef.current &&
+          !sidebarRef.current.contains(event.target as Node)
+        ) {
+          closeMobileSidebar();
+        }
+      };
 
-  // Render expandable section
-  const renderExpandableSection = (
-    icon: React.ComponentType<{ className?: string }>,
-    label: string,
-    isExpanded: boolean,
-    onClick: () => void,
-    isActive: boolean,
-    subTabs: AdminTab[]
-  ) => {
-    const Icon = icon;
+      // Add slight delay to prevent immediate closing
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, MOBILE_SIDEBAR_CLOSE_DELAY);
 
-    return (
-      <div className="space-y-1">
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [sidebarOpen, isDesktop, closeMobileSidebar]);
+
+    // Determine if we're showing mobile or desktop variant
+    const showMobileVariant = isMobile || isTablet;
+
+    // Desktop sidebar classes - fixed position
+    const desktopClasses = cn(
+      "bg-background border-r border-border",
+      "transition-all duration-300 ease-in-out",
+      "hidden lg:flex flex-col",
+      "will-change-[width]",
+      "transform-gpu",
+      "fixed left-0 top-16 bottom-0 z-40", // Fixed positioning from below header
+      sidebarCollapsed ? "w-20" : "w-72" // 288px expanded, 80px collapsed (increased)
+    );
+
+    // Mobile sidebar classes - fixed overlay
+    const mobileClasses = cn(
+      "fixed top-0 bottom-0 left-0 z-[60] w-72",
+      "bg-background border-r border-border shadow-xl",
+      "transform transition-transform duration-300 ease-in-out",
+      "lg:hidden flex flex-col",
+      "will-change-transform",
+      "transform-gpu",
+      sidebarOpen ? "translate-x-0" : "-translate-x-full"
+    );
+
+    // Memoized render navigation button
+    const renderNavButton = useCallback(
+      (tab: AdminTab) => (
         <Button
-          variant={isActive ? "default" : "ghost"}
+          key={tab.id}
+          variant={activeTab === tab.id ? "default" : "ghost"}
           className={cn(
             "w-full transition-all duration-200 relative",
             "hover:scale-100 hover:translate-x-1 hover:brightness-110", // Subtle hover effect
@@ -282,185 +219,237 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
               ? "justify-center px-2"
               : "justify-start"
           )}
-          onClick={onClick}
-          title={sidebarCollapsed && isDesktop ? label : undefined}
+          onClick={() => handleTabClick(tab.id)}
+          title={sidebarCollapsed && isDesktop ? tab.label : undefined}
         >
           {sidebarCollapsed && isDesktop ? (
             // Collapsed state - icon only, perfectly centered
-            <Icon className="w-5 h-5 flex-shrink-0" />
+            <tab.icon className="w-5 h-5 flex-shrink-0" />
           ) : (
-            // Expanded state - icon + label + chevron
+            // Expanded state - icon + label + badge
             <>
-              <Icon className="w-4 h-4 flex-shrink-0 mr-2" />
-              <span className="flex-1 text-left">{label}</span>
-              <span className="ml-auto">
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
-              </span>
+              <tab.icon className="w-4 h-4 flex-shrink-0 mr-2" />
+              <span className="flex-1 text-left">{tab.label}</span>
+              {tab.id === "messages" && unreadMessages > 0 && (
+                <Badge variant="accent" className="ml-auto">
+                  {unreadMessages}
+                </Badge>
+              )}
             </>
           )}
         </Button>
+      ),
+      [activeTab, sidebarCollapsed, isDesktop, unreadMessages, handleTabClick]
+    );
 
-        {/* Sub-tabs */}
-        {isExpanded && (!sidebarCollapsed || !isDesktop) && (
-          <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
-            {subTabs.map((subTab) => (
-              <Button
-                key={subTab.id}
-                variant={activeTab === subTab.id ? "secondary" : "ghost"}
-                size="sm"
-                className="w-full justify-start text-sm transition-all duration-200 hover:scale-100 hover:translate-x-1 hover:brightness-110"
-                onClick={() => handleSubTabClick(subTab.id)}
-              >
-                <subTab.icon className="w-3 h-3 mr-2 flex-shrink-0" />
-                {subTab.label}
-              </Button>
-            ))}
+    // Memoized render expandable section
+    const renderExpandableSection = useCallback(
+      (
+        icon: React.ComponentType<{ className?: string }>,
+        label: string,
+        isExpanded: boolean,
+        onClick: () => void,
+        isActive: boolean,
+        subTabs: AdminTab[]
+      ) => {
+        const Icon = icon;
+
+        return (
+          <div className="space-y-1">
+            <Button
+              variant={isActive ? "default" : "ghost"}
+              className={cn(
+                "w-full transition-all duration-200 relative",
+                "hover:scale-100 hover:translate-x-1 hover:brightness-110", // Subtle hover effect
+                sidebarCollapsed && isDesktop
+                  ? "justify-center px-2"
+                  : "justify-start"
+              )}
+              onClick={onClick}
+              title={sidebarCollapsed && isDesktop ? label : undefined}
+            >
+              {sidebarCollapsed && isDesktop ? (
+                // Collapsed state - icon only, perfectly centered
+                <Icon className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                // Expanded state - icon + label + chevron
+                <>
+                  <Icon className="w-4 h-4 flex-shrink-0 mr-2" />
+                  <span className="flex-1 text-left">{label}</span>
+                  <span className="ml-auto">
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </span>
+                </>
+              )}
+            </Button>
+
+            {/* Sub-tabs */}
+            {isExpanded && (!sidebarCollapsed || !isDesktop) && (
+              <div className="ml-4 space-y-1 border-l-2 border-border pl-2 animate-in slide-in-from-top-2 duration-200">
+                {subTabs.map((subTab) => (
+                  <Button
+                    key={subTab.id}
+                    variant={activeTab === subTab.id ? "secondary" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start text-sm transition-all duration-200 hover:scale-100 hover:translate-x-1 hover:brightness-110"
+                    onClick={() => handleSubTabClick(subTab.id)}
+                  >
+                    <subTab.icon className="w-3 h-3 mr-2 flex-shrink-0" />
+                    {subTab.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      },
+      [activeTab, sidebarCollapsed, isDesktop, handleSubTabClick]
+    );
+
+    // Sidebar content
+    const sidebarContent = (
+      <>
+        {/* Mobile header with close button */}
+        {showMobileVariant && (
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-neural rounded-lg flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Admin Panel</h2>
+                <p className="text-xs text-muted-foreground">Navigation</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={closeMobileSidebar}
+              aria-label="Close navigation menu"
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
         )}
-      </div>
-    );
-  };
 
-  // Sidebar content
-  const sidebarContent = (
-    <>
-      {/* Mobile header with close button */}
-      {showMobileVariant && (
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-neural rounded-lg flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">Admin Panel</h2>
-              <p className="text-xs text-muted-foreground">Navigation</p>
-            </div>
+        {/* Desktop toggle button */}
+        {isDesktop && (
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <h2 className="text-lg font-semibold transition-opacity duration-200">
+                Navigation
+              </h2>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              aria-label={
+                sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              }
+              aria-expanded={!sidebarCollapsed}
+              className={cn(sidebarCollapsed && "mx-auto")}
+            >
+              <ChevronLeft
+                className={cn(
+                  "w-5 h-5 transition-transform duration-300",
+                  sidebarCollapsed && "rotate-180"
+                )}
+              />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={closeMobileSidebar}
-            aria-label="Close navigation menu"
+        )}
+
+        {/* Navigation items with internal scrolling */}
+        <ScrollArea className="flex-1 px-3 py-4">
+          <nav
+            className="space-y-1"
+            role="navigation"
+            aria-label="Main navigation"
           >
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-      )}
+            {MAIN_TABS.map((tab) => renderNavButton(tab))}
 
-      {/* Desktop toggle button */}
-      {isDesktop && (
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          {!sidebarCollapsed && (
-            <h2 className="text-lg font-semibold transition-opacity duration-200">
-              Navigation
-            </h2>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            aria-label={
-              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-            }
-            aria-expanded={!sidebarCollapsed}
-            className={cn(sidebarCollapsed && "mx-auto")}
+            {/* Profile Section */}
+            {renderExpandableSection(
+              User,
+              "Profile",
+              expandedSections.profile,
+              handleProfileClick,
+              activeTab.startsWith("profile"),
+              PROFILE_SUB_TABS as unknown as AdminTab[]
+            )}
+
+            {/* Skills Section */}
+            {renderExpandableSection(
+              Briefcase,
+              "Skills",
+              expandedSections.skills,
+              handleSkillsClick,
+              activeTab.startsWith("skills"),
+              SKILLS_SUB_TABS as unknown as AdminTab[]
+            )}
+
+            {/* Projects Section */}
+            {renderExpandableSection(
+              Briefcase,
+              "Projects",
+              expandedSections.projects,
+              handleProjectsClick,
+              activeTab.startsWith("projects"),
+              PROJECTS_SUB_TABS as unknown as AdminTab[]
+            )}
+
+            {/* Resume Section */}
+            {renderExpandableSection(
+              FileText,
+              "Resume",
+              expandedSections.resume,
+              handleResumeClick,
+              activeTab.startsWith("resume"),
+              RESUME_SUB_TABS as unknown as AdminTab[]
+            )}
+          </nav>
+        </ScrollArea>
+      </>
+    );
+
+    return (
+      <>
+        {/* Mobile Backdrop */}
+        <MobileSidebarBackdrop
+          visible={sidebarOpen && showMobileVariant}
+          onClick={closeMobileSidebar}
+        />
+
+        {/* Conditional Sidebar Rendering - Only render one variant */}
+        {showMobileVariant ? (
+          <aside
+            ref={sidebarRef}
+            className={mobileClasses}
+            aria-label="Main navigation"
+            aria-hidden={!sidebarOpen}
           >
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 transition-transform duration-300",
-                sidebarCollapsed && "rotate-180"
-              )}
-            />
-          </Button>
-        </div>
-      )}
+            {sidebarContent}
+          </aside>
+        ) : (
+          <aside
+            ref={sidebarRef}
+            className={desktopClasses}
+            aria-label="Main navigation"
+            aria-hidden={false}
+          >
+            {sidebarContent}
+          </aside>
+        )}
+      </>
+    );
+  }
+);
 
-      {/* Navigation items with internal scrolling */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav
-          className="space-y-1"
-          role="navigation"
-          aria-label="Main navigation"
-        >
-          {tabs.map((tab) => renderNavButton(tab))}
-
-          {/* Profile Section */}
-          {renderExpandableSection(
-            User,
-            "Profile",
-            profileExpanded,
-            handleProfileClick,
-            activeTab.startsWith("profile"),
-            profileSubTabs
-          )}
-
-          {/* Skills Section */}
-          {renderExpandableSection(
-            Award,
-            "Skills",
-            skillsExpanded,
-            handleSkillsClick,
-            activeTab.startsWith("skills"),
-            skillsSubTabs
-          )}
-
-          {/* Projects Section */}
-          {renderExpandableSection(
-            Briefcase,
-            "Projects",
-            projectsExpanded,
-            handleProjectsClick,
-            activeTab.startsWith("projects"),
-            projectsSubTabs
-          )}
-
-          {/* Resume Section */}
-          {renderExpandableSection(
-            Upload,
-            "Resume",
-            resumeExpanded,
-            handleResumeClick,
-            activeTab.startsWith("resume"),
-            resumeSubTabs
-          )}
-        </nav>
-      </ScrollArea>
-    </>
-  );
-
-  return (
-    <>
-      {/* Mobile Backdrop */}
-      <MobileSidebarBackdrop
-        visible={sidebarOpen && showMobileVariant}
-        onClick={closeMobileSidebar}
-      />
-
-      {/* Desktop Sidebar */}
-      <aside
-        ref={sidebarRef}
-        className={desktopClasses}
-        aria-label="Main navigation"
-        aria-hidden={!isDesktop}
-      >
-        {sidebarContent}
-      </aside>
-
-      {/* Mobile Sidebar */}
-      <aside
-        ref={sidebarRef}
-        className={mobileClasses}
-        aria-label="Main navigation"
-        aria-hidden={!sidebarOpen}
-      >
-        {sidebarContent}
-      </aside>
-    </>
-  );
-};
+AdminSidebar.displayName = "AdminSidebar";
 
 export default AdminSidebar;
