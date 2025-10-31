@@ -24,9 +24,16 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onSignOut }) => {
   const showMobileMenu = isMobile || isTablet;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b border-border">
+    <header
+      className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b border-border"
+      role="banner"
+    >
       <div className="h-full px-4 sm:px-6">
-        <div className="flex items-center justify-between h-full">
+        <nav
+          className="flex items-center justify-between h-full"
+          role="navigation"
+          aria-label="User controls"
+        >
           {/* Left section: Mobile menu + Branding */}
           <div className="flex items-center space-x-3">
             {/* Mobile menu button - visible only on screens < 1024px */}
@@ -64,7 +71,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onSignOut }) => {
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
-        </div>
+        </nav>
       </div>
     </header>
   );

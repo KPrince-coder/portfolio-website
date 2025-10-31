@@ -7,6 +7,7 @@ import React, {
   useMemo,
   ReactNode,
 } from "react";
+import { announceToScreenReader } from "@/hooks/useScreenReaderAnnouncement";
 
 // ============================================================================
 // Types and Interfaces
@@ -197,6 +198,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const setSidebarCollapsed = useCallback((collapsed: boolean) => {
     setSidebarCollapsedState(collapsed);
     saveSidebarState(collapsed);
+
+    // Announce state change to screen readers
+    announceToScreenReader(
+      collapsed ? "Sidebar collapsed" : "Sidebar expanded",
+      "polite"
+    );
   }, []);
 
   /**
@@ -211,6 +218,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
    */
   const openMobileSidebar = useCallback(() => {
     setSidebarOpen(true);
+    announceToScreenReader("Navigation menu opened", "polite");
   }, []);
 
   /**
@@ -218,6 +226,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
    */
   const closeMobileSidebar = useCallback(() => {
     setSidebarOpen(false);
+    announceToScreenReader("Navigation menu closed", "polite");
   }, []);
 
   // ============================================================================

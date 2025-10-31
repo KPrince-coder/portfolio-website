@@ -5,6 +5,9 @@ import {
   AdminAuth,
   AdminHeader,
   AdminSidebar,
+  AdminLayout,
+  useAdminLayout,
+  SkipToContent,
   AdminDashboard,
   ContactMessages,
   ProjectsManagement,
@@ -22,9 +25,10 @@ import { Database } from "@/integrations/supabase/types";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 type ProjectCategoryRow =
-  Database["public"]["Tables"]["projects_categories"]["Row"];
-type ProjectAnalyticsRow =
-  Database["public"]["Tables"]["project_analytics"]["Row"]; // Import ProjectAnalyticsRow
+  Database["public"]["Tables"]["project_categories"]["Row"];
+// Note: project_analytics table doesn't exist in schema yet
+// type ProjectAnalyticsRow =
+//   Database["public"]["Tables"]["project_analytics"]["Row"];
 
 import { MessageService } from "@/lib/messages";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
@@ -38,9 +42,8 @@ const Admin: React.FC = () => {
   const [projectCategories, setProjectCategories] = useState<
     ProjectCategoryRow[]
   >([]);
-  const [projectAnalytics, setProjectAnalytics] = useState<
-    ProjectAnalyticsRow[]
-  >([]); // New state for project analytics
+  // Temporarily use any[] until project_analytics table is created
+  const [projectAnalytics, setProjectAnalytics] = useState<any[]>([]);
   const [messageStats, setMessageStats] = useState({
     totalMessages: 0,
     unreadMessages: 0,
@@ -68,41 +71,51 @@ const Admin: React.FC = () => {
   const { toast } = useToast();
 
   // Project filter states
-  const [projectSearchTerm, setProjectSearchTerm] = useState("");
-  const [projectCategoryFilter, setProjectCategoryFilter] = useState("All");
-  const [projectStatusFilter, setProjectStatusFilter] = useState("All");
-  const [projectPublishedFilter, setProjectPublishedFilter] = useState("All");
-  const [projectFeaturedFilter, setProjectFeaturedFilter] = useState("All");
+  const [projectSearchTerm, setProjectSearchTerm] = useState<string>("");
+  const [projectCategoryFilter, setProjectCategoryFilter] =
+    useState<string>("All");
+  const [projectStatusFilter, setProjectStatusFilter] = useState<string>("All");
+  const [projectPublishedFilter, setProjectPublishedFilter] =
+    useState<string>("All");
+  const [projectFeaturedFilter, setProjectFeaturedFilter] =
+    useState<string>("All");
 
-  const fetchProjects = useCallback(async () => {
-    let query = supabase.from("projects").select("*");
+  const fetchProjects = useCallback(async (): Promise<ProjectRow[]> => {
+    try {
+      let query = supabase.from("projects").select("*");
 
-    if (projectSearchTerm) {
-      query = query.or(
-        `title.ilike.%${projectSearchTerm}%,description.ilike.%${projectSearchTerm}%`
-      );
-    }
-    if (projectCategoryFilter !== "All") {
-      query = query.eq("category", projectCategoryFilter);
-    }
-    if (projectStatusFilter !== "All") {
-      query = query.eq("status", projectStatusFilter);
-    }
-    if (projectPublishedFilter !== "All") {
-      query = query.eq("published", projectPublishedFilter === "true");
-    }
-    if (projectFeaturedFilter !== "All") {
-      query = query.eq("featured", projectFeaturedFilter === "true");
-    }
+      if (projectSearchTerm) {
+        query = query.or(
+          `title.ilike.%${projectSearchTerm}%,description.ilike.%${projectSearchTerm}%`
+        );
+      }
+      if (projectCategoryFilter !== "All") {
+        query = query.eq("category_id", projectCategoryFilter);
+      }
+      if (projectStatusFilter !== "All") {
+        query = query.eq("status", projectStatusFilter);
+      }
+      // Note: 'published' field doesn't exist - using 'is_featured' instead
+      // TODO: Add 'published' field to projects table
+      if (projectPublishedFilter !== "All") {
+        query = query.eq("is_featured", projectPublishedFilter === "true");
+      }
+      if (projectFeaturedFilter !== "All") {
+        query = query.eq("is_featured", projectFeaturedFilter === "true");
+      }
 
-    query = query.order("created_at", { ascending: false });
+      query = query.order("created_at", { ascending: false });
 
-    const { data: projectsData, error: projectsError } = await query;
+      const { data: projectsData, error: projectsError } = await query;
 
-    if (projectsError) {
-      throw projectsError;
+      if (projectsError) {
+        throw projectsError;
+      }
+      return (projectsData as ProjectRow[]) || [];
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      return [];
     }
-    return projectsData || [];
   }, [
     projectSearchTerm,
     projectCategoryFilter,
@@ -139,7 +152,7 @@ const Admin: React.FC = () => {
 
       // Load project categories
       const { data: categoriesData, error: categoriesError } = await supabase
-        .from("projects_categories")
+        .from("project_categories")
         .select("*")
         .order("name", { ascending: true });
 
@@ -148,15 +161,16 @@ const Admin: React.FC = () => {
       }
       setProjectCategories(categoriesData || []);
 
-      // Load project analytics
-      const { data: analyticsData, error: analyticsError } = await supabase
-        .from("project_analytics")
-        .select("*");
-
-      if (analyticsError) {
-        throw analyticsError;
-      }
-      setProjectAnalytics(analyticsData || []);
+      // Load project analytics (table doesn't exist yet - commented out)
+      // TODO: Create project_analytics table in migration
+      // const { data: analyticsData, error: analyticsError } = await supabase
+      //   .from("project_analytics")
+      //   .select("*");
+      // if (analyticsError) {
+      //   throw analyticsError;
+      // }
+      // setProjectAnalytics(analyticsData || []);
+      setProjectAnalytics([]); // Empty array until table is created
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -276,8 +290,10 @@ const Admin: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const total = projects.length;
-    const published = projects.filter((p) => p.published).length;
-    const draft = projects.filter((p) => !p.published).length;
+    // Note: 'published' field doesn't exist - using 'is_featured' as proxy
+    // TODO: Add 'published' field to projects table or use correct field
+    const published = projects.filter((p) => p.is_featured).length;
+    const draft = projects.filter((p) => !p.is_featured).length;
 
     const totalViews = projectAnalytics.reduce(
       (sum, pa) => sum + pa.view_count,
@@ -599,90 +615,183 @@ const Admin: React.FC = () => {
   ).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader user={user} onSignOut={signOut} />
+    <AdminLayout>
+      <AdminContent
+        user={user}
+        activeTab={activeTab}
+        contactMessages={contactMessages}
+        projects={projects}
+        unreadMessages={unreadMessages}
+        messageStats={messageStats}
+        projectStats={projectStats}
+        messagesLoading={messagesLoading}
+        selectedMessage={selectedMessage}
+        showReplyModal={showReplyModal}
+        onSignOut={signOut}
+        onTabChange={setActiveTab}
+        onMarkAsRead={handleMarkAsRead}
+        onBulkAction={handleBulkAction}
+        onDeleteMessage={handleDeleteMessage}
+        onReplyToMessage={handleReplyToMessage}
+        onUpdateStatus={handleUpdateStatus}
+        onUpdatePriority={handleUpdatePriority}
+        onSendReply={handleSendReply}
+        onSaveDraft={handleSaveDraft}
+        onCloseReplyModal={() => {
+          setShowReplyModal(false);
+          setSelectedMessage(null);
+        }}
+      />
+    </AdminLayout>
+  );
+};
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          <AdminSidebar
-            activeTab={activeTab}
-            unreadMessages={unreadMessages}
-            onTabChange={setActiveTab}
-          />
+// Separate component for authenticated admin content with responsive margins
+const AdminContent: React.FC<{
+  user: User;
+  activeTab: string;
+  contactMessages: ContactMessage[];
+  projects: ProjectRow[];
+  unreadMessages: number;
+  messageStats: any;
+  projectStats: any;
+  messagesLoading: boolean;
+  selectedMessage: ContactMessage | null;
+  showReplyModal: boolean;
+  onSignOut: () => void;
+  onTabChange: (tab: string) => void;
+  onMarkAsRead: (id: string) => void;
+  onBulkAction: (ids: string[], action: string) => void;
+  onDeleteMessage: (id: string) => void;
+  onReplyToMessage: (id: string) => void;
+  onUpdateStatus: (id: string, updates: Partial<ContactMessage>) => void;
+  onUpdatePriority: (id: string, priority: ContactMessage["priority"]) => void;
+  onSendReply: (content: string) => Promise<void>;
+  onSaveDraft: (content: string) => Promise<void>;
+  onCloseReplyModal: () => void;
+}> = ({
+  user,
+  activeTab,
+  contactMessages,
+  projects,
+  unreadMessages,
+  messageStats,
+  projectStats,
+  messagesLoading,
+  selectedMessage,
+  showReplyModal,
+  onSignOut,
+  onTabChange,
+  onMarkAsRead,
+  onBulkAction,
+  onDeleteMessage,
+  onReplyToMessage,
+  onUpdateStatus,
+  onUpdatePriority,
+  onSendReply,
+  onSaveDraft,
+  onCloseReplyModal,
+}) => {
+  const { sidebarCollapsed, isDesktop, isMobile, isTablet } = useAdminLayout();
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                <MessageStats {...messageStats} />
-                <ProjectStats {...projectStats} /> {/* Add ProjectStats */}
-                <AdminDashboard
-                  contactMessages={contactMessages}
-                  projects={projects}
-                  unreadMessages={unreadMessages}
-                />
-              </div>
-            )}
+  // Calculate responsive margins based on sidebar state
+  const getMainContentClasses = () => {
+    const baseClasses =
+      "pt-16 min-h-screen transition-all duration-300 ease-in-out";
 
-            {activeTab.startsWith("profile") && (
-              <ProfileManagement activeSubTab={activeTab} />
-            )}
+    if (isMobile || isTablet) {
+      // Mobile: no left margin
+      return `${baseClasses} ml-0`;
+    }
 
-            {activeTab === "messages" && (
-              <ContactMessages
+    // Desktop: adjust margin based on sidebar state
+    if (sidebarCollapsed) {
+      return `${baseClasses} lg:ml-16`; // 64px collapsed
+    }
+
+    return `${baseClasses} lg:ml-70`; // 280px expanded
+  };
+
+  return (
+    <>
+      <SkipToContent />
+      <AdminHeader user={user} onSignOut={onSignOut} />
+      <AdminSidebar
+        activeTab={activeTab}
+        unreadMessages={unreadMessages}
+        onTabChange={onTabChange}
+      />
+
+      {/* Main Content with responsive margins */}
+      <main id="main-content" className={getMainContentClasses()} role="main">
+        <div className="container mx-auto px-4 sm:px-6 py-8">
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              <MessageStats {...messageStats} />
+              <ProjectStats {...projectStats} />
+              <AdminDashboard
                 contactMessages={contactMessages}
-                onMarkAsRead={handleMarkAsRead}
-                onBulkAction={handleBulkAction}
-                onDeleteMessage={handleDeleteMessage}
-                onReplyToMessage={handleReplyToMessage}
-                onUpdateStatus={handleUpdateStatus}
-                onUpdatePriority={handleUpdatePriority}
-                loading={messagesLoading}
+                projects={projects}
+                unreadMessages={unreadMessages}
               />
-            )}
+            </div>
+          )}
 
-            {activeTab.startsWith("projects") && (
-              <ProjectsManagement activeTab={activeTab} />
-            )}
+          {activeTab.startsWith("profile") && (
+            <ProfileManagement activeSubTab={activeTab} />
+          )}
 
-            {activeTab.startsWith("skills") && (
-              <SkillsManagementRouter activeSubTab={activeTab} />
-            )}
+          {activeTab === "messages" && (
+            <ContactMessages
+              contactMessages={contactMessages}
+              onMarkAsRead={onMarkAsRead}
+              onBulkAction={onBulkAction}
+              onDeleteMessage={onDeleteMessage}
+              onReplyToMessage={onReplyToMessage}
+              onUpdateStatus={onUpdateStatus}
+              onUpdatePriority={onUpdatePriority}
+              loading={messagesLoading}
+            />
+          )}
 
-            {activeTab.startsWith("resume") && (
-              <ResumeManagement activeTab={activeTab} />
-            )}
+          {activeTab.startsWith("projects") && (
+            <ProjectsManagement activeTab={activeTab} />
+          )}
 
-            {activeTab === "posts" && (
-              <PlaceholderSection
-                title="Blog Posts"
-                description="Blog management"
-              />
-            )}
+          {activeTab.startsWith("skills") && (
+            <SkillsManagementRouter activeSubTab={activeTab} />
+          )}
 
-            {activeTab === "settings" && (
-              <PlaceholderSection
-                title="Site Settings"
-                description="Site settings"
-              />
-            )}
-          </div>
+          {activeTab.startsWith("resume") && (
+            <ResumeManagement activeTab={activeTab} />
+          )}
+
+          {activeTab === "posts" && (
+            <PlaceholderSection
+              title="Blog Posts"
+              description="Blog management"
+            />
+          )}
+
+          {activeTab === "settings" && (
+            <PlaceholderSection
+              title="Site Settings"
+              description="Site settings"
+            />
+          )}
         </div>
-      </div>
+      </main>
 
       {/* Message Reply Modal */}
       {showReplyModal && selectedMessage && (
         <MessageReply
           message={selectedMessage}
-          onSendReply={handleSendReply}
-          onSaveDraft={handleSaveDraft}
-          onClose={() => {
-            setShowReplyModal(false);
-            setSelectedMessage(null);
-          }}
+          onSendReply={onSendReply}
+          onSaveDraft={onSaveDraft}
+          onClose={onCloseReplyModal}
         />
       )}
-    </div>
+    </>
   );
 };
 

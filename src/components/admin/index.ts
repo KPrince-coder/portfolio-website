@@ -4,6 +4,7 @@ export { default as AdminSidebar } from "./AdminSidebar";
 export { AdminLayout, useAdminLayout } from "./AdminLayout";
 export { SidebarItem } from "./SidebarItem";
 export { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
+export { SkipToContent } from "./SkipToContent";
 export { default as AdminDashboard } from "./AdminDashboard";
 export { default as ContactMessages } from "./ContactMessages";
 export { ProfileManagement } from "./profile";
