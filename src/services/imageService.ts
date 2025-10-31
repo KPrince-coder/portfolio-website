@@ -18,7 +18,7 @@ import {
   optimizeImageFromUrl,
   type OptimizedImageResult,
   type ImageOptimizationOptions,
-  cleanupImageUrls,
+  ManagedOptimizedImage,
 } from "@/lib/imageOptimization";
 
 // ============================================================================
@@ -312,8 +312,8 @@ export async function uploadImage(
 
     if (dbError) throw dbError;
 
-    // Cleanup object URLs
-    cleanupImageUrls(optimized);
+    // Cleanup object URLs (auto-cleanup with ManagedOptimizedImage)
+    optimized.cleanup();
 
     onProgress?.({
       stage: "complete",

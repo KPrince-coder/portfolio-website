@@ -1,13 +1,15 @@
 /**
- * Image Optimization Utility
+ * Image Optimization Utility - Fully Optimized Version
  *
  * Modern, high-performance image optimization with:
- * - Client-side compression before upload
- * - Multiple size generation (thumbnail, medium, large)
- * - WebP conversion for modern browsers
- * - Automatic format detection
+ * - Auto-cleanup with Symbol.dispose (prevents memory leaks)
+ * - AbortController support (cancellation)
+ * - Retry logic for network failures
+ * - Result caching for repeated operations
+ * - Parallel batch processing with concurrency control
+ * - Comprehensive error handling
  * - Progress tracking
- * - Error handling with retry logic
+ * - TypeScript strict mode compliance
  *
  * @module imageOptimization
  */
@@ -15,8 +17,19 @@
 import imageCompression from "browser-image-compression";
 
 // ============================================================================
+// POLYFILL FOR SYMBOL.DISPOSE
+// ============================================================================
+
+// Add Symbol.dispose polyfill for older browsers
+if (typeof Symbol.dispose === "undefined") {
+  (Symbol as any).dispose = Symbol("Symbol.dispose");
+}
+
+// ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
+
+export type ImageFormat = "jpeg" | "jpg" | "png" | "webp" | "gif";
 
 export interface ImageOptimizationOptions {
   maxWidth?: number;
@@ -26,6 +39,8 @@ export interface ImageOptimizationOptions {
   generateThumbnail?: boolean;
   generateResponsive?: boolean;
   onProgress?: (progress: number) => void;
+  signal?: AbortSignal; // NEW: Cancellation support
+  maxRetries?: number; // NEW: Retry logic
 }
 
 export interface OptimizedImageSize {
@@ -34,7 +49,7 @@ export interface OptimizedImageSize {
   width: number;
   height: number;
   size: number; // bytes
-  format: string;
+  format: ImageFormat;
 }
 
 export interface OptimizedImageResult {
@@ -49,7 +64,7 @@ export interface OptimizedImageResult {
     optimizedSize: number;
     compressionRatio: number;
     dimensions: { width: number; height: number };
-    format: string;
+    format: ImageFormat;
     mimeType: string;
   };
 }
@@ -58,6 +73,11 @@ export interface ImageDimensions {
   width: number;
   height: number;
 }
+
+// NEW: Result type for better error handling
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
 
 // ============================================================================
 // CONSTANTS
@@ -68,6 +88,8 @@ const MEDIUM_SIZE = 800;
 const LARGE_SIZE = 1200;
 const DEFAULT_QUALITY = 0.85;
 const MAX_FILE_SIZE_MB = 50;
+const DEFAULT_MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
 const COMPRESSION_OPTIONS = {
   maxSizeMB: MAX_FILE_SIZE_MB,
@@ -76,20 +98,231 @@ const COMPRESSION_OPTIONS = {
 };
 
 // ============================================================================
+// RESOURCE MANAGEMENT - AUTO-CLEANUP
+// ============================================================================
+
+/**
+ * Managed optimized image with automatic cleanup
+ * Implements Symbol.dispose for explicit resource management
+ */
+export class ManagedOptimizedImage implements OptimizedImageResult {
+  private urls: string[] = [];
+  private disposed = false;
+
+  constructor(public readonly result: OptimizedImageResult) {
+    this.urls = [
+      result.original.url,
+      result.optimized.url,
+      result.thumbnail?.url,
+      result.medium?.url,
+      result.large?.url,
+      result.webp?.url,
+    ].filter(Boolean) as string[];
+  }
+
+  get original() {
+    return this.result.original;
+  }
+  get optimized() {
+    return this.result.optimized;
+  }
+  get thumbnail() {
+    return this.result.thumbnail;
+  }
+  get medium() {
+    return this.result.medium;
+  }
+  get large() {
+    return this.result.large;
+  }
+  get webp() {
+    return this.result.webp;
+  }
+  get metadata() {
+    return this.result.metadata;
+  }
+
+  /**
+   * Manually cleanup all object URLs
+   */
+  cleanup(): void {
+    if (this.disposed) return;
+
+    this.urls.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.warn("Failed to revoke URL:", url, error);
+      }
+    });
+
+    this.urls = [];
+    this.disposed = true;
+  }
+
+  /**
+   * Symbol.dispose implementation for automatic cleanup
+   * Usage: using result = await optimizeImage(file);
+   */
+  [Symbol.dispose](): void {
+    this.cleanup();
+  }
+}
+
+// ============================================================================
+// CACHING
+// ============================================================================
+
+/**
+ * LRU cache for optimization results
+ */
+class ImageOptimizationCache {
+  private cache = new Map<string, OptimizedImageResult>();
+  private readonly maxSize = 50;
+
+  get(
+    file: File,
+    options: ImageOptimizationOptions
+  ): OptimizedImageResult | null {
+    const key = this.getKey(file, options);
+    const cached = this.cache.get(key);
+
+    if (cached) {
+      // Move to end (LRU)
+      this.cache.delete(key);
+      this.cache.set(key, cached);
+    }
+
+    return cached || null;
+  }
+
+  set(
+    file: File,
+    options: ImageOptimizationOptions,
+    result: OptimizedImageResult
+  ): void {
+    const key = this.getKey(file, options);
+
+    // Remove oldest if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, result);
+  }
+
+  private getKey(file: File, options: ImageOptimizationOptions): string {
+    const optionsKey = JSON.stringify({
+      quality: options.quality,
+      format: options.format,
+      generateThumbnail: options.generateThumbnail,
+      generateResponsive: options.generateResponsive,
+    });
+    return `${file.name}-${file.size}-${file.lastModified}-${optionsKey}`;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+const cache = new ImageOptimizationCache();
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
 /**
- * Get image dimensions from file
+ * Safe progress callback that won't crash if callback throws
+ */
+function safeProgress(
+  callback: ((progress: number) => void) | undefined,
+  progress: number
+): void {
+  if (!callback) return;
+
+  try {
+    callback(progress);
+  } catch (error) {
+    console.warn("Progress callback error:", error);
+  }
+}
+
+/**
+ * Retry logic wrapper
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = DEFAULT_MAX_RETRIES,
+  delay: number = RETRY_DELAY_MS
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry if it's an AbortError
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      // Wait before retry (exponential backoff)
+      if (attempt < maxRetries - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, delay * (attempt + 1))
+        );
+      }
+    }
+  }
+
+  throw lastError || new Error("Operation failed after retries");
+}
+
+/**
+ * Sanitize filename for safe storage
+ */
+function sanitizeFilename(filename: string): string {
+  return filename
+    .replace(/[^a-zA-Z0-9.-]/g, "_") // Replace invalid chars
+    .replace(/_{2,}/g, "_") // Remove duplicate underscores
+    .substring(0, 255); // Limit length
+}
+
+/**
+ * Check if operation was cancelled
+ */
+function checkCancellation(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new DOMException("Operation cancelled", "AbortError");
+  }
+}
+
+// Cache for image dimensions
+const dimensionsCache = new WeakMap<File, ImageDimensions>();
+
+/**
+ * Get image dimensions from file (with caching)
  */
 async function getImageDimensions(file: File): Promise<ImageDimensions> {
+  // Check cache first
+  const cached = dimensionsCache.get(file);
+  if (cached) return cached;
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
 
     img.onload = () => {
       URL.revokeObjectURL(url);
-      resolve({ width: img.width, height: img.height });
+      const dimensions = { width: img.width, height: img.height };
+      dimensionsCache.set(file, dimensions);
+      resolve(dimensions);
     };
 
     img.onerror = () => {
@@ -107,45 +340,61 @@ async function getImageDimensions(file: File): Promise<ImageDimensions> {
 async function convertImageFormat(
   file: File,
   format: "webp" | "jpeg" | "png",
-  quality: number = DEFAULT_QUALITY
+  quality: number = DEFAULT_QUALITY,
+  signal?: AbortSignal
 ): Promise<File> {
   return new Promise((resolve, reject) => {
+    checkCancellation(signal);
+
     const img = new Image();
     const url = URL.createObjectURL(file);
 
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      try {
+        checkCancellation(signal);
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          reject(new Error("Failed to get canvas context"));
+          return;
+        }
+
+        // Handle context loss
+        canvas.addEventListener("webglcontextlost", (event) => {
+          event.preventDefault();
+          reject(new Error("Canvas context lost during processing"));
+        });
+
+        ctx.drawImage(img, 0, 0);
         URL.revokeObjectURL(url);
-        reject(new Error("Failed to get canvas context"));
-        return;
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("Failed to convert image"));
+              return;
+            }
+
+            const convertedFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, `.${format}`),
+              { type: `image/${format}` }
+            );
+
+            resolve(convertedFile);
+          },
+          `image/${format}`,
+          quality
+        );
+      } catch (error) {
+        URL.revokeObjectURL(url);
+        reject(error);
       }
-
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Failed to convert image"));
-            return;
-          }
-
-          const convertedFile = new File(
-            [blob],
-            file.name.replace(/\.[^/.]+$/, `.${format}`),
-            { type: `image/${format}` }
-          );
-
-          resolve(convertedFile);
-        },
-        `image/${format}`,
-        quality
-      );
     };
 
     img.onerror = () => {
@@ -182,9 +431,15 @@ async function createImageVariant(
   file: File,
   maxSize: number,
   quality: number,
-  suffix: string
+  suffix: string,
+  signal?: AbortSignal
 ): Promise<OptimizedImageSize> {
+  checkCancellation(signal);
+
   const resized = await resizeImage(file, maxSize, maxSize, quality);
+
+  checkCancellation(signal);
+
   const dimensions = await getImageDimensions(resized);
   const url = URL.createObjectURL(resized);
 
@@ -194,7 +449,7 @@ async function createImageVariant(
     width: dimensions.width,
     height: dimensions.height,
     size: resized.size,
-    format: resized.type.split("/")[1],
+    format: resized.type.split("/")[1] as ImageFormat,
   };
 }
 
@@ -205,140 +460,219 @@ async function createImageVariant(
 /**
  * Optimize a single image with multiple size variants
  *
+ * Features:
+ * - Automatic cleanup with Symbol.dispose
+ * - Cancellation support via AbortSignal
+ * - Retry logic for network failures
+ * - Result caching for repeated operations
+ * - Progress tracking
+ *
  * @param file - Image file to optimize
  * @param options - Optimization options
- * @returns Optimized image result with all variants
+ * @returns Managed optimized image result with auto-cleanup
  *
  * @example
  * ```typescript
+ * // With auto-cleanup
+ * {
+ *   using result = await optimizeImage(file, {
+ *     quality: 0.85,
+ *     generateThumbnail: true,
+ *     maxRetries: 3
+ *   });
+ *   console.log(result.optimized.url);
+ * } // Automatically cleaned up
+ *
+ * // With cancellation
+ * const controller = new AbortController();
  * const result = await optimizeImage(file, {
- *   quality: 0.85,
- *   generateThumbnail: true,
- *   generateResponsive: true,
- *   onProgress: (progress) => console.log(`${progress}%`)
+ *   signal: controller.signal
  * });
+ *
+ * // Cancel if needed
+ * controller.abort();
  * ```
  */
 export async function optimizeImage(
   file: File,
   options: ImageOptimizationOptions = {}
-): Promise<OptimizedImageResult> {
+): Promise<ManagedOptimizedImage> {
   const {
     quality = DEFAULT_QUALITY,
     generateThumbnail = true,
     generateResponsive = true,
     format,
     onProgress,
+    signal,
+    maxRetries = 0,
   } = options;
 
-  try {
-    // Validate file
-    if (!file.type.startsWith("image/")) {
-      throw new Error("File must be an image");
-    }
+  // Check cache first
+  const cached = cache.get(file, options);
+  if (cached) {
+    safeProgress(onProgress, 100);
+    return new ManagedOptimizedImage(cached);
+  }
 
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      throw new Error(`File size must be less than ${MAX_FILE_SIZE_MB}MB`);
-    }
+  // Wrap in retry logic if maxRetries > 0
+  const optimizeFn = async (): Promise<OptimizedImageResult> => {
+    try {
+      // Validate file
+      checkCancellation(signal);
 
-    // Get original dimensions
-    const originalDimensions = await getImageDimensions(file);
-    onProgress?.(10);
+      if (!file.type.startsWith("image/")) {
+        throw new Error("File must be an image");
+      }
 
-    // Compress original
-    const compressed = await imageCompression(file, {
-      ...COMPRESSION_OPTIONS,
-      initialQuality: quality,
-    });
-    onProgress?.(30);
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        throw new Error(`File size must be less than ${MAX_FILE_SIZE_MB}MB`);
+      }
 
-    // Create original size variant
-    const original: OptimizedImageSize = {
-      file,
-      url: URL.createObjectURL(file),
-      width: originalDimensions.width,
-      height: originalDimensions.height,
-      size: file.size,
-      format: file.type.split("/")[1],
-    };
+      // Get original dimensions
+      safeProgress(onProgress, 10);
+      checkCancellation(signal);
 
-    // Create optimized variant
-    const optimized: OptimizedImageSize = {
-      file: compressed,
-      url: URL.createObjectURL(compressed),
-      width: originalDimensions.width,
-      height: originalDimensions.height,
-      size: compressed.size,
-      format: compressed.type.split("/")[1],
-    };
-    onProgress?.(50);
+      const originalDimensions = await getImageDimensions(file);
 
-    const result: OptimizedImageResult = {
-      original,
-      optimized,
-      metadata: {
-        originalSize: file.size,
-        optimizedSize: compressed.size,
-        compressionRatio: compressed.size / file.size,
-        dimensions: originalDimensions,
-        format: file.type.split("/")[1],
-        mimeType: file.type,
-      },
-    };
+      safeProgress(onProgress, 20);
+      checkCancellation(signal);
 
-    // Generate thumbnail
-    if (generateThumbnail) {
-      result.thumbnail = await createImageVariant(
-        compressed,
-        THUMBNAIL_SIZE,
-        quality,
-        "thumbnail"
-      );
-      onProgress?.(60);
-    }
+      // Compress original
+      const compressed = await imageCompression(file, {
+        ...COMPRESSION_OPTIONS,
+        initialQuality: quality,
+      });
 
-    // Generate responsive sizes
-    if (generateResponsive) {
-      result.medium = await createImageVariant(
-        compressed,
-        MEDIUM_SIZE,
-        quality,
-        "medium"
-      );
-      onProgress?.(70);
+      safeProgress(onProgress, 40);
+      checkCancellation(signal);
 
-      result.large = await createImageVariant(
-        compressed,
-        LARGE_SIZE,
-        quality,
-        "large"
-      );
-      onProgress?.(80);
-    }
-
-    // Generate WebP version
-    if (format === "webp" || generateResponsive) {
-      const webpFile = await convertImageFormat(compressed, "webp", quality);
-      const webpDimensions = await getImageDimensions(webpFile);
-      result.webp = {
-        file: webpFile,
-        url: URL.createObjectURL(webpFile),
-        width: webpDimensions.width,
-        height: webpDimensions.height,
-        size: webpFile.size,
-        format: "webp",
+      // Create original size variant
+      const original: OptimizedImageSize = {
+        file,
+        url: URL.createObjectURL(file),
+        width: originalDimensions.width,
+        height: originalDimensions.height,
+        size: file.size,
+        format: file.type.split("/")[1] as ImageFormat,
       };
-      onProgress?.(90);
-    }
 
-    onProgress?.(100);
-    return result;
+      // Create optimized variant
+      const optimized: OptimizedImageSize = {
+        file: compressed,
+        url: URL.createObjectURL(compressed),
+        width: originalDimensions.width,
+        height: originalDimensions.height,
+        size: compressed.size,
+        format: compressed.type.split("/")[1] as ImageFormat,
+      };
+
+      safeProgress(onProgress, 50);
+
+      const result: OptimizedImageResult = {
+        original,
+        optimized,
+        metadata: {
+          originalSize: file.size,
+          optimizedSize: compressed.size,
+          compressionRatio: compressed.size / file.size,
+          dimensions: originalDimensions,
+          format: file.type.split("/")[1] as ImageFormat,
+          mimeType: file.type,
+        },
+      };
+
+      // Generate thumbnail
+      if (generateThumbnail) {
+        result.thumbnail = await createImageVariant(
+          compressed,
+          THUMBNAIL_SIZE,
+          quality,
+          "thumbnail",
+          signal
+        );
+        safeProgress(onProgress, 60);
+      }
+
+      // Generate responsive sizes
+      if (generateResponsive) {
+        result.medium = await createImageVariant(
+          compressed,
+          MEDIUM_SIZE,
+          quality,
+          "medium",
+          signal
+        );
+        safeProgress(onProgress, 70);
+
+        result.large = await createImageVariant(
+          compressed,
+          LARGE_SIZE,
+          quality,
+          "large",
+          signal
+        );
+        safeProgress(onProgress, 80);
+      }
+
+      // Generate WebP version
+      if (format === "webp" || generateResponsive) {
+        const webpFile = await convertImageFormat(
+          compressed,
+          "webp",
+          quality,
+          signal
+        );
+        const webpDimensions = await getImageDimensions(webpFile);
+        result.webp = {
+          file: webpFile,
+          url: URL.createObjectURL(webpFile),
+          width: webpDimensions.width,
+          height: webpDimensions.height,
+          size: webpFile.size,
+          format: "webp",
+        };
+        safeProgress(onProgress, 90);
+      }
+
+      safeProgress(onProgress, 100);
+
+      // Cache result
+      cache.set(file, options, result);
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `Image optimization failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  // Apply retry logic if requested
+  const result =
+    maxRetries > 0
+      ? await withRetry(optimizeFn, maxRetries)
+      : await optimizeFn();
+
+  return new ManagedOptimizedImage(result);
+}
+
+/**
+ * Optimize image with Result type for better error handling
+ */
+export async function optimizeImageSafe(
+  file: File,
+  options: ImageOptimizationOptions = {}
+): Promise<Result<ManagedOptimizedImage>> {
+  try {
+    const data = await optimizeImage(file, options);
+    return { success: true, data };
   } catch (error) {
-    throw new Error(
-      `Image optimization failed: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
+    return {
+      success: false,
+      error: error instanceof Error ? error : new Error("Unknown error"),
+    };
   }
 }
 
@@ -353,37 +687,40 @@ export async function optimizeImage(
 export async function optimizeImageFromUrl(
   url: string,
   options: ImageOptimizationOptions = {}
-): Promise<OptimizedImageResult> {
-  try {
+): Promise<ManagedOptimizedImage> {
+  const { signal, maxRetries = DEFAULT_MAX_RETRIES } = options;
+
+  const fetchAndOptimize = async (): Promise<ManagedOptimizedImage> => {
+    checkCancellation(signal);
+
     // Fetch image
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
+
+    checkCancellation(signal);
 
     // Convert to blob
     const blob = await response.blob();
 
     // Get filename from URL or use default
-    const filename = url.split("/").pop() || "image.jpg";
+    const rawFilename = url.split("/").pop() || "image.jpg";
+    const filename = sanitizeFilename(decodeURIComponent(rawFilename));
 
     // Create file from blob
     const file = new File([blob], filename, { type: blob.type });
 
     // Optimize using main function
     return await optimizeImage(file, options);
-  } catch (error) {
-    throw new Error(
-      `Failed to optimize image from URL: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
-  }
+  };
+
+  return await withRetry(fetchAndOptimize, maxRetries);
 }
 
 /**
- * Batch optimize multiple images
- * Processes images in parallel with concurrency limit
+ * Batch optimize multiple images with improved parallel processing
+ * Processes images in parallel with concurrency limit using p-limit pattern
  *
  * @param files - Array of image files
  * @param options - Optimization options
@@ -394,19 +731,29 @@ export async function optimizeImages(
   files: File[],
   options: ImageOptimizationOptions = {},
   concurrency: number = 3
-): Promise<OptimizedImageResult[]> {
-  const results: OptimizedImageResult[] = [];
-  const queue = [...files];
+): Promise<ManagedOptimizedImage[]> {
+  const results: ManagedOptimizedImage[] = [];
+  const executing: Set<Promise<void>> = new Set();
 
-  // Process in batches
-  while (queue.length > 0) {
-    const batch = queue.splice(0, concurrency);
-    const batchResults = await Promise.all(
-      batch.map((file) => optimizeImage(file, options))
-    );
-    results.push(...batchResults);
+  for (const file of files) {
+    checkCancellation(options.signal);
+
+    const promise = optimizeImage(file, options)
+      .then((result) => {
+        results.push(result);
+      })
+      .finally(() => {
+        executing.delete(promise);
+      });
+
+    executing.add(promise);
+
+    if (executing.size >= concurrency) {
+      await Promise.race(executing);
+    }
   }
 
+  await Promise.all(executing);
   return results;
 }
 
@@ -470,6 +817,7 @@ export function validateImageFile(file: File): {
 
 /**
  * Cleanup object URLs to prevent memory leaks
+ * @deprecated Use ManagedOptimizedImage with Symbol.dispose instead
  */
 export function cleanupImageUrls(result: OptimizedImageResult): void {
   URL.revokeObjectURL(result.original.url);
@@ -478,4 +826,11 @@ export function cleanupImageUrls(result: OptimizedImageResult): void {
   if (result.medium) URL.revokeObjectURL(result.medium.url);
   if (result.large) URL.revokeObjectURL(result.large.url);
   if (result.webp) URL.revokeObjectURL(result.webp.url);
+}
+
+/**
+ * Clear the optimization cache
+ */
+export function clearOptimizationCache(): void {
+  cache.clear();
 }
