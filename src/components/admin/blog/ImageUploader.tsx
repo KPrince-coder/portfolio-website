@@ -194,7 +194,11 @@ export function ImageUploader({
         progress: 60,
       }));
 
-      const uploadedImage = await uploadFromUrl(imageUrl, postId);
+      const uploadedImage = await uploadImageFromUrl(imageUrl, {
+        postId,
+        altText,
+        caption,
+      });
 
       setUploadState({
         status: "success",
@@ -202,11 +206,7 @@ export function ImageUploader({
         optimizedSize: uploadedImage.file_size,
       });
 
-      onUploadComplete({
-        ...uploadedImage,
-        alt_text: altText,
-        caption: caption,
-      });
+      onUploadComplete(uploadedImage);
     } catch (error) {
       console.error("URL upload failed:", error);
       setUploadState({

@@ -135,7 +135,7 @@ export function PostForm({
   };
 
   const handleImageUpload = (image: any) => {
-    updateField("featured_image_id", image.id);
+    updateField("featured_image", image.optimized_url);
     setShowImageUploader(false);
   };
 
@@ -274,11 +274,11 @@ export function PostForm({
             <Input
               id="scheduled-at"
               type="datetime-local"
-              value={formData.scheduled_at || ""}
-              onChange={(e) => updateField("scheduled_at", e.target.value)}
+              value={formData.scheduled_for || ""}
+              onChange={(e) => updateField("scheduled_for", e.target.value)}
             />
-            {errors.scheduled_at && (
-              <p className="text-sm text-destructive">{errors.scheduled_at}</p>
+            {errors.scheduled_for && (
+              <p className="text-sm text-destructive">{errors.scheduled_for}</p>
             )}
           </div>
         )}
@@ -308,9 +308,9 @@ export function PostForm({
           </div>
           <Switch
             id="comments"
-            checked={formData.allow_comments}
+            checked={formData.comments_enabled}
             onCheckedChange={(checked) =>
-              updateField("allow_comments", checked)
+              updateField("comments_enabled", checked)
             }
           />
         </div>
@@ -324,7 +324,7 @@ export function PostForm({
         <CardTitle className="text-sm font-medium">Featured Image</CardTitle>
       </CardHeader>
       <CardContent>
-        {formData.featured_image_id ? (
+        {formData.featured_image ? (
           <div className="space-y-2">
             <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />

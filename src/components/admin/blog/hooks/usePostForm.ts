@@ -23,9 +23,8 @@ import {
 import type {
   BlogPost,
   BlogPostStatus,
-  BlogImage,
-  CreateBlogPostData,
-  UpdateBlogPostData,
+  CreateBlogPostInput,
+  UpdateBlogPostInput,
 } from "../types";
 
 // ============================================================================
@@ -38,11 +37,11 @@ export interface PostFormData {
   content: string;
   excerpt: string;
   status: BlogPostStatus;
-  featured_image_id?: string;
+  featured_image?: string;
   category_ids: string[];
   tag_ids: string[];
-  scheduled_at?: string;
-  allow_comments: boolean;
+  scheduled_for?: string;
+  comments_enabled: boolean;
   is_featured: boolean;
 }
 
@@ -95,7 +94,7 @@ const INITIAL_FORM_DATA: PostFormData = {
   status: "draft",
   category_ids: [],
   tag_ids: [],
-  allow_comments: true,
+  comments_enabled: true,
   is_featured: false,
 };
 
@@ -184,11 +183,11 @@ export function usePostForm(
         content: post.content,
         excerpt: post.excerpt || "",
         status: post.status,
-        featured_image_id: post.featured_image_id,
+        featured_image: post.featured_image,
         category_ids: post.categories?.map((c) => c.id) || [],
         tag_ids: post.tags?.map((t) => t.id) || [],
-        scheduled_at: post.scheduled_at,
-        allow_comments: post.allow_comments,
+        scheduled_for: post.scheduled_for,
+        comments_enabled: post.comments_enabled,
         is_featured: post.is_featured,
       };
 
@@ -270,8 +269,9 @@ export function usePostForm(
       newErrors.content = "Content is required";
     }
 
-    if (formData.status === "scheduled" && !formData.scheduled_at) {
-      newErrors.scheduled_at = "Scheduled date is required for scheduled posts";
+    if (formData.status === "scheduled" && !formData.scheduled_for) {
+      newErrors.scheduled_for =
+        "Scheduled date is required for scheduled posts";
     }
 
     setErrors(newErrors);
@@ -291,21 +291,20 @@ export function usePostForm(
         throw new Error("Please fix validation errors");
       }
 
-      const postData: CreateBlogPostData | UpdateBlogPostData = {
+      const postData: CreateBlogPostInput = {
         title: formData.title,
-        slug: formData.slug,
         content: formData.content,
         excerpt: formData.excerpt,
         status: "draft",
-        featured_image_id: formData.featured_image_id,
+        featured_image: formData.featured_image,
         category_ids: formData.category_ids,
         tag_ids: formData.tag_ids,
-        allow_comments: formData.allow_comments,
+        comments_enabled: formData.comments_enabled,
         is_featured: formData.is_featured,
       };
 
       if (postId) {
-        await updatePost(postId, postData);
+        await updatePost({ ...postData, id: postId });
       } else {
         const newPost = await createPost(postData);
         // Update URL or state with new post ID if needed
@@ -338,24 +337,23 @@ export function usePostForm(
         throw new Error("Please fix validation errors");
       }
 
-      const postData: CreateBlogPostData | UpdateBlogPostData = {
+      const postData: CreateBlogPostInput = {
         title: formData.title,
-        slug: formData.slug,
         content: formData.content,
         excerpt: formData.excerpt,
         status: formData.status === "scheduled" ? "scheduled" : "published",
-        featured_image_id: formData.featured_image_id,
+        featured_image: formData.featured_image,
         category_ids: formData.category_ids,
         tag_ids: formData.tag_ids,
-        scheduled_at: formData.scheduled_at,
-        allow_comments: formData.allow_comments,
+        scheduled_for: formData.scheduled_for,
+        comments_enabled: formData.comments_enabled,
         is_featured: formData.is_featured,
       };
 
       let currentPostId = postId;
 
       if (postId) {
-        await updatePost(postId, postData);
+        await updatePost({ ...postData, id: postId });
       } else {
         const newPost = await createPost(postData);
         currentPostId = newPost.id;
