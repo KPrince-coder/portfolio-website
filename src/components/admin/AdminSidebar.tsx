@@ -1,10 +1,8 @@
 import React, { useReducer, useCallback, useRef, useEffect } from "react";
 import {
   Shield,
-  Mail,
   Briefcase,
   FileText,
-  Settings,
   User,
   ChevronDown,
   ChevronRight,
@@ -431,7 +429,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
             ref={sidebarRef}
             className={mobileClasses}
             aria-label="Main navigation"
-            aria-hidden={!sidebarOpen}
           >
             {sidebarContent}
           </aside>
@@ -440,7 +437,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
             ref={sidebarRef}
             className={desktopClasses}
             aria-label="Main navigation"
-            aria-hidden={false}
           >
             {sidebarContent}
           </aside>
