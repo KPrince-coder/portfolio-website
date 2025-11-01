@@ -483,6 +483,7 @@ export function PostsList({
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Categories</TableHead>
+                <TableHead>Read Time</TableHead>
                 <TableHead>
                   <Button
                     variant="ghost"
@@ -527,6 +528,9 @@ export function PostsList({
                       <Skeleton className="h-4 w-16" />
                     </TableCell>
                     <TableCell>
+                      <Skeleton className="h-4 w-16" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="h-4 w-24" />
                     </TableCell>
                     <TableCell>
@@ -537,7 +541,7 @@ export function PostsList({
               ) : posts.length === 0 ? (
                 // Empty state
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
+                  <TableCell colSpan={8} className="text-center py-12">
                     <div className="text-muted-foreground">
                       {searchQuery || filters.status ? (
                         <>
@@ -598,6 +602,12 @@ export function PostsList({
                             +{post.categories.length - 2}
                           </Badge>
                         )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {post.read_time_minutes || 1} min
                       </div>
                     </TableCell>
                     <TableCell>{post.view_count.toLocaleString()}</TableCell>

@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Check,
   Upload,
+  Clock,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet-async";
 import { MarkdownEditor } from "./MarkdownEditor";
@@ -660,6 +660,39 @@ export const PostForm = memo(function PostForm({
                 />
                 <p className="text-xs text-muted-foreground mt-2">
                   Used in post previews and meta descriptions
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Read Time Display */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">
+                  Reading Time
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    {formData.content ? (
+                      <>
+                        Estimated:{" "}
+                        {Math.max(
+                          1,
+                          Math.ceil(
+                            formData.content.trim().split(/\s+/).length / 200
+                          )
+                        )}{" "}
+                        min read
+                      </>
+                    ) : (
+                      "Add content to calculate reading time"
+                    )}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Automatically calculated based on ~200 words per minute
                 </p>
               </CardContent>
             </Card>
