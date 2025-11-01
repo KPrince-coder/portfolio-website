@@ -264,11 +264,14 @@ function htmlToMarkdown(html: string): string {
  */
 async function extractPdfText(file: File): Promise<string> {
   try {
-    // Dynamically import pdfjs-dist
+    // Dynamically import pdfjs-dist and worker
     const pdfjsLib = await import("pdfjs-dist");
 
-    // Set worker source - use unpkg as a reliable CDN
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    // Import the worker as a URL (Vite will bundle it)
+    const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+
+    // Set worker source to the bundled worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
 
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
