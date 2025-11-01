@@ -127,6 +127,13 @@ export function MarkdownEditor({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC = Exit fullscreen
+      if (e.key === "Escape" && isFullscreen) {
+        e.preventDefault();
+        setIsFullscreen(false);
+        return;
+      }
+
       // Ctrl/Cmd + B = Bold
       if ((e.ctrlKey || e.metaKey) && e.key === "b") {
         e.preventDefault();
@@ -144,14 +151,26 @@ export function MarkdownEditor({
         e.preventDefault();
         insertMarkdown("[", "](url)", "link text");
       }
+
+      // Ctrl/Cmd + Shift + C = Code block
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "C") {
+        e.preventDefault();
+        insertMarkdown("```\n", "\n```", "code");
+      }
     };
+
+    // Add global listener for ESC in fullscreen
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
 
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.addEventListener("keydown", handleKeyDown);
       return () => textarea.removeEventListener("keydown", handleKeyDown);
     }
-  }, [insertMarkdown]);
+  }, [insertMarkdown, isFullscreen]);
 
   // ============================================================================
   // TOOLBAR ACTIONS
@@ -313,11 +332,11 @@ export function MarkdownEditor({
     </div>
   );
 
-  // Memoized preview component for better performance
+  // Memoized preview component for better performance - matches PostContent styling
   const MarkdownPreview = useMemo(
     () => (
       <div
-        className="prose prose-sm max-w-none p-4 overflow-auto"
+        className="prose prose-slate dark:prose-invert max-w-none p-4 overflow-auto"
         style={{
           minHeight: isFullscreen ? "80vh" : minHeight,
           maxHeight: isFullscreen ? "80vh" : maxHeight,
@@ -326,22 +345,137 @@ export function MarkdownEditor({
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            code({ className, children, ...props }: any) {
+            // Code blocks with syntax highlighting - matches PostContent
+            code: ({ inline, className, children, ...props }: any) => {
               const match = /language-(\w+)/.exec(className || "");
-              return match ? (
-                <SyntaxHighlighter
-                  style={vscDarkPlus as any}
-                  language={match[1]}
-                  PreTag="div"
+              const language = match ? match[1] : "";
+
+              if (!inline && language) {
+                return (
+                  <SyntaxHighlighter
+                    style={vscDarkPlus}
+                    language={language}
+                    PreTag="div"
+                    className="rounded-lg my-4 !bg-[#1e1e1e]"
+                    showLineNumbers
+                    customStyle={{
+                      margin: "1rem 0",
+                      borderRadius: "0.5rem",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                );
+              }
+
+              return (
+                <code
+                  className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+                  {...props}
                 >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
-              ) : (
-                <code className={className} {...props}>
                   {children}
                 </code>
               );
             },
+
+            // Headings with proper styling
+            h1: ({ children, ...props }: any) => (
+              <h1 className="text-3xl font-bold mt-8 mb-4" {...props}>
+                {children}
+              </h1>
+            ),
+            h2: ({ children, ...props }: any) => (
+              <h2 className="text-2xl font-bold mt-6 mb-3" {...props}>
+                {children}
+              </h2>
+            ),
+            h3: ({ children, ...props }: any) => (
+              <h3 className="text-xl font-semibold mt-4 mb-2" {...props}>
+                {children}
+              </h3>
+            ),
+
+            // Images with lazy loading
+            img: ({ src, alt, ...props }: any) => (
+              <img
+                src={src}
+                alt={alt || ""}
+                loading="lazy"
+                className="rounded-lg w-full h-auto my-4"
+                {...props}
+              />
+            ),
+
+            // Links
+            a: ({ href, children, ...props }: any) => {
+              const isExternal = href?.startsWith("http");
+              return (
+                <a
+                  href={href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  className="text-primary hover:underline"
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            },
+
+            // Blockquotes
+            blockquote: ({ children, ...props }: any) => (
+              <blockquote
+                className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground"
+                {...props}
+              >
+                {children}
+              </blockquote>
+            ),
+
+            // Lists
+            ul: ({ children, ...props }: any) => (
+              <ul className="list-disc list-inside my-4 space-y-2" {...props}>
+                {children}
+              </ul>
+            ),
+            ol: ({ children, ...props }: any) => (
+              <ol
+                className="list-decimal list-inside my-4 space-y-2"
+                {...props}
+              >
+                {children}
+              </ol>
+            ),
+
+            // Paragraphs
+            p: ({ children, ...props }: any) => (
+              <p className="my-4 leading-7" {...props}>
+                {children}
+              </p>
+            ),
+
+            // Tables
+            table: ({ children, ...props }: any) => (
+              <div className="overflow-x-auto my-4">
+                <table className="w-full border-collapse" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            th: ({ children, ...props }: any) => (
+              <th
+                className="border border-border bg-muted px-4 py-2 text-left font-semibold"
+                {...props}
+              >
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }: any) => (
+              <td className="border border-border px-4 py-2" {...props}>
+                {children}
+              </td>
+            ),
           }}
         >
           {previewValue ||
@@ -359,32 +493,54 @@ export function MarkdownEditor({
   // ============================================================================
 
   return (
-    <div
-      className={`border rounded-lg overflow-hidden ${
-        isFullscreen
-          ? "fixed inset-4 z-50 bg-background shadow-2xl"
-          : "relative"
-      }`}
-    >
-      {renderToolbar()}
+    <>
+      {/* Fullscreen Backdrop */}
+      {isFullscreen && (
+        <div
+          className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40"
+          onClick={() => setIsFullscreen(false)}
+          aria-label="Exit fullscreen"
+        />
+      )}
 
-      <div className="flex">
-        {/* Edit View */}
-        {(view === "edit" || view === "split") && (
-          <div className={`${view === "split" ? "w-1/2 border-r" : "w-full"}`}>
-            {renderEditor()}
-          </div>
-        )}
+      {/* Editor Container */}
+      <div
+        className={`border rounded-lg overflow-hidden transition-all ${
+          isFullscreen
+            ? "fixed inset-4 z-50 bg-background shadow-2xl"
+            : "relative"
+        }`}
+      >
+        {renderToolbar()}
 
-        {/* Preview View */}
-        {(view === "preview" || view === "split") && (
-          <div
-            className={`${view === "split" ? "w-1/2" : "w-full"} bg-muted/10`}
-          >
-            {renderPreview()}
+        <div className="flex">
+          {/* Edit View */}
+          {(view === "edit" || view === "split") && (
+            <div
+              className={`${view === "split" ? "w-1/2 border-r" : "w-full"}`}
+            >
+              {renderEditor()}
+            </div>
+          )}
+
+          {/* Preview View */}
+          {(view === "preview" || view === "split") && (
+            <div
+              className={`${view === "split" ? "w-1/2" : "w-full"} bg-muted/10`}
+            >
+              {renderPreview()}
+            </div>
+          )}
+        </div>
+
+        {/* Fullscreen Hint */}
+        {isFullscreen && (
+          <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-xs text-muted-foreground border">
+            Press <kbd className="px-1.5 py-0.5 bg-muted rounded">ESC</kbd> to
+            exit fullscreen
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

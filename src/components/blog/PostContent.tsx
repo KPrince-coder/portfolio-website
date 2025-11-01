@@ -11,7 +11,7 @@
  * @module blog/PostContent
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -20,6 +20,9 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Copy, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // ============================================================================
 // TYPES
@@ -89,6 +92,9 @@ export const PostContent = React.memo<PostContentProps>(function PostContent({
   showTableOfContents = true,
   className = "",
 }) {
+  const { toast } = useToast();
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
   // ============================================================================
   // MEMOIZED VALUES
   // ============================================================================
@@ -96,6 +102,28 @@ export const PostContent = React.memo<PostContentProps>(function PostContent({
   const headings = useMemo(() => extractHeadings(content), [content]);
 
   const hasTableOfContents = showTableOfContents && headings.length > 0;
+
+  // ============================================================================
+  // CODE COPY HANDLER
+  // ============================================================================
+
+  const handleCopyCode = async (code: string, language: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      toast({
+        title: "Code copied!",
+        description: `${language} code copied to clipboard`,
+      });
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy code to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
 
   // ============================================================================
   // MARKDOWN COMPONENTS
@@ -141,28 +169,65 @@ export const PostContent = React.memo<PostContentProps>(function PostContent({
         );
       },
 
-      // Code blocks with syntax highlighting
+      // Code blocks with syntax highlighting and enhanced design
       code: ({ inline, className, children, ...props }: any) => {
         const match = /language-(\w+)/.exec(className || "");
         const language = match ? match[1] : "";
+        const codeString = String(children).replace(/\n$/, "");
 
         if (!inline && language) {
+          const isCopied = copiedCode === codeString;
+
           return (
-            <SyntaxHighlighter
-              style={vscDarkPlus}
-              language={language}
-              PreTag="div"
-              className="rounded-lg my-4"
-              {...props}
-            >
-              {String(children).replace(/\n$/, "")}
-            </SyntaxHighlighter>
+            <div className="relative group my-6">
+              {/* Language Badge */}
+              <div className="absolute top-0 left-0 px-3 py-1 bg-primary/10 text-primary text-xs font-mono rounded-br-lg rounded-tl-lg z-10">
+                {language}
+              </div>
+
+              {/* Copy Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopyCode(codeString, language)}
+                className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                title="Copy code"
+              >
+                {isCopied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+
+              <SyntaxHighlighter
+                style={vscDarkPlus}
+                language={language}
+                PreTag="div"
+                className="!bg-[#1e1e1e] !m-0"
+                showLineNumbers
+                customStyle={{
+                  borderRadius: "0.5rem",
+                  fontSize: "0.875rem",
+                  padding: "1.5rem",
+                  paddingTop: "2.5rem",
+                }}
+                codeTagProps={{
+                  style: {
+                    fontFamily: "'Fira Code', 'Consolas', 'Monaco', monospace",
+                  },
+                }}
+                {...props}
+              >
+                {codeString}
+              </SyntaxHighlighter>
+            </div>
           );
         }
 
         return (
           <code
-            className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+            className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-primary"
             {...props}
           >
             {children}

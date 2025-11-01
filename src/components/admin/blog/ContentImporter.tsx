@@ -18,7 +18,7 @@
  * @module blog/ContentImporter
  */
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   Upload,
@@ -27,7 +27,6 @@ import {
   X,
   AlertCircle,
   Loader2,
-  Eye,
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -217,10 +216,10 @@ function htmlToMarkdown(html: string): string {
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, "![]($1)");
 
   // Lists
-  markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
+  markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (_match, content) => {
     return content.replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n");
   });
-  markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
+  markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (_match, content) => {
     let counter = 1;
     return content.replace(
       /<li[^>]*>(.*?)<\/li>/gi,

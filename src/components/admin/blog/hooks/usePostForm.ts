@@ -20,12 +20,7 @@ import {
   publishPost,
   unpublishPost,
 } from "@/services/blogService";
-import type {
-  BlogPost,
-  BlogPostStatus,
-  CreateBlogPostInput,
-  UpdateBlogPostInput,
-} from "../types";
+import type { BlogPostStatus, CreateBlogPostInput } from "../types";
 
 // ============================================================================
 // TYPES

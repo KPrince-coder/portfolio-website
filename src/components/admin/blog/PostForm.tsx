@@ -27,6 +27,7 @@ import {
   Check,
   Upload,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,9 +92,7 @@ export const PostForm = memo(function PostForm({
     saveDraft,
     publish,
     unpublish,
-    reset,
     generateSlug,
-    validate,
     errors,
   } = usePostForm({ postId, autoSave: true });
 
@@ -420,56 +419,57 @@ export const PostForm = memo(function PostForm({
     [formData.tag_ids]
   );
 
-  const renderCategoriesCard = () => {
-    const selectedCategories = formData.category_ids || [];
-
-    return (
-      <Card>
-        <CardHeader>
-          <div citle className="text-sm font-medium flex items-center gap-2">
-            <Folder className="h-4 w-4" />
-            Categories
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {categoriesLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </div>
-          ) : categories.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No categories available
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {categories.map((category) => (
-                <div key={category.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={`category-${category.id}`}
-                    checked={selectedCategorySet.has(category.id)}
-                    onChange={() => toggleCategory(category.id)}
-                    className="rounded border-gray-300 focus:ring-2 focus:ring-primary"
+  const renderCategoriesCard = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Folder className="h-4 w-4" />
+          Categories
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {categoriesLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No categories available
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {categories.map((category) => (
+              <div key={category.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`category-${category.id}`}
+                  checked={selectedCategorySet.has(category.id)}
+                  onChange={() => toggleCategory(category.id)}
+                  className="rounded border-gray-300 focus:ring-2 focus:ring-primary"
+                />
+                <label
+                  htmlFor={`category-${category.id}`}
+                  className="text-sm cursor-pointer flex items-center gap-2"
+                >
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: category.color }}
+                    aria-hidden="true"
                   />
-                  <label
-                    htmlFor={`category-${category.id}`}
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                  >
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                      aria-hidden="true"
-                    />
-                    {category.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
+                  {category.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   const renderTagsCard = () => {
     const selectedTags = formData.tag_ids || [];
