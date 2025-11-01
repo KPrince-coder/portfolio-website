@@ -30,12 +30,13 @@ const Index: React.FC = () => {
       {/* Main Content */}
       <main>
         <Hero />
-        <About />
-        <Skills />
-        <Projects />
-        <Resume />
-
-        <Contact />
+        <Suspense fallback={<div className="min-h-screen" />}>
+          <About />
+          <Skills />
+          <Projects />
+          <Resume />
+          <Contact />
+        </Suspense>
       </main>
 
       {/* Footer */}

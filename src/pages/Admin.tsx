@@ -128,13 +128,9 @@ const Admin: React.FC = () => {
       setProjects(projectsData);
     } catch (error) {
       console.error("Error refetching projects:", error);
-      toast({
-        variant: "destructive",
-        title: "Failed to refetch projects",
-        description: "Please try again.",
-      });
+      // Don't include toast in dependencies to avoid infinite loops
     }
-  }, [fetchProjects, toast]);
+  }, [fetchProjects]);
 
   const loadData = useCallback(async () => {
     try {
@@ -171,13 +167,10 @@ const Admin: React.FC = () => {
       setProjectAnalytics([]); // Empty array until table is created
     } catch (error) {
       console.error("Error loading data:", error);
-      toast({
-        variant: "destructive",
-        title: "Failed to load data",
-        description: "Please refresh the page to try again.",
-      });
+      // Don't include toast in dependencies to avoid infinite loops
     }
-  }, [toast, fetchProjects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -214,7 +207,15 @@ const Admin: React.FC = () => {
           });
         });
     }
-  }, [fetchProjects, user, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    user,
+    projectSearchTerm,
+    projectCategoryFilter,
+    projectStatusFilter,
+    projectPublishedFilter,
+    projectFeaturedFilter,
+  ]);
 
   // Set up real-time messages with callbacks
   const { messages: contactMessages, updateMessage } = useRealtimeMessages({
