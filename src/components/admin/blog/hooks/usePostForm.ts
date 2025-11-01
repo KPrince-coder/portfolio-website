@@ -43,6 +43,14 @@ export interface PostFormData {
   scheduled_for?: string;
   comments_enabled: boolean;
   is_featured: boolean;
+  seo_metadata?: {
+    meta_title?: string;
+    meta_description?: string;
+    og_image?: string;
+    keywords?: string[];
+    canonical_url?: string;
+    robots_meta?: string;
+  };
 }
 
 export interface UsePostFormOptions {
@@ -96,6 +104,9 @@ const INITIAL_FORM_DATA: PostFormData = {
   tag_ids: [],
   comments_enabled: true,
   is_featured: false,
+  seo_metadata: {
+    robots_meta: "index,follow",
+  },
 };
 
 const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
@@ -189,6 +200,7 @@ export function usePostForm(
         scheduled_for: post.scheduled_for,
         comments_enabled: post.comments_enabled,
         is_featured: post.is_featured,
+        seo_metadata: post.seo_metadata || { robots_meta: "index,follow" },
       };
 
       setFormData(loadedData);
@@ -301,6 +313,7 @@ export function usePostForm(
         tag_ids: formData.tag_ids,
         comments_enabled: formData.comments_enabled,
         is_featured: formData.is_featured,
+        seo_metadata: formData.seo_metadata,
       };
 
       if (postId) {
@@ -348,6 +361,7 @@ export function usePostForm(
         scheduled_for: formData.scheduled_for,
         comments_enabled: formData.comments_enabled,
         is_featured: formData.is_featured,
+        seo_metadata: formData.seo_metadata,
       };
 
       let currentPostId = postId;

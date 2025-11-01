@@ -13,19 +13,15 @@
  * @module blog/PostForm
  */
 
-import React, { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import {
   Save,
   Send,
   Eye,
-  Clock,
   Image as ImageIcon,
   Tag,
   Folder,
-  Calendar,
-  MessageSquare,
-  Star,
   Loader2,
   AlertCircle,
   Check,
@@ -56,6 +52,8 @@ import {
 import { MarkdownEditor } from "./MarkdownEditor";
 import { ImageUploader } from "./ImageUploader";
 import { usePostForm } from "./hooks/usePostForm";
+import { useCategories } from "./hooks/useCategories";
+import { useTags } from "./hooks/useTags";
 import type { BlogPostStatus } from "./types";
 
 // ============================================================================
@@ -95,6 +93,10 @@ export function PostForm({
     validate,
     errors,
   } = usePostForm({ postId, autoSave: true });
+
+  // Move hooks to top level - CRITICAL FIX
+  const { categories, loading: categoriesLoading } = useCategories();
+  const { tags, loading: tagsLoading, searchQuery, setSearchQuery } = useTags();
 
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -352,31 +354,161 @@ export function PostForm({
     </Card>
   );
 
-  const renderCategoriesCard = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">Categories</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          Category selection coming soon
-        </p>
-      </CardContent>
-    </Card>
+  // Memoize callbacks for performance
+  const toggleCategory = useCallback(
+    (categoryId: string) => {
+      const selectedCategories = formData.category_ids || [];
+      const newCategories = selectedCategories.includes(categoryId)
+        ? selectedCategories.filter((id) => id !== categoryId)
+        : [...selectedCategories, categoryId];
+      updateField("category_ids", newCategories);
+    },
+    [formData.category_ids, updateField]
   );
 
-  const renderTagsCard = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">Tags</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          Tag selection coming soon
-        </p>
-      </CardContent>
-    </Card>
+  const toggleTag = useCallback(
+    (tagId: string) => {
+      const selectedTags = formData.tag_ids || [];
+      const newTags = selectedTags.includes(tagId)
+        ? selectedTags.filter((id) => id !== tagId)
+        : [...selectedTags, tagId];
+      updateField("tag_ids", newTags);
+    },
+    [formData.tag_ids, updateField]
   );
+
+  // Memoize selected items for O(1) lookups
+  const selectedCategorySet = useMemo(
+    () => new Set(formData.category_ids || []),
+    [formData.category_ids]
+  );
+
+  const selectedTagSet = useMemo(
+    () => new Set(formData.tag_ids || []),
+    [formData.tag_ids]
+  );
+
+  const renderCategoriesCard = () => {
+    const selectedCategories = formData.category_ids || [];
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Folder className="h-4 w-4" />
+            Categories
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {categoriesLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : categories.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No categories available
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {categories.map((category) => (
+                <div key={category.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`category-${category.id}`}
+                    checked={selectedCategorySet.has(category.id)}
+                    onChange={() => toggleCategory(category.id)}
+                    className="rounded border-gray-300 focus:ring-2 focus:ring-primary"
+                  />
+                  <label
+                    htmlFor={`category-${category.id}`}
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: category.color }}
+                      aria-hidden="true"
+                    />
+                    {category.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderTagsCard = () => {
+    const selectedTags = formData.tag_ids || [];
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Tags
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label htmlFor="tags-search" className="sr-only">
+              Search tags
+            </Label>
+            <Input
+              id="tags-search"
+              placeholder="Search tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm"
+              aria-label="Search tags"
+            />
+          </div>
+          {tagsLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : tags.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tags found</p>
+          ) : (
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {tags.map((tag) => (
+                <div key={tag.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`tag-${tag.id}`}
+                    checked={selectedTagSet.has(tag.id)}
+                    onChange={() => toggleTag(tag.id)}
+                    className="rounded border-gray-300 focus:ring-2 focus:ring-primary"
+                  />
+                  <label
+                    htmlFor={`tag-${tag.id}`}
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                  >
+                    {tag.name}
+                    <span className="text-xs text-muted-foreground">
+                      ({tag.usage_count})
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-2 border-t">
+              {tags
+                .filter((tag) => selectedTags.includes(tag.id))
+                .map((tag) => (
+                  <Badge key={tag.id} variant="secondary" className="text-xs">
+                    {tag.name}
+                  </Badge>
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   // ============================================================================
   // RENDER
@@ -480,6 +612,120 @@ export function PostForm({
               <p className="text-xs text-muted-foreground mt-2">
                 Used in post previews and meta descriptions
               </p>
+            </CardContent>
+          </Card>
+
+          {/* SEO Metadata */}
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO & Metadata</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="meta-title">Meta Title</Label>
+                <Input
+                  id="meta-title"
+                  value={formData.seo_metadata?.meta_title || ""}
+                  onChange={(e) =>
+                    updateField("seo_metadata", {
+                      ...formData.seo_metadata,
+                      meta_title: e.target.value,
+                    })
+                  }
+                  placeholder="Custom SEO title (defaults to post title)"
+                  maxLength={60}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {(formData.seo_metadata?.meta_title || "").length}/60
+                  characters
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="meta-description">Meta Description</Label>
+                <Textarea
+                  id="meta-description"
+                  value={formData.seo_metadata?.meta_description || ""}
+                  onChange={(e) =>
+                    updateField("seo_metadata", {
+                      ...formData.seo_metadata,
+                      meta_description: e.target.value,
+                    })
+                  }
+                  placeholder="Custom SEO description (defaults to excerpt)"
+                  rows={3}
+                  maxLength={160}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {(formData.seo_metadata?.meta_description || "").length}/160
+                  characters
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="keywords">Keywords</Label>
+                <Input
+                  id="keywords"
+                  value={formData.seo_metadata?.keywords?.join(", ") || ""}
+                  onChange={(e) =>
+                    updateField("seo_metadata", {
+                      ...formData.seo_metadata,
+                      keywords: e.target.value.split(",").map((k) => k.trim()),
+                    })
+                  }
+                  placeholder="keyword1, keyword2, keyword3"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated keywords for SEO
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="canonical-url">Canonical URL</Label>
+                <Input
+                  id="canonical-url"
+                  value={formData.seo_metadata?.canonical_url || ""}
+                  onChange={(e) =>
+                    updateField("seo_metadata", {
+                      ...formData.seo_metadata,
+                      canonical_url: e.target.value,
+                    })
+                  }
+                  placeholder="https://example.com/original-post"
+                />
+                <p className="text-xs text-muted-foreground">
+                  For cross-posted content (prevents duplicate content issues)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="robots-meta">Robots Meta</Label>
+                <Select
+                  value={formData.seo_metadata?.robots_meta || "index,follow"}
+                  onValueChange={(value) =>
+                    updateField("seo_metadata", {
+                      ...formData.seo_metadata,
+                      robots_meta: value,
+                    })
+                  }
+                >
+                  <SelectTrigger id="robots-meta">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="index,follow">Index, Follow</SelectItem>
+                    <SelectItem value="noindex,follow">
+                      No Index, Follow
+                    </SelectItem>
+                    <SelectItem value="index,nofollow">
+                      Index, No Follow
+                    </SelectItem>
+                    <SelectItem value="noindex,nofollow">
+                      No Index, No Follow
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
         </div>
