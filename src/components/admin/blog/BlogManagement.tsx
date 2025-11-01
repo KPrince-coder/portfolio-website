@@ -46,9 +46,13 @@ export const BlogManagement = memo(function BlogManagement({
     onTabChange?.("posts-new");
   }, [onTabChange]);
 
-  const handleEditPost = useCallback((postId: string) => {
-    setEditingPostId(postId);
-  }, []);
+  const handleEditPost = useCallback(
+    (postId: string) => {
+      setEditingPostId(postId);
+      onTabChange?.("posts-edit");
+    },
+    [onTabChange]
+  );
 
   const handlePostSave = useCallback(() => {
     toast({
@@ -56,7 +60,8 @@ export const BlogManagement = memo(function BlogManagement({
       description: "Your blog post has been saved successfully",
     });
     setEditingPostId(null);
-  }, [toast]);
+    onTabChange?.("posts-list");
+  }, [toast, onTabChange]);
 
   const handlePostPublish = useCallback(() => {
     toast({
@@ -64,11 +69,13 @@ export const BlogManagement = memo(function BlogManagement({
       description: "Your blog post has been published successfully",
     });
     setEditingPostId(null);
-  }, [toast]);
+    onTabChange?.("posts-list");
+  }, [toast, onTabChange]);
 
   const handlePostCancel = useCallback(() => {
     setEditingPostId(null);
-  }, []);
+    onTabChange?.("posts-list");
+  }, [onTabChange]);
 
   // ============================================================================
   // RENDER HELPERS
