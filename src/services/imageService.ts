@@ -285,6 +285,17 @@ export async function uploadImage(
       throw new Error("User not authenticated");
     }
 
+    // Get user's profile ID (blog_images.uploaded_by references profiles.id)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.user.id)
+      .single();
+
+    if (!profile) {
+      throw new Error("User profile not found");
+    }
+
     const { data: imageData, error: dbError } = await supabase
       .from("blog_images")
       .insert({
@@ -305,7 +316,7 @@ export async function uploadImage(
         format: optimized.metadata.format,
         compression_ratio: optimized.metadata.compressionRatio,
         is_featured: isFeatured,
-        uploaded_by: user.user.id,
+        uploaded_by: profile.id,
       })
       .select()
       .single();
