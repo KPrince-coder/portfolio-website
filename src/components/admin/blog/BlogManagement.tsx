@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface BlogManagementProps {
   activeSubTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 // ============================================================================
@@ -33,6 +34,7 @@ interface BlogManagementProps {
 
 export function BlogManagement({
   activeSubTab = "posts-list",
+  onTabChange,
 }: BlogManagementProps) {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -43,7 +45,8 @@ export function BlogManagement({
 
   const handleCreatePost = () => {
     setEditingPostId(null);
-    // The activeSubTab should be changed by parent, but we can show the form
+    // Navigate to create new subtab
+    onTabChange?.("posts-new");
   };
 
   const handleEditPost = (postId: string) => {
@@ -94,7 +97,12 @@ export function BlogManagement({
   const renderSection = () => {
     switch (activeSubTab) {
       case "posts-list":
-        return <PostsList onEditPost={handleEditPost} />;
+        return (
+          <PostsList
+            onEditPost={handleEditPost}
+            onCreatePost={handleCreatePost}
+          />
+        );
       case "posts-new":
         return (
           <PostForm
@@ -117,7 +125,12 @@ export function BlogManagement({
       case "posts-tags":
         return <TagsSection />;
       default:
-        return <PostsList onEditPost={handleEditPost} />;
+        return (
+          <PostsList
+            onEditPost={handleEditPost}
+            onCreatePost={handleCreatePost}
+          />
+        );
     }
   };
 

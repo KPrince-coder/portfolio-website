@@ -18,6 +18,7 @@ import { BlogManagement } from "./BlogManagement";
 
 interface BlogManagementRouterProps {
   activeSubTab: string;
+  onTabChange?: (tab: string) => void;
 }
 
 // ============================================================================
@@ -26,6 +27,9 @@ interface BlogManagementRouterProps {
 
 export function BlogManagementRouter({
   activeSubTab,
+  onTabChange,
 }: BlogManagementRouterProps) {
-  return <BlogManagement activeSubTab={activeSubTab} />;
+  return (
+    <BlogManagement activeSubTab={activeSubTab} onTabChange={onTabChange} />
+  );
 }

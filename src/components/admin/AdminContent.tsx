@@ -188,7 +188,10 @@ export const AdminContent: React.FC<AdminContentProps> = ({
           )}
 
           {activeTab.startsWith("posts") && (
-            <BlogManagementRouter activeSubTab={activeTab} />
+            <BlogManagementRouter
+              activeSubTab={activeTab}
+              onTabChange={onTabChange}
+            />
           )}
 
           {activeTab === "settings" && fullUser && (
