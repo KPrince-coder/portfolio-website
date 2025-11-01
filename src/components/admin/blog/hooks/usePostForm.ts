@@ -270,9 +270,7 @@ export function usePostForm(
       newErrors.title = "Title is required";
     }
 
-    if (!formData.slug.trim()) {
-      newErrors.slug = "Slug is required";
-    }
+    // Slug validation removed - database trigger generates it automatically
 
     if (!formData.content.trim()) {
       newErrors.content = "Content is required";
