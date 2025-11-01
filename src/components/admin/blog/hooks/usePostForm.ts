@@ -146,7 +146,7 @@ export function usePostForm(
   options: UsePostFormOptions = {}
 ): UsePostFormReturn {
   const {
-    postId,
+    postId: initialPostId,
     autoSave = true,
     autoSaveInterval = AUTO_SAVE_INTERVAL,
   } = options;
@@ -155,6 +155,7 @@ export function usePostForm(
   // STATE
   // ============================================================================
 
+  const [postId, setPostId] = useState<string | undefined>(initialPostId);
   const [formData, setFormData] = useState<PostFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -216,10 +217,11 @@ export function usePostForm(
   // ============================================================================
 
   useEffect(() => {
-    if (postId) {
-      loadPost(postId);
+    if (initialPostId) {
+      setPostId(initialPostId);
+      loadPost(initialPostId);
     }
-  }, [postId, loadPost]);
+  }, [initialPostId, loadPost]);
 
   // ============================================================================
   // UPDATE FIELD
@@ -315,7 +317,9 @@ export function usePostForm(
         await updatePost({ ...postData, id: postId });
       } else {
         const newPost = await createPost(postData);
-        // Update URL or state with new post ID if needed
+        // Update postId state so subsequent saves are updates, not creates
+        setPostId(newPost.id);
+        // Update URL
         window.history.replaceState(null, "", `/admin/blog/${newPost.id}/edit`);
       }
 
@@ -366,6 +370,8 @@ export function usePostForm(
       } else {
         const newPost = await createPost(postData);
         currentPostId = newPost.id;
+        // Update postId state
+        setPostId(newPost.id);
         window.history.replaceState(null, "", `/admin/blog/${newPost.id}/edit`);
       }
 

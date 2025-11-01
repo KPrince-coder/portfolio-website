@@ -302,8 +302,20 @@ export async function createPost(
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error("User not authenticated");
 
-    // Generate slug if not provided
-    const slug = generateSlug(input.title);
+    // Generate unique slug
+    let slug = generateSlug(input.title);
+
+    // Check if slug exists and make it unique
+    const { data: existingPost } = await supabase
+      .from("blog_posts")
+      .select("slug")
+      .eq("slug", slug)
+      .single();
+
+    if (existingPost) {
+      // Add timestamp to make slug unique
+      slug = `${slug}-${Date.now()}`;
+    }
 
     // Calculate read time
     const read_time_minutes = calculateReadTime(input.content);
