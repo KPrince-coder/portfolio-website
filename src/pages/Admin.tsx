@@ -93,11 +93,11 @@ const Admin: React.FC = () => {
       if (projectStatusFilter !== "All") {
         query = query.eq("status", projectStatusFilter);
       }
-      // Note: 'published' field doesn't exist - using 'is_featured' instead
-      // TODO: Add 'published' field to projects table
-      if (projectPublishedFilter !== "All") {
-        query = query.eq("is_featured", projectPublishedFilter === "true");
-      }
+      // Note: Projects don't have a published field - they use status instead
+      // Skip published filter for projects as it's not applicable
+      // if (projectPublishedFilter !== "All") {
+      //   query = query.eq("status", "completed");
+      // }
       if (projectFeaturedFilter !== "All") {
         query = query.eq("is_featured", projectFeaturedFilter === "true");
       }
@@ -288,10 +288,9 @@ const Admin: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const total = projects.length;
-    // Note: 'published' field doesn't exist - using 'is_featured' as proxy
-    // TODO: Add 'published' field to projects table or use correct field
-    const published = projects.filter((p) => p.is_featured).length;
-    const draft = projects.filter((p) => !p.is_featured).length;
+    // Projects use status field: 'completed' = published, others = draft
+    const published = projects.filter((p) => p.status === "completed").length;
+    const draft = projects.filter((p) => p.status !== "completed").length;
 
     const totalViews = projectAnalytics.reduce(
       (sum, pa) => sum + pa.view_count,
