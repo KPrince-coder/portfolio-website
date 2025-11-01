@@ -79,6 +79,7 @@ const ACCEPTED_FORMATS = {
   "text/markdown": [".md", ".markdown"],
   "text/html": [".html", ".htm"],
   "text/plain": [".txt"],
+  "application/pdf": [".pdf"],
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -259,9 +260,110 @@ function htmlToMarkdown(html: string): string {
 }
 
 /**
+ * Extract text from PDF file
+ */
+async function extractPdfText(file: File): Promise<string> {
+  try {
+    // Dynamically import pdfjs-dist
+    const pdfjsLib = await import("pdfjs-dist");
+
+    // Set worker source - use unpkg as a reliable CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+
+          // Load PDF document
+          const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+          const pdf = await loadingTask.promise;
+
+          const textContent: string[] = [];
+
+          // Extract text from each page
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const content = await page.getTextContent();
+
+            // Combine text items with proper spacing
+            const pageText = content.items
+              .map((item: any) => item.str)
+              .join(" ");
+
+            textContent.push(pageText);
+          }
+
+          const fullText = textContent.join("\n\n").trim();
+
+          if (!fullText || fullText.length < 10) {
+            reject(
+              new Error(
+                "Could not extract text from PDF. The PDF might be image-based or encrypted."
+              )
+            );
+            return;
+          }
+
+          resolve(fullText);
+        } catch (error) {
+          reject(
+            new Error(
+              `Failed to parse PDF: ${
+                error instanceof Error ? error.message : "Unknown error"
+              }`
+            )
+          );
+        }
+      };
+
+      reader.onerror = () => reject(new Error("Failed to read PDF file"));
+      reader.readAsArrayBuffer(file);
+    });
+  } catch (error) {
+    throw new Error(
+      `PDF parsing failed: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+  }
+}
+
+/**
  * Parse uploaded file
  */
 async function parseFile(file: File): Promise<ParsedFile> {
+  // Handle PDF files separately
+  if (
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  ) {
+    try {
+      const content = await extractPdfText(file);
+      const format = "text";
+      const title = extractTitle(content, format);
+      const excerpt = extractExcerpt(content, format);
+
+      return {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        content,
+        format,
+        title,
+        excerpt,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to parse PDF: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -428,6 +530,7 @@ export function ContentImporter({ onImport, onCancel }: ContentImporterProps) {
                         <Badge variant="outline">Markdown (.md)</Badge>
                         <Badge variant="outline">HTML (.html)</Badge>
                         <Badge variant="outline">Text (.txt)</Badge>
+                        <Badge variant="outline">PDF (.pdf)</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Maximum file size: {MAX_FILE_SIZE / 1024 / 1024}MB
