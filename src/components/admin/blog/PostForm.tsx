@@ -13,7 +13,7 @@
  * @module blog/PostForm
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { format } from "date-fns";
 import {
   Save,
@@ -25,6 +25,7 @@ import {
   Loader2,
   AlertCircle,
   Check,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +50,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Helmet } from "react-helmet-async";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { ImageUploader } from "./ImageUploader";
+import { ContentImporter } from "./ContentImporter";
 import { usePostForm } from "./hooks/usePostForm";
 import { useCategories } from "./hooks/useCategories";
 import { useTags } from "./hooks/useTags";
@@ -71,7 +74,7 @@ interface PostFormProps {
 // COMPONENT
 // ============================================================================
 
-export function PostForm({
+export const PostForm = memo(function PostForm({
   postId,
   onSave,
   onPublish,
@@ -100,6 +103,7 @@ export function PostForm({
 
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showContentImporter, setShowContentImporter] = useState(false);
 
   // ============================================================================
   // HANDLERS
@@ -139,6 +143,23 @@ export function PostForm({
   const handleImageUpload = (image: any) => {
     updateField("featured_image", image.optimized_url);
     setShowImageUploader(false);
+  };
+
+  const handleContentImport = (imported: any) => {
+    // Import title if not already set
+    if (imported.title && !formData.title) {
+      updateField("title", imported.title);
+    }
+
+    // Import content
+    updateField("content", imported.content);
+
+    // Import excerpt if not already set
+    if (imported.excerpt && !formData.excerpt) {
+      updateField("excerpt", imported.excerpt);
+    }
+
+    setShowContentImporter(false);
   };
 
   // ============================================================================
@@ -227,6 +248,17 @@ export function PostForm({
           >
             <Eye className="h-4 w-4 mr-2" />
             Preview
+          </Button>
+
+          <Separator />
+
+          <Button
+            onClick={() => setShowContentImporter(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Import Content
           </Button>
 
           {onCancel && (
@@ -394,7 +426,7 @@ export function PostForm({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <div citle className="text-sm font-medium flex items-center gap-2">
             <Folder className="h-4 w-4" />
             Categories
           </CardTitle>
@@ -523,250 +555,270 @@ export function PostForm({
   }
 
   return (
-    <div className="space-y-6">
-      {renderHeader()}
+    <>
+      <Helmet>
+        <title>
+          {postId ? "Edit Post" : "Create New Post"} - Admin Dashboard
+        </title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="space-y-6">
+        {renderHeader()}
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Title */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => updateField("title", e.target.value)}
-                  placeholder="Enter post title"
-                  className="text-2xl font-bold"
-                />
-                {errors.title && (
-                  <p className="text-sm text-destructive">{errors.title}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug *</Label>
-                <div className="flex gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Title */}
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title *</Label>
                   <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => updateField("slug", e.target.value)}
-                    placeholder="post-url-slug"
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => updateField("title", e.target.value)}
+                    placeholder="Enter post title"
+                    className="text-2xl font-bold"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSlugGenerate}
-                  >
-                    Generate
-                  </Button>
+                  {errors.title && (
+                    <p className="text-sm text-destructive">{errors.title}</p>
+                  )}
                 </div>
-                {errors.slug && (
-                  <p className="text-sm text-destructive">{errors.slug}</p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => updateField("slug", e.target.value)}
+                      placeholder="post-url-slug"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSlugGenerate}
+                    >
+                      Generate
+                    </Button>
+                  </div>
+                  {errors.slug && (
+                    <p className="text-sm text-destructive">{errors.slug}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Content Editor */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Content *</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MarkdownEditor
+                  value={formData.content}
+                  onChange={(value) => updateField("content", value)}
+                  onImageInsert={() => setShowImageUploader(true)}
+                />
+                {errors.content && (
+                  <p className="text-sm text-destructive mt-2">
+                    {errors.content}
+                  </p>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Content Editor */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content *</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MarkdownEditor
-                value={formData.content}
-                onChange={(value) => updateField("content", value)}
-                onImageInsert={() => setShowImageUploader(true)}
-              />
-              {errors.content && (
-                <p className="text-sm text-destructive mt-2">
-                  {errors.content}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Excerpt */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Excerpt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={formData.excerpt}
-                onChange={(e) => updateField("excerpt", e.target.value)}
-                placeholder="Brief summary of the post (auto-generated if left empty)"
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                Used in post previews and meta descriptions
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* SEO Metadata */}
-          <Card>
-            <CardHeader>
-              <CardTitle>SEO & Metadata</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="meta-title">Meta Title</Label>
-                <Input
-                  id="meta-title"
-                  value={formData.seo_metadata?.meta_title || ""}
-                  onChange={(e) =>
-                    updateField("seo_metadata", {
-                      ...formData.seo_metadata,
-                      meta_title: e.target.value,
-                    })
-                  }
-                  placeholder="Custom SEO title (defaults to post title)"
-                  maxLength={60}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {(formData.seo_metadata?.meta_title || "").length}/60
-                  characters
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="meta-description">Meta Description</Label>
+            {/* Excerpt */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Excerpt</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <Textarea
-                  id="meta-description"
-                  value={formData.seo_metadata?.meta_description || ""}
-                  onChange={(e) =>
-                    updateField("seo_metadata", {
-                      ...formData.seo_metadata,
-                      meta_description: e.target.value,
-                    })
-                  }
-                  placeholder="Custom SEO description (defaults to excerpt)"
+                  value={formData.excerpt}
+                  onChange={(e) => updateField("excerpt", e.target.value)}
+                  placeholder="Brief summary of the post (auto-generated if left empty)"
                   rows={3}
-                  maxLength={160}
                 />
-                <p className="text-xs text-muted-foreground">
-                  {(formData.seo_metadata?.meta_description || "").length}/160
-                  characters
+                <p className="text-xs text-muted-foreground mt-2">
+                  Used in post previews and meta descriptions
                 </p>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="keywords">Keywords</Label>
-                <Input
-                  id="keywords"
-                  value={formData.seo_metadata?.keywords?.join(", ") || ""}
-                  onChange={(e) =>
-                    updateField("seo_metadata", {
-                      ...formData.seo_metadata,
-                      keywords: e.target.value.split(",").map((k) => k.trim()),
-                    })
-                  }
-                  placeholder="keyword1, keyword2, keyword3"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Comma-separated keywords for SEO
-                </p>
-              </div>
+            {/* SEO Metadata */}
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO & Metadata</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="meta-title">Meta Title</Label>
+                  <Input
+                    id="meta-title"
+                    value={formData.seo_metadata?.meta_title || ""}
+                    onChange={(e) =>
+                      updateField("seo_metadata", {
+                        ...formData.seo_metadata,
+                        meta_title: e.target.value,
+                      })
+                    }
+                    placeholder="Custom SEO title (defaults to post title)"
+                    maxLength={60}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {(formData.seo_metadata?.meta_title || "").length}/60
+                    characters
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="canonical-url">Canonical URL</Label>
-                <Input
-                  id="canonical-url"
-                  value={formData.seo_metadata?.canonical_url || ""}
-                  onChange={(e) =>
-                    updateField("seo_metadata", {
-                      ...formData.seo_metadata,
-                      canonical_url: e.target.value,
-                    })
-                  }
-                  placeholder="https://example.com/original-post"
-                />
-                <p className="text-xs text-muted-foreground">
-                  For cross-posted content (prevents duplicate content issues)
-                </p>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meta-description">Meta Description</Label>
+                  <Textarea
+                    id="meta-description"
+                    value={formData.seo_metadata?.meta_description || ""}
+                    onChange={(e) =>
+                      updateField("seo_metadata", {
+                        ...formData.seo_metadata,
+                        meta_description: e.target.value,
+                      })
+                    }
+                    placeholder="Custom SEO description (defaults to excerpt)"
+                    rows={3}
+                    maxLength={160}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {(formData.seo_metadata?.meta_description || "").length}/160
+                    characters
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="robots-meta">Robots Meta</Label>
-                <Select
-                  value={formData.seo_metadata?.robots_meta || "index,follow"}
-                  onValueChange={(value) =>
-                    updateField("seo_metadata", {
-                      ...formData.seo_metadata,
-                      robots_meta: value,
-                    })
-                  }
-                >
-                  <SelectTrigger id="robots-meta">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="index,follow">Index, Follow</SelectItem>
-                    <SelectItem value="noindex,follow">
-                      No Index, Follow
-                    </SelectItem>
-                    <SelectItem value="index,nofollow">
-                      Index, No Follow
-                    </SelectItem>
-                    <SelectItem value="noindex,nofollow">
-                      No Index, No Follow
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="keywords">Keywords</Label>
+                  <Input
+                    id="keywords"
+                    value={formData.seo_metadata?.keywords?.join(", ") || ""}
+                    onChange={(e) =>
+                      updateField("seo_metadata", {
+                        ...formData.seo_metadata,
+                        keywords: e.target.value
+                          .split(",")
+                          .map((k) => k.trim()),
+                      })
+                    }
+                    placeholder="keyword1, keyword2, keyword3"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Comma-separated keywords for SEO
+                  </p>
+                </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {renderActions()}
-          {renderStatusCard()}
-          {renderFeaturedImageCard()}
-          {renderCategoriesCard()}
-          {renderTagsCard()}
-        </div>
-      </div>
+                <div className="space-y-2">
+                  <Label htmlFor="canonical-url">Canonical URL</Label>
+                  <Input
+                    id="canonical-url"
+                    value={formData.seo_metadata?.canonical_url || ""}
+                    onChange={(e) =>
+                      updateField("seo_metadata", {
+                        ...formData.seo_metadata,
+                        canonical_url: e.target.value,
+                      })
+                    }
+                    placeholder="https://example.com/original-post"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    For cross-posted content (prevents duplicate content issues)
+                  </p>
+                </div>
 
-      {/* Image Uploader Dialog */}
-      <Dialog open={showImageUploader} onOpenChange={setShowImageUploader}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Upload Image</DialogTitle>
-          </DialogHeader>
-          <ImageUploader
-            onUploadComplete={handleImageUpload}
-            onCancel={() => setShowImageUploader(false)}
-            postId={postId}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>Preview</DialogTitle>
-          </DialogHeader>
-          <div className="prose prose-sm max-w-none">
-            <h1>{formData.title || "Untitled Post"}</h1>
-            {formData.excerpt && <p className="lead">{formData.excerpt}</p>}
-            <div dangerouslySetInnerHTML={{ __html: formData.content }} />
+                <div className="space-y-2">
+                  <Label htmlFor="robots-meta">Robots Meta</Label>
+                  <Select
+                    value={formData.seo_metadata?.robots_meta || "index,follow"}
+                    onValueChange={(value) =>
+                      updateField("seo_metadata", {
+                        ...formData.seo_metadata,
+                        robots_meta: value,
+                      })
+                    }
+                  >
+                    <SelectTrigger id="robots-meta">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="index,follow">
+                        Index, Follow
+                      </SelectItem>
+                      <SelectItem value="noindex,follow">
+                        No Index, Follow
+                      </SelectItem>
+                      <SelectItem value="index,nofollow">
+                        Index, No Follow
+                      </SelectItem>
+                      <SelectItem value="noindex,nofollow">
+                        No Index, No Follow
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {renderActions()}
+            {renderStatusCard()}
+            {renderFeaturedImageCard()}
+            {renderCategoriesCard()}
+            {renderTagsCard()}
+          </div>
+        </div>
+
+        {/* Image Uploader Dialog */}
+        <Dialog open={showImageUploader} onOpenChange={setShowImageUploader}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Upload Image</DialogTitle>
+            </DialogHeader>
+            <ImageUploader
+              onUploadComplete={handleImageUpload}
+              onCancel={() => setShowImageUploader(false)}
+              postId={postId}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Preview</DialogTitle>
+            </DialogHeader>
+            <div className="prose prose-sm max-w-none">
+              <h1>{formData.title || "Untitled Post"}</h1>
+              {formData.excerpt && <p className="lead">{formData.excerpt}</p>}
+              <div dangerouslySetInnerHTML={{ __html: formData.content }} />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Content Importer Dialog */}
+        {showContentImporter && (
+          <ContentImporter
+            onImport={handleContentImport}
+            onCancel={() => setShowContentImporter(false)}
+          />
+        )}
+      </div>
+    </>
   );
-}
+});
