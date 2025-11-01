@@ -68,8 +68,8 @@ export function MarkdownEditor({
   onChange,
   onImageInsert,
   placeholder = "Write your post content in Markdown...",
-  minHeight = "400px",
-  maxHeight = "800px",
+  minHeight = "600px",
+  maxHeight = "600px",
 }: MarkdownEditorProps) {
   const [view, setView] = useState<"edit" | "preview" | "split">("split");
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -317,16 +317,17 @@ export function MarkdownEditor({
   );
 
   const renderEditor = () => (
-    <div className="relative flex-1">
+    <div className="relative flex-1 flex flex-col">
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-full resize-none border-0 focus-visible:ring-0 font-mono text-sm"
+        className="w-full flex-1 resize-none border-0 focus-visible:ring-0 font-mono text-sm"
         style={{
           minHeight: isFullscreen ? "80vh" : minHeight,
           maxHeight: isFullscreen ? "80vh" : maxHeight,
+          height: isFullscreen ? "80vh" : maxHeight,
         }}
       />
     </div>
@@ -336,10 +337,11 @@ export function MarkdownEditor({
   const MarkdownPreview = useMemo(
     () => (
       <div
-        className="prose prose-slate dark:prose-invert max-w-none p-4 overflow-auto"
+        className="prose prose-slate dark:prose-invert max-w-none p-4 overflow-auto flex-1"
         style={{
           minHeight: isFullscreen ? "80vh" : minHeight,
           maxHeight: isFullscreen ? "80vh" : maxHeight,
+          height: isFullscreen ? "80vh" : maxHeight,
         }}
       >
         <ReactMarkdown
