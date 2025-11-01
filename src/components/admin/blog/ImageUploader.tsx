@@ -152,7 +152,7 @@ export function ImageUploader({
           optimizedSize: uploadedImage.file_size,
         });
 
-        // Call completion handler with metadata
+        // Call completion handler immediately - dialog will show success and Done button
         onUploadComplete(uploadedImage);
       } catch (error) {
         console.error("Upload failed:", error);

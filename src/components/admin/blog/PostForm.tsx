@@ -136,7 +136,8 @@ export const PostForm = memo(function PostForm({
 
   const handleImageUpload = (image: any) => {
     updateField("featured_image", image.optimized_url);
-    setShowImageUploader(false);
+    // Don't close immediately - let ImageUploader show success message
+    // The onCancel callback will close it when user clicks Done
   };
 
   const handleContentImport = (imported: any) => {
@@ -354,8 +355,12 @@ export const PostForm = memo(function PostForm({
       <CardContent>
         {formData.featured_image ? (
           <div className="space-y-2">
-            <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+            <div className="aspect-video rounded-lg bg-muted overflow-hidden">
+              <img
+                src={formData.featured_image}
+                alt="Featured"
+                className="w-full h-full object-cover"
+              />
             </div>
             <Button
               variant="outline"
