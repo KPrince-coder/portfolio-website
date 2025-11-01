@@ -470,7 +470,7 @@ export function PostsList({
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Categories</TableHead>
-                <TableHead>Read Time</TableHead>
+                <TableHead className="w-28">Read Time</TableHead>
                 <TableHead>
                   <Button
                     variant="ghost"
@@ -592,9 +592,9 @@ export function PostsList({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {post.read_time_minutes || 1} min
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap">
+                        <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span>{post.read_time_minutes || 1} min</span>
                       </div>
                     </TableCell>
                     <TableCell>{post.view_count.toLocaleString()}</TableCell>

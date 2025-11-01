@@ -654,12 +654,11 @@ export const PostForm = memo(function PostForm({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">
                     {formData.content ? (
                       <>
-                        Estimated:{" "}
                         {Math.max(
                           1,
                           Math.ceil(
@@ -669,12 +668,15 @@ export const PostForm = memo(function PostForm({
                         min read
                       </>
                     ) : (
-                      "Add content to calculate reading time"
+                      <span className="text-muted-foreground">
+                        Add content to calculate
+                      </span>
                     )}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Automatically calculated based on ~200 words per minute
+                  Based on ~200 words per minute. Final value calculated on
+                  save.
                 </p>
               </CardContent>
             </Card>
