@@ -335,17 +335,34 @@ async function extractPdfText(file: File): Promise<string> {
               }
             });
 
-            // Convert lines to markdown with structure detection
+            // Convert lines to markdown with proper heading hierarchy for TOC
             const formattedLines = lines.map((line, index) => {
-              // Detect headings (all caps, short lines, or numbered sections)
+              // H1: Chapter/Part level (main sections)
+              if (/^(Chapter|Part)\s+\d+/i.test(line)) {
+                return `# ${line}\n`;
+              }
+
+              // H2: Section level or ALL CAPS short titles
               if (
+                /^Section\s+\d+/i.test(line) ||
                 (line.length < 60 &&
                   line === line.toUpperCase() &&
-                  /[A-Z]/.test(line)) ||
-                /^(\d+\.|\d+\))\s*[A-Z]/.test(line) ||
-                /^(Chapter|Section|Part)\s+\d+/i.test(line)
+                  /[A-Z]{3,}/.test(line))
               ) {
                 return `## ${line}\n`;
+              }
+
+              // H3: Numbered sections (1., 2., 1), 2))
+              if (/^(\d+\.|\d+\))\s+[A-Z]/.test(line) && line.length < 80) {
+                return `### ${line}\n`;
+              }
+
+              // H4: Lettered subsections (a., b., A., B.)
+              if (
+                /^([a-zA-Z]\.|\([a-zA-Z]\))\s+/.test(line) &&
+                line.length < 80
+              ) {
+                return `#### ${line}\n`;
               }
 
               // Detect bullet points
@@ -353,8 +370,8 @@ async function extractPdfText(file: File): Promise<string> {
                 return `- ${line.substring(1).trim()}`;
               }
 
-              // Detect numbered lists
-              if (/^\d+[\.)]\s/.test(line)) {
+              // Detect numbered lists (not headings - longer text)
+              if (/^\d+[\.)]\s/.test(line) && line.length > 80) {
                 return line;
               }
 
@@ -563,12 +580,12 @@ export function ContentImporter({ onImport, onCancel }: ContentImporterProps) {
 
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Import Content</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
           {!parsedFile ? (
             <>
               {/* Upload Area */}
@@ -743,7 +760,7 @@ export function ContentImporter({ onImport, onCancel }: ContentImporterProps) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
