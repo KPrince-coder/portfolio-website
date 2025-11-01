@@ -1,334 +1,343 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import {
-  Calendar,
-  Clock,
-  Tag,
-  Share2,
-  BookOpen,
-  Search,
-  Filter,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+/**
+ * Blog Page Component
+ *
+ * Public blog listing page with:
+ * - SEO optimization (meta tags, structured data)
+ * - Performance optimization (memoization, lazy loading)
+ * - Responsive design
+ * - Advanced filtering and search
+ * - Pagination
+ * - Loading states and error handling
+ *
+ * @module pages/Blog
+ */
+
+import React, { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { useSearchParams } from "react-router-dom";
+import { Loader2, FileText, Search as SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
-import BlogNavigation from "@/components/BlogNavigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BlogPostCard } from "@/components/blog/BlogPostCard";
+import { BlogFilters } from "@/components/blog/BlogFilters";
+import { useBlogPosts } from "@/components/blog/hooks/useBlogPosts";
 
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  featured_image_url: string;
-  published_at: string;
-  reading_time: number;
-  tags: string[];
-  published: boolean;
-}
+// ============================================================================
+// CONSTANTS
+// ============================================================================
 
-const Blog: React.FC = () => {
-  const { slug } = useParams();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+const SITE_NAME = "Your Blog";
+const SITE_URL = "https://yourdomain.com";
+const DEFAULT_DESCRIPTION =
+  "Discover insightful articles, tutorials, and thoughts on web development, technology, and more.";
 
-  const allTags = Array.from(new Set(posts.flatMap((post) => post.tags || [])));
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
-  useEffect(() => {
-    loadPosts();
-    if (slug) {
-      loadPost(slug);
-    }
-  }, [slug]);
+export function Blog() {
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const loadPosts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("published_at", { ascending: false });
+  // ============================================================================
+  // BLOG POSTS HOOK
+  // ============================================================================
 
-      if (error) throw error;
-      setPosts(data || []);
-    } catch (error) {
-      console.error("Error loading posts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPost = async (postSlug: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", postSlug)
-        .eq("published", true)
-        .single();
-
-      if (error) throw error;
-      setCurrentPost(data);
-    } catch (error) {
-      console.error("Error loading post:", error);
-    }
-  };
-
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag =
-      !selectedTag || (post.tags && post.tags.includes(selectedTag));
-    return matchesSearch && matchesTag;
+  const {
+    posts,
+    pagination,
+    loading,
+    error,
+    filters,
+    updateFilter,
+    clearFilters,
+    searchQuery,
+    setSearchQuery,
+    sort,
+    setSort,
+    currentPage,
+    setCurrentPage,
+    hasFilters,
+    totalPosts,
+  } = useBlogPosts({
+    initialFilters: {
+      category: searchParams.get("category") || undefined,
+      tag: searchParams.get("tag") || undefined,
+      search: searchParams.get("search") || undefined,
+      featured: searchParams.get("featured") === "true" ? true : undefined,
+    },
+    initialPagination: {
+      page: parseInt(searchParams.get("page") || "1"),
+      per_page: 12,
+    },
   });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  // ============================================================================
+  // URL SYNC
+  // ============================================================================
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (filters.category) params.set("category", filters.category);
+    if (filters.tag) params.set("tag", filters.tag);
+    if (searchQuery) params.set("search", searchQuery);
+    if (filters.featured) params.set("featured", "true");
+    if (currentPage > 1) params.set("page", currentPage.toString());
+
+    setSearchParams(params, { replace: true });
+  }, [filters, searchQuery, currentPage, setSearchParams]);
+
+  // ============================================================================
+  // SEO META TAGS
+  // ============================================================================
+
+  const metaTags = React.useMemo(() => {
+    let title = SITE_NAME;
+    let description = DEFAULT_DESCRIPTION;
+
+    if (hasFilters) {
+      const filterParts = [];
+      if (filters.category) filterParts.push(`Category: ${filters.category}`);
+      if (filters.tag) filterParts.push(`Tag: ${filters.tag}`);
+      if (searchQuery) filterParts.push(`Search: ${searchQuery}`);
+      if (filters.featured) filterParts.push("Featured Posts");
+
+      title = `${filterParts.join(" | ")} - ${SITE_NAME}`;
+      description = `Browse ${filterParts
+        .join(", ")
+        .toLowerCase()} on ${SITE_NAME}.`;
+    }
+
+    if (currentPage > 1) {
+      title = `${title} - Page ${currentPage}`;
+    }
+
+    return {
+      title,
+      description,
+      canonicalUrl: `${SITE_URL}/blog`,
+      ogTitle: title,
+      ogDescription: description,
+      ogType: "website",
+      twitterCard: "summary_large_image",
+    };
+  }, [hasFilters, filters, searchQuery, currentPage]);
+
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
+
+  const renderLoadingSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: 12 }).map((_, index) => (
+        <Card key={index} className="h-full">
+          <div className="p-0">
+            <Skeleton className="aspect-video w-full" />
+          </div>
+          <CardContent className="p-4">
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-6 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-1" />
+            <Skeleton className="h-4 w-3/4 mb-3" />
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const renderEmptyState = () => {
+    if (hasFilters) {
+      return (
+        <Card className="text-center py-12">
+          <CardContent>
+            <SearchIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No posts found</h3>
+            <p className="text-muted-foreground mb-4">
+              No posts match your current filters. Try adjusting your search
+              criteria.
+            </p>
+            <Button onClick={clearFilters} variant="outline">
+              Clear all filters
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="text-center py-12">
+        <CardContent>
+          <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+          <p className="text-muted-foreground">
+            Check back soon for new content!
+          </p>
+        </CardContent>
+      </Card>
+    );
   };
 
-  if (loading) {
+  const renderPagination = () => {
+    if (!pagination || pagination.total_pages <= 1) return null;
+
+    const { page, total_pages, has_prev, has_next } = pagination;
+
     return (
-      <div className="min-h-screen bg-background">
-        <BlogNavigation />
-        <div className="pt-20 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-muted-foreground">Loading blog posts...</p>
-          </div>
+      <div className="flex items-center justify-center gap-2 mt-8">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage(page - 1)}
+          disabled={!has_prev || loading}
+        >
+          Previous
+        </Button>
+
+        <div className="flex items-center gap-1">
+          {/* Show page numbers */}
+          {Array.from({ length: Math.min(5, total_pages) }, (_, i) => {
+            let pageNum;
+            if (total_pages <= 5) {
+              pageNum = i + 1;
+            } else if (page <= 3) {
+              pageNum = i + 1;
+            } else if (page >= total_pages - 2) {
+              pageNum = total_pages - 4 + i;
+            } else {
+              pageNum = page - 2 + i;
+            }
+
+            return (
+              <Button
+                key={pageNum}
+                variant={pageNum === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(pageNum)}
+                disabled={loading}
+              >
+                {pageNum}
+              </Button>
+            );
+          })}
         </div>
+
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage(page + 1)}
+          disabled={!has_next || loading}
+        >
+          Next
+        </Button>
       </div>
     );
-  }
+  };
 
-  // Individual blog post view
-  if (slug && currentPost) {
-    return (
-      <div className="min-h-screen bg-background">
-        <BlogNavigation />
-        <div className="pt-20">
-          {/* Hero Section */}
-          <div className="container mx-auto px-6 mb-12">
-            <div className="max-w-4xl mx-auto">
-              {currentPost.featured_image_url && (
-                <div className="aspect-video mb-8 overflow-hidden rounded-xl">
-                  <img
-                    src={currentPost.featured_image_url}
-                    alt={currentPost.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
-              <div className="text-center mb-8">
-                <h1 className="heading-xl mb-6">{currentPost.title}</h1>
-
-                <div className="flex items-center justify-center space-x-6 text-muted-foreground mb-6">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(currentPost.published_at)}</span>
-                  </div>
-
-                  {currentPost.reading_time && (
-                    <div className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4" />
-                      <span>{currentPost.reading_time} min read</span>
-                    </div>
-                  )}
-                </div>
-
-                {currentPost.tags && currentPost.tags.length > 0 && (
-                  <div className="flex items-center justify-center space-x-2 mb-8">
-                    <Tag className="w-4 h-4 text-muted-foreground" />
-                    <div className="flex flex-wrap gap-2">
-                      {currentPost.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <Button variant="outline" className="neural-glow">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share Article
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="container mx-auto px-6 pb-16">
-            <div className="max-w-4xl mx-auto">
-              <Card className="card-neural">
-                <CardContent className="p-8 lg:p-12">
-                  <div
-                    className="prose prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: currentPost.content }}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Blog listing view
   return (
-    <div className="min-h-screen bg-background">
-      <BlogNavigation />
-      <div className="pt-20">
-        {/* Hero Section */}
-        <div className="container mx-auto px-6 py-16 text-center">
-          <h1 className="heading-xl mb-6">
-            <span className="gradient-text">Engineering Insights</span>
-          </h1>
-          <p className="text-muted text-lg max-w-2xl mx-auto mb-8">
-            Exploring the intersection of data engineering, AI, and software
-            development through practical insights and real-world experiences.
+    <>
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>{metaTags.title}</title>
+        <meta name="description" content={metaTags.description} />
+        <link rel="canonical" href={metaTags.canonicalUrl} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={metaTags.ogTitle} />
+        <meta property="og:description" content={metaTags.ogDescription} />
+        <meta property="og:type" content={metaTags.ogType} />
+        <meta property="og:url" content={metaTags.canonicalUrl} />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content={metaTags.twitterCard} />
+        <meta name="twitter:title" content={metaTags.ogTitle} />
+        <meta name="twitter:description" content={metaTags.ogDescription} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: SITE_NAME,
+            description: DEFAULT_DESCRIPTION,
+            url: `${SITE_URL}/blog`,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `${SITE_URL}/blog`,
+            },
+          })}
+        </script>
+      </Helmet>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Blog</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            {DEFAULT_DESCRIPTION}
           </p>
         </div>
 
-        {/* Search and Filter */}
-        <div className="container mx-auto px-6 mb-12">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search articles..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => setSelectedTag(null)}
-                className={selectedTag ? "" : "neural-glow"}
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                All Topics
-              </Button>
-            </div>
-
-            {allTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-8">
-                {allTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant={selectedTag === tag ? "default" : "secondary"}
-                    className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                    onClick={() =>
-                      setSelectedTag(selectedTag === tag ? null : tag)
-                    }
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Filters */}
+        <div className="mb-8">
+          <BlogFilters
+            filters={filters}
+            onFilterChange={updateFilter}
+            onClearFilters={clearFilters}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sort={sort}
+            onSortChange={setSort}
+            loading={loading}
+            totalPosts={totalPosts}
+          />
         </div>
 
-        {/* Blog Posts Grid */}
-        <div className="container mx-auto px-6 pb-16">
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-16">
-              <BookOpen className="w-16 h-16 text-muted mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No articles found</h3>
-              <p className="text-muted-foreground">
-                {searchTerm || selectedTag
-                  ? "Try adjusting your search or filter criteria"
-                  : "Blog posts will appear here once published"}
-              </p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPosts.map((post) => (
-                <Card
+        {/* Error State */}
+        {error && (
+          <Card className="mb-8 border-destructive">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 text-destructive">
+                <Loader2 className="h-4 w-4" />
+                <span>Failed to load posts: {error}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Content */}
+        {loading ? (
+          renderLoadingSkeleton()
+        ) : posts.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <>
+            {/* Posts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post, index) => (
+                <BlogPostCard
                   key={post.id}
-                  className="card-neural hover-scale group cursor-pointer"
-                >
-                  <Link to={`/blog/${post.slug}`}>
-                    {post.featured_image_url && (
-                      <div className="aspect-video overflow-hidden rounded-t-lg">
-                        <img
-                          src={post.featured_image_url}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-
-                    <CardHeader>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{formatDate(post.published_at)}</span>
-                        </div>
-
-                        {post.reading_time && (
-                          <div className="flex items-center space-x-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{post.reading_time} min</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <CardTitle className="group-hover:text-secondary transition-colors">
-                        {post.title}
-                      </CardTitle>
-                    </CardHeader>
-
-                    <CardContent>
-                      {post.excerpt && (
-                        <p className="text-muted-foreground mb-4 line-clamp-3">
-                          {post.excerpt}
-                        </p>
-                      )}
-
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {post.tags.slice(0, 3).map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                          {post.tags.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{post.tags.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Link>
-                </Card>
+                  post={post}
+                  variant={index === 0 && !hasFilters ? "featured" : "default"}
+                  showExcerpt
+                  showCategories
+                  showReadTime
+                  showViewCount
+                />
               ))}
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default Blog;
+            {/* Pagination */}
+            {renderPagination()}
+          </>
+        )}
+      </div>
+    </>
+  );
+}
