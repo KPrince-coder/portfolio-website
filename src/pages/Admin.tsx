@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -22,9 +23,18 @@ import { MessageService } from "@/lib/messages";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 
 const Admin: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Sync activeTab with URL for blog routes
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin/blog")) {
+      setActiveTab("posts");
+    }
+  }, [location.pathname]);
   const [initialMessages, setInitialMessages] = useState<ContactMessage[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [projectCategories, setProjectCategories] = useState<

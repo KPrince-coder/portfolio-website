@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import {
   AdminHeader,
   AdminSidebar,
@@ -188,7 +189,7 @@ export const AdminContent: React.FC<AdminContentProps> = ({
             <ResumeManagement activeTab={activeTab} />
           )}
 
-          {activeTab.startsWith("posts") && <BlogManagementRouter />}
+          {activeTab === "posts" && <BlogManagementRouter />}
 
           {activeTab === "settings" && fullUser && (
             <SettingsManagement user={fullUser} />
