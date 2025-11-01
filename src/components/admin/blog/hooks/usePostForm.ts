@@ -166,6 +166,8 @@ export function usePostForm(
 
   const initialDataRef = useRef<PostFormData>(INITIAL_FORM_DATA);
   const autoSaveTimerRef = useRef<NodeJS.Timeout>();
+  const userEditedSlugRef = useRef(false);
+  const userEditedExcerptRef = useRef(false);
 
   // ============================================================================
   // DEBOUNCED VALUES
@@ -202,6 +204,10 @@ export function usePostForm(
       setFormData(loadedData);
       initialDataRef.current = loadedData;
       setIsDirty(false);
+
+      // Mark slug and excerpt as user-edited if they exist (from loaded post)
+      userEditedSlugRef.current = !!loadedData.slug;
+      userEditedExcerptRef.current = !!loadedData.excerpt;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load post";
@@ -229,6 +235,14 @@ export function usePostForm(
 
   const updateField = useCallback(
     <K extends keyof PostFormData>(field: K, value: PostFormData[K]) => {
+      // Track manual edits to slug and excerpt
+      if (field === "slug") {
+        userEditedSlugRef.current = true;
+      }
+      if (field === "excerpt") {
+        userEditedExcerptRef.current = true;
+      }
+
       setFormData((prev) => ({ ...prev, [field]: value }));
       setIsDirty(true);
     },
@@ -243,21 +257,21 @@ export function usePostForm(
     return generateSlugFromTitle(title);
   }, []);
 
-  // Auto-generate slug from title
+  // Auto-generate slug from title in real-time (unless user manually edited it)
   useEffect(() => {
-    if (formData.title && !formData.slug) {
+    if (formData.title && !userEditedSlugRef.current) {
       const newSlug = generateSlugFromTitle(formData.title);
       setFormData((prev) => ({ ...prev, slug: newSlug }));
     }
-  }, [formData.title, formData.slug]);
+  }, [formData.title]);
 
-  // Auto-generate excerpt from content
+  // Auto-generate excerpt from content in real-time (unless user manually edited it)
   useEffect(() => {
-    if (formData.content && !formData.excerpt) {
+    if (formData.content && !userEditedExcerptRef.current) {
       const newExcerpt = extractExcerpt(formData.content);
       setFormData((prev) => ({ ...prev, excerpt: newExcerpt }));
     }
-  }, [formData.content, formData.excerpt]);
+  }, [formData.content]);
 
   // ============================================================================
   // VALIDATION
