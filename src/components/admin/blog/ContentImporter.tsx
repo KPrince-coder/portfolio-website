@@ -286,20 +286,96 @@ async function extractPdfText(file: File): Promise<string> {
 
           const textContent: string[] = [];
 
-          // Extract text from each page
+          // Extract text from each page with proper formatting
           for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
             const page = await pdf.getPage(pageNum);
             const content = await page.getTextContent();
 
-            // Combine text items with proper spacing
-            const pageText = content.items
-              .map((item: any) => item.str)
-              .join(" ");
+            // Process text items with position information
+            const items = content.items as any[];
+            let currentY = -1;
+            let currentLine = "";
+            const lines: string[] = [];
 
-            textContent.push(pageText);
+            items.forEach((item, index) => {
+              const text = item.str.trim();
+              if (!text) return;
+
+              const y = item.transform[5]; // Y position
+
+              // Detect new line based on Y position change
+              if (currentY === -1) {
+                currentY = y;
+              }
+
+              const yDiff = Math.abs(currentY - y);
+
+              if (yDiff > 5) {
+                // New line detected
+                if (currentLine.trim()) {
+                  lines.push(currentLine.trim());
+                }
+                currentLine = text;
+                currentY = y;
+              } else {
+                // Same line - add space if needed
+                if (
+                  currentLine &&
+                  !currentLine.endsWith(" ") &&
+                  !text.startsWith(" ")
+                ) {
+                  currentLine += " ";
+                }
+                currentLine += text;
+              }
+
+              // Handle end of items
+              if (index === items.length - 1 && currentLine.trim()) {
+                lines.push(currentLine.trim());
+              }
+            });
+
+            // Convert lines to markdown with structure detection
+            const formattedLines = lines.map((line, index) => {
+              // Detect headings (all caps, short lines, or numbered sections)
+              if (
+                (line.length < 60 &&
+                  line === line.toUpperCase() &&
+                  /[A-Z]/.test(line)) ||
+                /^(\d+\.|\d+\))\s*[A-Z]/.test(line) ||
+                /^(Chapter|Section|Part)\s+\d+/i.test(line)
+              ) {
+                return `## ${line}\n`;
+              }
+
+              // Detect bullet points
+              if (/^[•●○■▪▫–—-]\s/.test(line)) {
+                return `- ${line.substring(1).trim()}`;
+              }
+
+              // Detect numbered lists
+              if (/^\d+[\.)]\s/.test(line)) {
+                return line;
+              }
+
+              // Detect sub-bullets (indented)
+              if (/^\s{2,}[•●○■▪▫–—-]\s/.test(line)) {
+                return `  - ${line.trim().substring(1).trim()}`;
+              }
+
+              // Regular paragraph - add extra line break for readability
+              const nextLine = lines[index + 1];
+              if (nextLine && !nextLine.match(/^[•●○■▪▫–—-\d]/)) {
+                return `${line}\n`;
+              }
+
+              return line;
+            });
+
+            textContent.push(formattedLines.join("\n"));
           }
 
-          const fullText = textContent.join("\n\n").trim();
+          const fullText = textContent.join("\n\n---\n\n").trim();
 
           if (!fullText || fullText.length < 10) {
             reject(
