@@ -342,8 +342,14 @@ export function PostsList({
 
   return (
     <div className="space-y-6">
-      {/* Header - Removed duplicate, now handled by parent BlogManagement */}
-      <div className="flex items-center justify-end">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Blog Posts</h2>
+          <p className="text-muted-foreground">
+            Manage your blog posts, drafts, and published content.
+          </p>
+        </div>
         <Button onClick={handleCreatePost}>
           <Plus className="h-4 w-4 mr-2" />
           New Post

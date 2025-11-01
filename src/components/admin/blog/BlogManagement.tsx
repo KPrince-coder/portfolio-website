@@ -10,9 +10,7 @@
  * @module blog/BlogManagement
  */
 
-import React, { useState } from "react";
-import { Plus, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useCallback, useMemo, memo } from "react";
 import { PostsList } from "./PostsList";
 import { PostForm } from "./PostForm";
 import { CategoriesSection } from "./sections/CategoriesSection";
@@ -32,7 +30,7 @@ interface BlogManagementProps {
 // COMPONENT
 // ============================================================================
 
-export function BlogManagement({
+export const BlogManagement = memo(function BlogManagement({
   activeSubTab = "posts-list",
   onTabChange,
 }: BlogManagementProps) {
@@ -43,58 +41,40 @@ export function BlogManagement({
   // HANDLERS
   // ============================================================================
 
-  const handleCreatePost = () => {
+  const handleCreatePost = useCallback(() => {
     setEditingPostId(null);
-    // Navigate to create new subtab
     onTabChange?.("posts-new");
-  };
+  }, [onTabChange]);
 
-  const handleEditPost = (postId: string) => {
+  const handleEditPost = useCallback((postId: string) => {
     setEditingPostId(postId);
-  };
+  }, []);
 
-  const handlePostSave = () => {
+  const handlePostSave = useCallback(() => {
     toast({
       title: "Post saved",
       description: "Your blog post has been saved successfully",
     });
     setEditingPostId(null);
-  };
+  }, [toast]);
 
-  const handlePostPublish = () => {
+  const handlePostPublish = useCallback(() => {
     toast({
       title: "Post published",
       description: "Your blog post has been published successfully",
     });
     setEditingPostId(null);
-  };
+  }, [toast]);
 
-  const handlePostCancel = () => {
+  const handlePostCancel = useCallback(() => {
     setEditingPostId(null);
-  };
+  }, []);
 
   // ============================================================================
   // RENDER HELPERS
   // ============================================================================
 
-  const getSectionTitle = () => {
-    switch (activeSubTab) {
-      case "posts-list":
-        return "Blog Posts";
-      case "posts-new":
-        return "Create New Post";
-      case "posts-edit":
-        return "Edit Post";
-      case "posts-categories":
-        return "Categories";
-      case "posts-tags":
-        return "Tags";
-      default:
-        return "Blog Management";
-    }
-  };
-
-  const renderSection = () => {
+  const sectionContent = useMemo(() => {
     switch (activeSubTab) {
       case "posts-list":
         return (
@@ -132,26 +112,19 @@ export function BlogManagement({
           />
         );
     }
-  };
+  }, [
+    activeSubTab,
+    editingPostId,
+    handleEditPost,
+    handleCreatePost,
+    handlePostSave,
+    handlePostPublish,
+    handlePostCancel,
+  ]);
 
   // ============================================================================
   // RENDER
   // ============================================================================
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {getSectionTitle()}
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your blog posts, categories, and tags.
-          </p>
-        </div>
-      </div>
-
-      {renderSection()}
-    </div>
-  );
-}
+  return <div className="space-y-6">{sectionContent}</div>;
+});
