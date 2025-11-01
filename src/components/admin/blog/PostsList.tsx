@@ -230,10 +230,15 @@ export function PostsList({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleViewPost(post.id)}>
-          <Eye className="h-4 w-4 mr-2" />
-          View
-        </DropdownMenuItem>
+        {post.status === "published" && (
+          <>
+            <DropdownMenuItem onClick={() => handleViewPost(post.id)}>
+              <Eye className="h-4 w-4 mr-2" />
+              View
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={() => handleEditPost(post.id)}>
           <Edit className="h-4 w-4 mr-2" />
           Edit
