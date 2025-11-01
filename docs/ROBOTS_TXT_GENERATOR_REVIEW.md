@@ -302,11 +302,11 @@ export function generateRobotsTxtForEnvironment(
 
 ---
 
-## 📦 Complete Optimized Version
+## 📦 Implemented Features
 
-Created: `src/lib/robotsTxtGenerator.optimized.ts`
+All features have been merged into: `src/lib/robotsTxtGenerator.ts`
 
-### New Features
+### New Features (All Implemented ✅)
 
 1. ✅ **Multiple User-Agents** - Support different rules per bot
 2. ✅ **Input Validation** - Validate options before generation
@@ -478,27 +478,28 @@ if (validation.warnings.length > 0) {
 
 ---
 
-## 🔄 Migration Guide
+## 🔄 Usage Guide
 
-### Step 1: Review Current Usage
+### Step 1: Basic Usage (No Changes Needed)
 
-Check where `generateRobotsTxt` is used:
-
-```bash
-# Search for usage
-grep -r "generateRobotsTxt" src/
-```
-
-### Step 2: Update Imports (Optional)
-
-If using optimized version:
+Existing code continues to work:
 
 ```typescript
-// Before
 import { generateRobotsTxt } from '@/lib/robotsTxtGenerator';
 
-// After (optimized)
-import { generateRobotsTxt } from '@/lib/robotsTxtGenerator.optimized';
+const robotsTxt = generateRobotsTxt();
+```
+
+### Step 2: Use New Features (Optional)
+
+Take advantage of new capabilities:
+
+```typescript
+import { 
+  generateProductionRobotsTxt,
+  generateStagingRobotsTxt,
+  COMMON_BOTS 
+} from '@/lib/robotsTxtGenerator';
 ```
 
 ### Step 3: Add Environment-Specific Generation
