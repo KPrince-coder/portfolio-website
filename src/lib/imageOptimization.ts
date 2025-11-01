@@ -537,10 +537,12 @@ export async function optimizeImage(
       safeProgress(onProgress, 20);
       checkCancellation(signal);
 
-      // Compress original
+      // Compress original with more aggressive settings
       const compressed = await imageCompression(file, {
         ...COMPRESSION_OPTIONS,
         initialQuality: quality,
+        maxWidthOrHeight: options.maxWidth || options.maxHeight || 1920, // Limit dimensions
+        fileType: format ? `image/${format}` : undefined, // Convert format if specified
       });
 
       safeProgress(onProgress, 40);
