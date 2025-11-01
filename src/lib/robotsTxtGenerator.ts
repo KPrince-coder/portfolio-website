@@ -10,12 +10,14 @@
  * @module lib/robotsTxtGenerator
  */
 
+import { SEO_CONFIG } from "@/config/seo.config";
+
 // ============================================================================
 // TYPES
 // ============================================================================
 
 interface RobotsTxtOptions {
-  baseUrl: string;
+  baseUrl?: string;
   allowAll?: boolean;
   disallowPaths?: string[];
   crawlDelay?: number;
@@ -27,7 +29,7 @@ interface RobotsTxtOptions {
 // ============================================================================
 
 const DEFAULT_OPTIONS: Required<RobotsTxtOptions> = {
-  baseUrl: "https://yourdomain.com",
+  baseUrl: SEO_CONFIG.siteUrl,
   allowAll: true,
   disallowPaths: ["/admin", "/api"],
   crawlDelay: 0,

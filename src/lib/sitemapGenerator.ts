@@ -12,6 +12,7 @@
 
 import { getPosts } from "@/services/blogService";
 import type { BlogPostWithRelations } from "@/components/admin/blog/types";
+import { SEO_CONFIG } from "@/config/seo.config";
 
 // ============================================================================
 // TYPES
@@ -44,7 +45,7 @@ interface SitemapOptions {
 // ============================================================================
 
 const DEFAULT_OPTIONS: Required<SitemapOptions> = {
-  baseUrl: "https://yourdomain.com",
+  baseUrl: SEO_CONFIG.siteUrl,
   includeStaticPages: true,
   includeBlogPosts: true,
   includeCategories: true,

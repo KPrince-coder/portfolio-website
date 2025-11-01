@@ -12,6 +12,7 @@
 
 import { getPosts } from "@/services/blogService";
 import type { BlogPostWithRelations } from "@/components/admin/blog/types";
+import { SEO_CONFIG } from "@/config/seo.config";
 
 // ============================================================================
 // TYPES
@@ -34,13 +35,17 @@ interface RSSFeedOptions {
 // ============================================================================
 
 const DEFAULT_OPTIONS: Required<RSSFeedOptions> = {
-  baseUrl: "https://yourdomain.com",
-  title: "Your Blog",
+  baseUrl: SEO_CONFIG.siteUrl,
+  title: SEO_CONFIG.siteName,
   description: "Latest blog posts and articles",
   language: "en-us",
   copyright: `Copyright ${new Date().getFullYear()}`,
-  managingEditor: "editor@yourdomain.com",
-  webMaster: "webmaster@yourdomain.com",
+  managingEditor: `${SEO_CONFIG.defaultAuthor} <editor@${SEO_CONFIG.siteUrl
+    .replace("https://", "")
+    .replace("http://", "")}>`,
+  webMaster: `webmaster@${SEO_CONFIG.siteUrl
+    .replace("https://", "")
+    .replace("http://", "")}`,
   maxItems: 50,
   includeFullContent: false,
 };
