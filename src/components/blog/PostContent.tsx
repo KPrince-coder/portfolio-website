@@ -171,8 +171,8 @@ export const PostContent = React.memo<PostContentProps>(function PostContent({
 
       // Code blocks with syntax highlighting and enhanced design
       code: ({ inline, className, children, ...props }: any) => {
-        const match = /language-(\w+)/.exec(className || "");
-        const language = match ? match[1] : "";
+        const matchResult = /language-(\w+)/.exec(className || "");
+        const language = matchResult ? matchResult[1] : "";
         const codeString = String(children).replace(/\n$/, "");
 
         if (!inline && language) {

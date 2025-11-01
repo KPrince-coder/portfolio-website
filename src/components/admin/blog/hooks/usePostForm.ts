@@ -257,21 +257,23 @@ export function usePostForm(
     return generateSlugFromTitle(title);
   }, []);
 
-  // Auto-generate slug from title in real-time (unless user manually edited it)
+  // Auto-generate slug from title with debouncing (unless user manually edited it)
+  const debouncedTitle = useDebounce(formData.title, 300);
   useEffect(() => {
-    if (formData.title && !userEditedSlugRef.current) {
-      const newSlug = generateSlugFromTitle(formData.title);
+    if (debouncedTitle && !userEditedSlugRef.current) {
+      const newSlug = generateSlugFromTitle(debouncedTitle);
       setFormData((prev) => ({ ...prev, slug: newSlug }));
     }
-  }, [formData.title]);
+  }, [debouncedTitle]);
 
-  // Auto-generate excerpt from content in real-time (unless user manually edited it)
+  // Auto-generate excerpt from content with debouncing (unless user manually edited it)
+  const debouncedContent = useDebounce(formData.content, 500);
   useEffect(() => {
-    if (formData.content && !userEditedExcerptRef.current) {
-      const newExcerpt = extractExcerpt(formData.content);
+    if (debouncedContent && !userEditedExcerptRef.current) {
+      const newExcerpt = extractExcerpt(debouncedContent);
       setFormData((prev) => ({ ...prev, excerpt: newExcerpt }));
     }
-  }, [formData.content]);
+  }, [debouncedContent]);
 
   // ============================================================================
   // VALIDATION
@@ -314,6 +316,7 @@ export function usePostForm(
 
       const postData: CreateBlogPostInput = {
         title: formData.title,
+        slug: formData.slug, // Include slug for updates
         content: formData.content,
         excerpt: formData.excerpt,
         status: "draft",
@@ -389,6 +392,7 @@ export function usePostForm(
 
       const postData: CreateBlogPostInput = {
         title: formData.title,
+        slug: formData.slug, // Include slug for updates
         content: formData.content,
         excerpt: formData.excerpt,
         status: formData.status === "scheduled" ? "scheduled" : "published",

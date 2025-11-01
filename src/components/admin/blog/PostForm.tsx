@@ -134,11 +134,6 @@ export const PostForm = memo(function PostForm({
     }
   };
 
-  const handleSlugGenerate = () => {
-    const newSlug = generateSlug(formData.title);
-    updateField("slug", newSlug);
-  };
-
   const handleImageUpload = (image: any) => {
     updateField("featured_image", image.optimized_url);
     setShowImageUploader(false);

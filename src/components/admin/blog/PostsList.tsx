@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  Filter,
   Plus,
   MoreHorizontal,
   Eye,
@@ -26,9 +25,6 @@ import {
   Archive,
   Send,
   Clock,
-  CheckSquare,
-  Square,
-  ChevronDown,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -96,14 +92,6 @@ const STATUS_ICONS: Record<
   archived: Archive,
 };
 
-const SORT_FIELDS = [
-  { value: "created_at", label: "Created Date" },
-  { value: "published_at", label: "Published Date" },
-  { value: "updated_at", label: "Updated Date" },
-  { value: "title", label: "Title" },
-  { value: "view_count", label: "Views" },
-] as const;
-
 const PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 // ============================================================================
@@ -129,7 +117,6 @@ export function PostsList({
     setSearchQuery,
     sort,
     setSort,
-    currentPage,
     setCurrentPage,
     perPage,
     setPerPage,

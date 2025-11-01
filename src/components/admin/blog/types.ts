@@ -117,6 +117,7 @@ export interface BlogPostWithRelations extends BlogPost {
 
 export interface CreateBlogPostInput {
   title: string;
+  slug?: string; // Optional - database trigger generates if not provided
   content: string;
   excerpt?: string;
   featured_image?: string;
