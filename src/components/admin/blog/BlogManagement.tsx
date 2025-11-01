@@ -10,11 +10,9 @@
  * @module blog/BlogManagement
  */
 
-import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Folder, Tag, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { FileText, Folder, Tag } from "lucide-react";
+import { PostsList } from "./PostsList";
 import { CategoriesSection } from "./sections/CategoriesSection";
 import { TagsSection } from "./sections/TagsSection";
 
@@ -31,8 +29,6 @@ interface BlogManagementProps {
 // ============================================================================
 
 export function BlogManagement({ defaultTab = "posts" }: BlogManagementProps) {
-  const navigate = useNavigate();
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,25 +58,7 @@ export function BlogManagement({ defaultTab = "posts" }: BlogManagementProps) {
 
         {/* Posts Tab */}
         <TabsContent value="posts" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center space-y-4">
-                <div className="flex justify-center">
-                  <FileText className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Posts Management</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create and manage your blog posts
-                  </p>
-                </div>
-                <Button onClick={() => navigate("/admin/blog/new")}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Post
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <PostsList />
         </TabsContent>
 
         {/* Categories Tab */}
