@@ -15,6 +15,10 @@ import {
   FolderKanban,
   Code,
   GraduationCap,
+  List,
+  Plus,
+  Folder,
+  Tag,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -26,7 +30,6 @@ import { AdminTab } from "./types";
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
   { id: "messages", label: "Messages", icon: Mail },
-  { id: "posts", label: "Blog Posts", icon: FileText },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -60,6 +63,13 @@ export const RESUME_SUB_TABS: readonly AdminTab[] = [
   { id: "resume-experiences", label: "Work Experiences", icon: BriefcaseIcon },
   { id: "resume-education", label: "Education", icon: GraduationCap },
   { id: "resume-certifications", label: "Certifications", icon: Award },
+] as const;
+
+export const POSTS_SUB_TABS: readonly AdminTab[] = [
+  { id: "posts-list", label: "All Posts", icon: List },
+  { id: "posts-new", label: "Create New", icon: Plus },
+  { id: "posts-categories", label: "Categories", icon: Folder },
+  { id: "posts-tags", label: "Tags", icon: Tag },
 ] as const;
 
 // ============================================================================

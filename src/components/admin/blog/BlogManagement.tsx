@@ -10,67 +10,135 @@
  * @module blog/BlogManagement
  */
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Folder, Tag } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PostsList } from "./PostsList";
+import { PostForm } from "./PostForm";
 import { CategoriesSection } from "./sections/CategoriesSection";
 import { TagsSection } from "./sections/TagsSection";
+import { useToast } from "@/hooks/use-toast";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 interface BlogManagementProps {
-  defaultTab?: "posts" | "categories" | "tags";
+  activeSubTab?: string;
 }
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 
-export function BlogManagement({ defaultTab = "posts" }: BlogManagementProps) {
+export function BlogManagement({
+  activeSubTab = "posts-list",
+}: BlogManagementProps) {
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
+
+  const handleCreatePost = () => {
+    setEditingPostId(null);
+    // The activeSubTab should be changed by parent, but we can show the form
+  };
+
+  const handleEditPost = (postId: string) => {
+    setEditingPostId(postId);
+  };
+
+  const handlePostSave = () => {
+    toast({
+      title: "Post saved",
+      description: "Your blog post has been saved successfully",
+    });
+    setEditingPostId(null);
+  };
+
+  const handlePostPublish = () => {
+    toast({
+      title: "Post published",
+      description: "Your blog post has been published successfully",
+    });
+    setEditingPostId(null);
+  };
+
+  const handlePostCancel = () => {
+    setEditingPostId(null);
+  };
+
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
+
+  const getSectionTitle = () => {
+    switch (activeSubTab) {
+      case "posts-list":
+        return "Blog Posts";
+      case "posts-new":
+        return "Create New Post";
+      case "posts-edit":
+        return "Edit Post";
+      case "posts-categories":
+        return "Categories";
+      case "posts-tags":
+        return "Tags";
+      default:
+        return "Blog Management";
+    }
+  };
+
+  const renderSection = () => {
+    switch (activeSubTab) {
+      case "posts-list":
+        return <PostsList onEditPost={handleEditPost} />;
+      case "posts-new":
+        return (
+          <PostForm
+            onSave={handlePostSave}
+            onPublish={handlePostPublish}
+            onCancel={handlePostCancel}
+          />
+        );
+      case "posts-edit":
+        return (
+          <PostForm
+            postId={editingPostId}
+            onSave={handlePostSave}
+            onPublish={handlePostPublish}
+            onCancel={handlePostCancel}
+          />
+        );
+      case "posts-categories":
+        return <CategoriesSection />;
+      case "posts-tags":
+        return <TagsSection />;
+      default:
+        return <PostsList onEditPost={handleEditPost} />;
+    }
+  };
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Blog Management</h1>
-        <p className="text-muted-foreground">
-          Manage your blog posts, categories, and tags.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {getSectionTitle()}
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your blog posts, categories, and tags.
+          </p>
+        </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="posts" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Posts</span>
-          </TabsTrigger>
-          <TabsTrigger value="categories" className="flex items-center gap-2">
-            <Folder className="h-4 w-4" />
-            <span className="hidden sm:inline">Categories</span>
-          </TabsTrigger>
-          <TabsTrigger value="tags" className="flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            <span className="hidden sm:inline">Tags</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Posts Tab */}
-        <TabsContent value="posts" className="space-y-4">
-          <PostsList />
-        </TabsContent>
-
-        {/* Categories Tab */}
-        <TabsContent value="categories" className="space-y-4">
-          <CategoriesSection />
-        </TabsContent>
-
-        {/* Tags Tab */}
-        <TabsContent value="tags" className="space-y-4">
-          <TagsSection />
-        </TabsContent>
-      </Tabs>
+      {renderSection()}
     </div>
   );
 }

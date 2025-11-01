@@ -22,6 +22,7 @@ import {
   SKILLS_SUB_TABS,
   PROJECTS_SUB_TABS,
   RESUME_SUB_TABS,
+  POSTS_SUB_TABS,
   MOBILE_SIDEBAR_CLOSE_DELAY,
 } from "./AdminSidebar.constants";
 
@@ -34,6 +35,7 @@ type SectionState = {
   skills: boolean;
   projects: boolean;
   resume: boolean;
+  posts: boolean;
 };
 
 type SectionAction =
@@ -51,7 +53,13 @@ const sectionReducer = (
     case "EXPAND":
       return { ...state, [action.section]: true };
     case "COLLAPSE_ALL":
-      return { profile: false, skills: false, projects: false, resume: false };
+      return {
+        profile: false,
+        skills: false,
+        projects: false,
+        resume: false,
+        posts: false,
+      };
     default:
       return state;
   }
@@ -91,6 +99,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
       skills: activeTab.startsWith("skills"),
       projects: activeTab.startsWith("projects"),
       resume: activeTab.startsWith("resume"),
+      posts: activeTab.startsWith("posts"),
     });
 
     // Memoized event handlers
@@ -122,6 +131,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
       }
     }, [expandedSections.resume, onTabChange]);
 
+    const handlePostsClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "posts" });
+      if (!expandedSections.posts) {
+        onTabChange("posts-list");
+      }
+    }, [expandedSections.posts, onTabChange]);
+
     const handleSubTabClick = useCallback(
       (subTabId: string) => {
         if (subTabId.startsWith("profile")) {
@@ -132,6 +148,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
           dispatch({ type: "EXPAND", section: "projects" });
         } else if (subTabId.startsWith("resume")) {
           dispatch({ type: "EXPAND", section: "resume" });
+        } else if (subTabId.startsWith("posts")) {
+          dispatch({ type: "EXPAND", section: "posts" });
         }
         onTabChange(subTabId);
 
@@ -409,6 +427,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
               handleResumeClick,
               activeTab.startsWith("resume"),
               RESUME_SUB_TABS as unknown as AdminTab[]
+            )}
+
+            {/* Blog Posts Section */}
+            {renderExpandableSection(
+              FileText,
+              "Blog Posts",
+              expandedSections.posts,
+              handlePostsClick,
+              activeTab.startsWith("posts"),
+              POSTS_SUB_TABS as unknown as AdminTab[]
             )}
           </nav>
         </ScrollArea>
