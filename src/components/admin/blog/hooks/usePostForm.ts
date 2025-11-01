@@ -311,19 +311,41 @@ export function usePostForm(
         seo_metadata: formData.seo_metadata,
       };
 
+      let savedPostId: string;
+
       if (postId) {
         await updatePost({ ...postData, id: postId });
+        savedPostId = postId;
       } else {
         const newPost = await createPost(postData);
+        savedPostId = newPost.id;
         // Update postId state so subsequent saves are updates, not creates
         setPostId(newPost.id);
         // Update URL
         window.history.replaceState(null, "", `/admin/blog/${newPost.id}/edit`);
       }
 
+      // Reload post to get auto-generated values (slug, excerpt, read_time)
+      const savedPost = await getPostById(savedPostId);
+      const updatedData: PostFormData = {
+        title: savedPost.title,
+        slug: savedPost.slug,
+        content: savedPost.content,
+        excerpt: savedPost.excerpt || "",
+        status: savedPost.status,
+        featured_image: savedPost.featured_image,
+        category_ids: savedPost.categories?.map((c) => c.id) || [],
+        tag_ids: savedPost.tags?.map((t) => t.id) || [],
+        scheduled_for: savedPost.scheduled_for,
+        comments_enabled: savedPost.comments_enabled,
+        is_featured: savedPost.is_featured,
+        seo_metadata: savedPost.seo_metadata || { robots_meta: "index,follow" },
+      };
+
+      setFormData(updatedData);
       setLastSaved(new Date());
       setIsDirty(false);
-      initialDataRef.current = formData;
+      initialDataRef.current = updatedData;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to save draft";
@@ -377,9 +399,32 @@ export function usePostForm(
         await publishPost(currentPostId);
       }
 
+      // Reload post to get auto-generated values (slug, excerpt, read_time)
+      if (currentPostId) {
+        const savedPost = await getPostById(currentPostId);
+        const updatedData: PostFormData = {
+          title: savedPost.title,
+          slug: savedPost.slug,
+          content: savedPost.content,
+          excerpt: savedPost.excerpt || "",
+          status: savedPost.status,
+          featured_image: savedPost.featured_image,
+          category_ids: savedPost.categories?.map((c) => c.id) || [],
+          tag_ids: savedPost.tags?.map((t) => t.id) || [],
+          scheduled_for: savedPost.scheduled_for,
+          comments_enabled: savedPost.comments_enabled,
+          is_featured: savedPost.is_featured,
+          seo_metadata: savedPost.seo_metadata || {
+            robots_meta: "index,follow",
+          },
+        };
+
+        setFormData(updatedData);
+        initialDataRef.current = updatedData;
+      }
+
       setLastSaved(new Date());
       setIsDirty(false);
-      initialDataRef.current = formData;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to publish post";
