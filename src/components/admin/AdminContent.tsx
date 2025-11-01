@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
+import { BlogManagementRouter } from "@/components/admin/blog/BlogManagementRouter";
 import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -187,12 +188,7 @@ export const AdminContent: React.FC<AdminContentProps> = ({
             <ResumeManagement activeTab={activeTab} />
           )}
 
-          {activeTab === "posts" && (
-            <PlaceholderSection
-              title="Blog Posts"
-              description="Blog management"
-            />
-          )}
+          {activeTab.startsWith("posts") && <BlogManagementRouter />}
 
           {activeTab === "settings" && fullUser && (
             <SettingsManagement user={fullUser} />
