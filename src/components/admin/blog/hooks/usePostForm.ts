@@ -205,9 +205,9 @@ export function usePostForm(
       initialDataRef.current = loadedData;
       setIsDirty(false);
 
-      // Mark slug and excerpt as user-edited if they exist (from loaded post)
-      userEditedSlugRef.current = !!loadedData.slug;
-      userEditedExcerptRef.current = !!loadedData.excerpt;
+      // Don't mark as user-edited when loading - allow auto-generation to continue
+      userEditedSlugRef.current = false;
+      userEditedExcerptRef.current = false;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load post";
@@ -360,6 +360,10 @@ export function usePostForm(
       setLastSaved(new Date());
       setIsDirty(false);
       initialDataRef.current = updatedData;
+
+      // Reset user-edited flags after save to allow auto-generation to continue
+      userEditedSlugRef.current = false;
+      userEditedExcerptRef.current = false;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to save draft";
@@ -435,6 +439,10 @@ export function usePostForm(
 
         setFormData(updatedData);
         initialDataRef.current = updatedData;
+
+        // Reset user-edited flags after save to allow auto-generation to continue
+        userEditedSlugRef.current = false;
+        userEditedExcerptRef.current = false;
       }
 
       setLastSaved(new Date());
