@@ -812,15 +812,17 @@ export const PostForm = memo(function PostForm({
 
         {/* Image Uploader Dialog */}
         <Dialog open={showImageUploader} onOpenChange={setShowImageUploader}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>Upload Image</DialogTitle>
             </DialogHeader>
-            <ImageUploader
-              onUploadComplete={handleImageUpload}
-              onCancel={() => setShowImageUploader(false)}
-              postId={postId}
-            />
+            <div className="overflow-y-auto flex-1 pr-2">
+              <ImageUploader
+                onUploadComplete={handleImageUpload}
+                onCancel={() => setShowImageUploader(false)}
+                postId={postId}
+              />
+            </div>
           </DialogContent>
         </Dialog>
 
