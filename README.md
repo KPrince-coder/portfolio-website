@@ -88,8 +88,8 @@ See the [docs README](./docs/README.md) for a complete index of all documentatio
 
 This project uses Supabase for the backend:
 
-- **Project ID:** `jcsghggucepqzmonlpeg`
-- **Dashboard:** <https://supabase.com/dashboard/project/jcsghggucepqzmonlpeg>
+- **Project ID:** `id`
+- **Dashboard:** <https://supabase.com/dashboard/project/id>
 
 ### Migrations
 
@@ -100,12 +100,12 @@ Database migrations are located in `supabase/migrations/`:
 To apply migrations:
 
 ```bash
-npx supabase link --project-ref jcsghggucepqzmonlpeg
+npx supabase link --project-ref id
 npx supabase db push
 ```
 
 To generate TypeScript types:
 
 ```bash
-npx supabase gen types typescript --project-id jcsghggucepqzmonlpeg > src/integrations/supabase/types.ts
+npx supabase gen types typescript --project-id id > src/integrations/supabase/types.ts
 ```
