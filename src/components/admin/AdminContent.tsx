@@ -5,17 +5,16 @@ import {
   SkipToContent,
   useAdminLayout,
   AdminDashboard,
-  ContactMessages,
   ProjectsManagement,
   ProfileManagement,
   ResumeManagement,
   SettingsManagement,
-  MessageReply,
   MessageStats,
   ProjectStats,
   User,
   ContactMessage,
 } from "@/components/admin";
+import { MessagesManagementRouter } from "@/components/admin/messages";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
@@ -49,20 +48,8 @@ interface AdminContentProps {
     projectsThisWeek: number;
     projectsThisMonth: number;
   };
-  messagesLoading: boolean;
-  selectedMessage: ContactMessage | null;
-  showReplyModal: boolean;
   onSignOut: () => void;
   onTabChange: (tab: string) => void;
-  onMarkAsRead: (id: string) => void;
-  onBulkAction: (ids: string[], action: string) => void;
-  onDeleteMessage: (id: string) => void;
-  onReplyToMessage: (id: string) => void;
-  onUpdateStatus: (id: string, updates: Partial<ContactMessage>) => void;
-  onUpdatePriority: (id: string, priority: ContactMessage["priority"]) => void;
-  onSendReply: (content: string) => Promise<void>;
-  onSaveDraft: (content: string) => Promise<void>;
-  onCloseReplyModal: () => void;
 }
 
 /**
@@ -84,20 +71,8 @@ export const AdminContent: React.FC<AdminContentProps> = ({
   unreadMessages,
   messageStats,
   projectStats,
-  messagesLoading,
-  selectedMessage,
-  showReplyModal,
   onSignOut,
   onTabChange,
-  onMarkAsRead,
-  onBulkAction,
-  onDeleteMessage,
-  onReplyToMessage,
-  onUpdateStatus,
-  onUpdatePriority,
-  onSendReply,
-  onSaveDraft,
-  onCloseReplyModal,
 }) => {
   const { sidebarCollapsed, isDesktop } = useAdminLayout();
   const [fullUser, setFullUser] = useState<SupabaseUser | null>(null);
@@ -145,7 +120,7 @@ export const AdminContent: React.FC<AdminContentProps> = ({
 
       {/* Main Content with responsive left margin */}
       <main id="main-content" className={mainContentClasses} role="main">
-        <div className="container mx-auto px-4 sm:px-6 py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           {activeTab === "overview" && (
             <div className="space-y-6">
               <MessageStats {...messageStats} />
@@ -162,16 +137,10 @@ export const AdminContent: React.FC<AdminContentProps> = ({
             <ProfileManagement activeSubTab={activeTab} />
           )}
 
-          {activeTab === "messages" && (
-            <ContactMessages
-              contactMessages={contactMessages}
-              onMarkAsRead={onMarkAsRead}
-              onBulkAction={onBulkAction}
-              onDeleteMessage={onDeleteMessage}
-              onReplyToMessage={onReplyToMessage}
-              onUpdateStatus={onUpdateStatus}
-              onUpdatePriority={onUpdatePriority}
-              loading={messagesLoading}
+          {activeTab.startsWith("messages") && (
+            <MessagesManagementRouter
+              activeSubTab={activeTab}
+              onTabChange={onTabChange}
             />
           )}
 
@@ -199,16 +168,6 @@ export const AdminContent: React.FC<AdminContentProps> = ({
           )}
         </div>
       </main>
-
-      {/* Message Reply Modal */}
-      {showReplyModal && selectedMessage && (
-        <MessageReply
-          message={selectedMessage}
-          onSendReply={onSendReply}
-          onSaveDraft={onSaveDraft}
-          onClose={onCloseReplyModal}
-        />
-      )}
     </>
   );
 };

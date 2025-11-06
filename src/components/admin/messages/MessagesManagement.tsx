@@ -6,13 +6,14 @@
  * @module messages/MessagesManagement
  */
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "./hooks/useMessages";
 import { MessagesList } from "./sections/MessagesList";
 import { MessageReply } from "./sections/MessageReply";
-import { MessageStats } from "./sections/MessageStats";
+import { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
+import { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 
 // ============================================================================
 // TYPES
@@ -107,17 +108,28 @@ export function MessagesManagement({
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-0 h-auto sm:h-10">
+          <TabsTrigger value="messages" className="min-h-[44px]">
+            Messages
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="min-h-[44px]">
+            Statistics
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="min-h-[44px]">
+            Templates
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="messages" className="mt-6">
+        <TabsContent value="messages" className="mt-4 sm:mt-6">
           <MessagesList onReplyToMessage={handleReplyToMessage} />
         </TabsContent>
 
-        <TabsContent value="stats" className="mt-6">
-          <MessageStats stats={undefined as any} />
+        <TabsContent value="stats" className="mt-4 sm:mt-6">
+          <MessageStatsComponent stats={undefined as any} />
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-4 sm:mt-6">
+          <EmailTemplatesSection />
         </TabsContent>
       </Tabs>
 

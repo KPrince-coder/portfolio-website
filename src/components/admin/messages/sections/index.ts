@@ -9,3 +9,4 @@
 export { MessagesList } from "./MessagesList";
 export { MessageStats } from "./MessageStats";
 export { MessageReply } from "./MessageReply";
+export { EmailTemplatesSection } from "./EmailTemplatesSection";

@@ -47,10 +47,10 @@ export type {
 
 export { MessagesList } from "./sections/MessagesList";
 export { MessageReply } from "./sections/MessageReply";
-export { MessageStats } from "./sections/MessageStats";
+export { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
+export { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 export { MessagesManagement } from "./MessagesManagement";
-// export { EmailTemplatesSection } from './sections/EmailTemplatesSection';
-// export { MessagesManagementRouter } from './MessagesManagementRouter';
+export { MessagesManagementRouter } from "./MessagesManagementRouter";
 
 // ============================================================================
 // HOOKS

@@ -29,8 +29,13 @@ import { AdminTab } from "./types";
 
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
-  { id: "messages", label: "Messages", icon: Mail },
   { id: "settings", label: "Settings", icon: Settings },
+] as const;
+
+export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
+  { id: "messages", label: "All Messages", icon: Mail },
+  { id: "messages-stats", label: "Statistics", icon: TrendingUp },
+  { id: "messages-templates", label: "Templates", icon: FileText },
 ] as const;
 
 export const PROFILE_SUB_TABS: readonly AdminTab[] = [
@@ -76,7 +81,8 @@ export const POSTS_SUB_TABS: readonly AdminTab[] = [
 // Animation and Layout Constants
 // ============================================================================
 
-export const SIDEBAR_COLLAPSED_WIDTH = 64; // px
-export const SIDEBAR_EXPANDED_WIDTH = 256; // px
+// Using rem units for better accessibility (1rem = 16px default)
+export const SIDEBAR_COLLAPSED_WIDTH = 5; // rem (80px at default font size)
+export const SIDEBAR_EXPANDED_WIDTH = 18; // rem (288px at default font size)
 export const SIDEBAR_ANIMATION_DURATION = 300; // ms
 export const MOBILE_SIDEBAR_CLOSE_DELAY = 100; // ms

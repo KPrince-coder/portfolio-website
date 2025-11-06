@@ -4,6 +4,7 @@ import {
   Briefcase,
   FileText,
   User,
+  Mail,
   ChevronDown,
   ChevronRight,
   ChevronLeft,
@@ -18,6 +19,7 @@ import { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 import { cn } from "@/lib/utils";
 import {
   MAIN_TABS,
+  MESSAGES_SUB_TABS,
   PROFILE_SUB_TABS,
   SKILLS_SUB_TABS,
   PROJECTS_SUB_TABS,
@@ -31,6 +33,7 @@ import {
 // ============================================================================
 
 type SectionState = {
+  messages: boolean;
   profile: boolean;
   skills: boolean;
   projects: boolean;
@@ -54,6 +57,7 @@ const sectionReducer = (
       return { ...state, [action.section]: true };
     case "COLLAPSE_ALL":
       return {
+        messages: false,
         profile: false,
         skills: false,
         projects: false,
@@ -95,6 +99,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
     // Consolidated state for expandable sections using useReducer
     const [expandedSections, dispatch] = useReducer(sectionReducer, {
+      messages: activeTab.startsWith("messages"),
       profile: activeTab.startsWith("profile"),
       skills: activeTab.startsWith("skills"),
       projects: activeTab.startsWith("projects"),
@@ -103,6 +108,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
     });
 
     // Memoized event handlers
+    const handleMessagesClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "messages" });
+      if (!expandedSections.messages) {
+        onTabChange("messages");
+      }
+    }, [expandedSections.messages, onTabChange]);
+
     const handleProfileClick = useCallback(() => {
       dispatch({ type: "TOGGLE", section: "profile" });
       if (!expandedSections.profile) {
@@ -140,7 +152,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
     const handleSubTabClick = useCallback(
       (subTabId: string) => {
-        if (subTabId.startsWith("profile")) {
+        if (subTabId.startsWith("messages")) {
+          dispatch({ type: "EXPAND", section: "messages" });
+        } else if (subTabId.startsWith("profile")) {
           dispatch({ type: "EXPAND", section: "profile" });
         } else if (subTabId.startsWith("skills")) {
           dispatch({ type: "EXPAND", section: "skills" });
@@ -207,13 +221,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
       "hidden lg:flex flex-col",
       "will-change-[width]",
       "transform-gpu",
-      "fixed left-0 top-16 bottom-0 z-40", // Fixed positioning from below header
-      sidebarCollapsed ? "w-20" : "w-72" // 288px expanded, 80px collapsed (increased)
+      "fixed left-0 top-16 bottom-0 z-40", // top-16 = 4rem (64px) header height
+      // Width: 5rem (80px) collapsed, 18rem (288px) expanded - see SIDEBAR_*_WIDTH constants
+      sidebarCollapsed ? "w-20" : "w-72"
     );
 
     // Mobile sidebar classes - fixed overlay
     const mobileClasses = cn(
-      "fixed top-0 bottom-0 left-0 z-[60] w-72",
+      "fixed top-0 bottom-0 left-0 z-[60] w-72", // 18rem (288px) - see SIDEBAR_EXPANDED_WIDTH
       "bg-background border-r border-border shadow-xl",
       "transform transition-transform duration-300 ease-in-out",
       "lg:hidden flex flex-col",
@@ -388,6 +403,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
             aria-label="Main navigation"
           >
             {MAIN_TABS.map((tab) => renderNavButton(tab))}
+
+            {/* Messages Section */}
+            {renderExpandableSection(
+              Mail,
+              "Messages",
+              expandedSections.messages,
+              handleMessagesClick,
+              activeTab.startsWith("messages"),
+              MESSAGES_SUB_TABS as unknown as AdminTab[]
+            )}
 
             {/* Profile Section */}
             {renderExpandableSection(
