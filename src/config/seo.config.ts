@@ -8,7 +8,7 @@
 
 export const SEO_CONFIG = {
   siteName: import.meta.env.VITE_SITE_NAME || "Your Portfolio",
-  siteUrl: import.meta.env.VITE_SITE_URL || "https://yoursite.com",
+  siteUrl: import.meta.env.VITE_SITE_URL || "https://codeprince.netlify.app",
   twitterHandle: import.meta.env.VITE_TWITTER_HANDLE || "@yourhandle",
   defaultAuthor: import.meta.env.VITE_DEFAULT_AUTHOR || "Your Name",
   defaultImage: import.meta.env.VITE_DEFAULT_OG_IMAGE || "/og-image.jpg",
