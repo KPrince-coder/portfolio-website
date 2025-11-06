@@ -24,6 +24,13 @@ export type {
   EmailTemplate,
   EmailTemplateFormData,
 
+  // Email Service Types
+  SendNotificationParams,
+  SendReplyParams,
+  EmailResponse,
+  EmailLog,
+  EmailStatistics,
+
   // Component Props
   MessagesListProps,
   MessageReplyProps,

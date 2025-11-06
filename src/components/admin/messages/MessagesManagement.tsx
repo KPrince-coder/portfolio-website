@@ -6,7 +6,7 @@
  * @module messages/MessagesManagement
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "./hooks/useMessages";
@@ -14,6 +14,9 @@ import { MessagesList } from "./sections/MessagesList";
 import { MessageReply } from "./sections/MessageReply";
 import { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
 import { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
+import { sendReplyEmail } from "@/services/emailService";
+import { supabase } from "@/integrations/supabase/client";
+import { emailConfig } from "@/config/email.config";
 
 // ============================================================================
 // TYPES
@@ -37,6 +40,41 @@ export function MessagesManagement({
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | null>(
     null
   );
+  const [adminName, setAdminName] = useState<string>("Support Team");
+
+  // ============================================================================
+  // FETCH ADMIN NAME
+  // ============================================================================
+
+  useEffect(() => {
+    const fetchAdminName = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          // Try to get name from user profile
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("user_id", user.id)
+            .single();
+
+          if (profile?.full_name) {
+            setAdminName(profile.full_name);
+          } else {
+            // Fallback to email username or company name
+            setAdminName(user.email?.split("@")[0] || emailConfig.companyName);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin name:", error);
+        // Keep default "Support Team"
+      }
+    };
+
+    fetchAdminName();
+  }, []);
 
   // ============================================================================
   // HANDLERS
@@ -55,26 +93,44 @@ export function MessagesManagement({
       if (!replyingToMessageId) return;
 
       try {
-        await updateMessage({
-          id: replyingToMessageId,
-          reply_content: content,
-          reply_sent_at: new Date().toISOString(),
-          is_replied: true,
-          status: "replied",
-        });
+        // Send email through Supabase Edge Function
+        // This will also update the message status automatically
+        const result = await sendReplyEmail(
+          replyingToMessageId,
+          content,
+          adminName
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to send reply");
+        }
 
         toast({
           title: "Reply sent",
-          description: "Your reply has been sent successfully.",
+          description: `Your reply has been sent successfully. ${
+            result.response_time_hours
+              ? `Response time: ${result.response_time_hours}h`
+              : ""
+          }`,
         });
 
+        // Refresh messages to get updated status
+        // The Edge Function already updated the database
         setReplyingToMessageId(null);
       } catch (error) {
         console.error("Send reply error:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to send reply",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Please try again or contact support.",
+        });
         throw error;
       }
     },
-    [replyingToMessageId, updateMessage, toast]
+    [replyingToMessageId, toast]
   );
 
   const handleSaveDraft = useCallback(

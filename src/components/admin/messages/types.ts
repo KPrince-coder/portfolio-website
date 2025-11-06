@@ -155,6 +155,55 @@ export interface SendReplyInput {
 }
 
 // ============================================================================
+// EMAIL SERVICE TYPES
+// ============================================================================
+
+export interface SendNotificationParams {
+  messageId: string;
+  adminEmail?: string;
+}
+
+export interface SendReplyParams {
+  messageId: string;
+  replyContent: string;
+  adminName?: string;
+}
+
+export interface EmailResponse {
+  success: boolean;
+  email_id?: string;
+  message: string;
+  error?: string;
+  details?: string;
+  duration_ms?: number;
+  response_time_hours?: number;
+}
+
+export interface EmailLog {
+  id: string;
+  message_id: string;
+  email_type: "notification" | "reply" | "auto_reply";
+  recipient_email: string;
+  subject: string;
+  status: "sent" | "failed" | "pending";
+  error_message?: string;
+  sent_at?: string;
+  created_at: string;
+}
+
+export interface EmailStatistics {
+  total_sent: number;
+  total_failed: number;
+  success_rate: number;
+  avg_response_time_hours: number;
+  emails_by_type: {
+    notification: number;
+    reply: number;
+    auto_reply: number;
+  };
+}
+
+// ============================================================================
 // RESULT TYPES
 // ============================================================================
 

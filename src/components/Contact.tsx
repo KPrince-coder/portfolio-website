@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { Mail, MessageSquare, Send, CheckCircle, AlertCircle, Linkedin, Github, Twitter } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from "react";
+import {
+  Mail,
+  MessageSquare,
+  Send,
+  CheckCircle,
+  AlertCircle,
+  Linkedin,
+  Github,
+  Twitter,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { sendNotificationEmail } from "@/services/emailService";
+import { emailConfig } from "@/config/email.config";
 
 interface FormData {
   name: string;
@@ -24,10 +35,10 @@ interface FormErrors {
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,70 +48,70 @@ const Contact: React.FC = () => {
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
+      newErrors.subject = "Subject is required";
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
+      newErrors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters long';
+      newErrors.message = "Message must be at least 10 characters long";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleInputChange =
+    (field: keyof FormData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormData((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: e.target.value,
       }));
-    }
-  };
+
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: undefined,
+        }));
+      }
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Send contact message to Supabase
       const { data, error } = await supabase
-        .from('contact_messages')
+        .from("contact_messages")
         .insert([
           {
             name: formData.name.trim(),
             email: formData.email.trim(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
-            priority: 'medium',
-            category: 'general',
+            priority: "medium",
+            category: "general",
             ip_address: null, // Could be populated with actual IP if needed
-            user_agent: navigator.userAgent
-          }
+            user_agent: navigator.userAgent,
+          },
         ])
         .select()
         .single();
@@ -109,31 +120,29 @@ const Contact: React.FC = () => {
         throw error;
       }
 
-      // Send notification to admin (optional - could be triggered by database trigger instead)
+      // Send notification to admin
       try {
-        await supabase.functions.invoke('send-message-notification', {
-          body: { message_id: data.id }
-        });
+        await sendNotificationEmail(data.id, emailConfig.adminEmail);
       } catch (notificationError) {
-        console.error('Failed to send notification:', notificationError);
+        console.error("Failed to send notification:", notificationError);
         // Don't fail the whole operation if notification fails
       }
 
       toast({
         title: "Message sent successfully!",
-        description: "Thank you for reaching out. I'll get back to you within 24 hours.",
+        description:
+          "Thank you for reaching out. I'll get back to you within 24 hours.",
       });
 
       // Reset form
       setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
       });
-
     } catch (error: any) {
-      console.error('Contact form error:', error);
+      console.error("Contact form error:", error);
       toast({
         variant: "destructive",
         title: "Failed to send message",
@@ -147,32 +156,35 @@ const Contact: React.FC = () => {
   const socialLinks = [
     {
       icon: Linkedin,
-      label: 'LinkedIn',
-      href: 'https://linkedin.com/in/alexneural',
-      color: 'text-blue-500 hover:text-blue-400'
+      label: "LinkedIn",
+      href: "https://linkedin.com/in/alexneural",
+      color: "text-blue-500 hover:text-blue-400",
     },
     {
       icon: Github,
-      label: 'GitHub',
-      href: 'https://github.com/alexneural',
-      color: 'text-secondary hover:text-secondary-glow'
+      label: "GitHub",
+      href: "https://github.com/alexneural",
+      color: "text-secondary hover:text-secondary-glow",
     },
     {
       icon: Twitter,
-      label: 'Twitter',
-      href: 'https://twitter.com/alexneural',
-      color: 'text-blue-400 hover:text-blue-300'
+      label: "Twitter",
+      href: "https://twitter.com/alexneural",
+      color: "text-blue-400 hover:text-blue-300",
     },
     {
       icon: Mail,
-      label: 'Email',
-      href: 'mailto:alex@alexneural.dev',
-      color: 'text-accent hover:text-accent-glow'
-    }
+      label: "Email",
+      href: "mailto:alex@alexneural.dev",
+      color: "text-accent hover:text-accent-glow",
+    },
   ];
 
   return (
-    <section id="contact" className="py-20 bg-gradient-to-b from-background/50 to-background">
+    <section
+      id="contact"
+      className="py-20 bg-gradient-to-b from-background/50 to-background"
+    >
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="heading-xl mb-6">
@@ -180,8 +192,9 @@ const Contact: React.FC = () => {
           </h2>
           <div className="w-24 h-1 bg-gradient-secondary mx-auto mb-8"></div>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Ready to discuss your next AI project? I'm always excited to collaborate on innovative 
-            solutions that push the boundaries of what's possible with data and artificial intelligence.
+            Ready to discuss your next AI project? I'm always excited to
+            collaborate on innovative solutions that push the boundaries of
+            what's possible with data and artificial intelligence.
           </p>
         </div>
 
@@ -205,10 +218,10 @@ const Contact: React.FC = () => {
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={handleInputChange('name')}
+                        onChange={handleInputChange("name")}
                         placeholder="Your full name"
                         className={`bg-background/50 border-border focus:border-secondary ${
-                          errors.name ? 'border-destructive' : ''
+                          errors.name ? "border-destructive" : ""
                         }`}
                       />
                       {errors.name && (
@@ -218,7 +231,7 @@ const Contact: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm font-medium">
                         Email Address *
@@ -227,10 +240,10 @@ const Contact: React.FC = () => {
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={handleInputChange('email')}
+                        onChange={handleInputChange("email")}
                         placeholder="your.email@example.com"
                         className={`bg-background/50 border-border focus:border-secondary ${
-                          errors.email ? 'border-destructive' : ''
+                          errors.email ? "border-destructive" : ""
                         }`}
                       />
                       {errors.email && (
@@ -249,10 +262,10 @@ const Contact: React.FC = () => {
                     <Input
                       id="subject"
                       value={formData.subject}
-                      onChange={handleInputChange('subject')}
+                      onChange={handleInputChange("subject")}
                       placeholder="What would you like to discuss?"
                       className={`bg-background/50 border-border focus:border-secondary ${
-                        errors.subject ? 'border-destructive' : ''
+                        errors.subject ? "border-destructive" : ""
                       }`}
                     />
                     {errors.subject && (
@@ -270,11 +283,11 @@ const Contact: React.FC = () => {
                     <Textarea
                       id="message"
                       value={formData.message}
-                      onChange={handleInputChange('message')}
+                      onChange={handleInputChange("message")}
                       placeholder="Tell me about your project, goals, or any questions you have..."
                       rows={5}
                       className={`bg-background/50 border-border focus:border-secondary resize-none ${
-                        errors.message ? 'border-destructive' : ''
+                        errors.message ? "border-destructive" : ""
                       }`}
                     />
                     {errors.message && (
@@ -323,15 +336,19 @@ const Contact: React.FC = () => {
                     <Mail className="w-5 h-5 text-secondary" />
                     <div>
                       <p className="font-medium">Email</p>
-                      <p className="text-sm text-muted-foreground">alex@alexneural.dev</p>
+                      <p className="text-sm text-muted-foreground">
+                        alex@alexneural.dev
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <MessageSquare className="w-5 h-5 text-accent" />
                     <div>
                       <p className="font-medium">Response Time</p>
-                      <p className="text-sm text-muted-foreground">Within 24 hours</p>
+                      <p className="text-sm text-muted-foreground">
+                        Within 24 hours
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -344,10 +361,12 @@ const Contact: React.FC = () => {
                         key={social.label}
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(social.href, '_blank')}
+                        onClick={() => window.open(social.href, "_blank")}
                         className="justify-start neural-glow"
                       >
-                        <social.icon className={`w-4 h-4 mr-2 ${social.color}`} />
+                        <social.icon
+                          className={`w-4 h-4 mr-2 ${social.color}`}
+                        />
                         {social.label}
                       </Button>
                     ))}
@@ -365,11 +384,15 @@ const Contact: React.FC = () => {
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start space-x-2">
                     <div className="w-1.5 h-1.5 bg-secondary rounded-full mt-2"></div>
-                    <span>Detailed discussion about your project requirements</span>
+                    <span>
+                      Detailed discussion about your project requirements
+                    </span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2"></div>
-                    <span>Technical feasibility assessment and recommendations</span>
+                    <span>
+                      Technical feasibility assessment and recommendations
+                    </span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1.5 h-1.5 bg-success rounded-full mt-2"></div>
