@@ -353,6 +353,225 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          admin_notes: string | null
+          archived: boolean | null
+          category: string | null
+          created_at: string | null
+          email: string
+          id: string
+          ip_address: string | null
+          is_replied: boolean | null
+          message: string
+          name: string
+          priority: string | null
+          reply_content: string | null
+          reply_sent_at: string | null
+          status: string | null
+          subject: string
+          tags: string[] | null
+          updated_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          archived?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          ip_address?: string | null
+          is_replied?: boolean | null
+          message: string
+          name: string
+          priority?: string | null
+          reply_content?: string | null
+          reply_sent_at?: string | null
+          status?: string | null
+          subject: string
+          tags?: string[] | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          archived?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          ip_address?: string | null
+          is_replied?: boolean | null
+          message?: string
+          name?: string
+          priority?: string | null
+          reply_content?: string | null
+          reply_sent_at?: string | null
+          status?: string | null
+          subject?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          bcc: string[] | null
+          bounced_at: string | null
+          cc: string[] | null
+          click_count: number | null
+          clicked_at: string | null
+          created_at: string | null
+          delivered_at: string | null
+          email_type: string
+          error_code: string | null
+          error_message: string | null
+          failed_at: string | null
+          from_email: string
+          from_name: string | null
+          html_content: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          open_count: number | null
+          opened_at: string | null
+          reply_to: string | null
+          resend_email_id: string | null
+          retry_count: number | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_id: string | null
+          template_variables: Json | null
+          text_content: string | null
+          to_email: string
+          to_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bcc?: string[] | null
+          bounced_at?: string | null
+          cc?: string[] | null
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email_type: string
+          error_code?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          from_email: string
+          from_name?: string | null
+          html_content?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          open_count?: number | null
+          opened_at?: string | null
+          reply_to?: string | null
+          resend_email_id?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_id?: string | null
+          template_variables?: Json | null
+          text_content?: string | null
+          to_email: string
+          to_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bcc?: string[] | null
+          bounced_at?: string | null
+          cc?: string[] | null
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email_type?: string
+          error_code?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          from_email?: string
+          from_name?: string | null
+          html_content?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          open_count?: number | null
+          opened_at?: string | null
+          reply_to?: string | null
+          resend_email_id?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_id?: string | null
+          template_variables?: Json | null
+          text_content?: string | null
+          to_email?: string
+          to_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "react_email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          text_content: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          template_type: string
+          text_content?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          template_type?: string
+          text_content?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       learning_goals: {
         Row: {
           color: string
@@ -385,6 +604,116 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      message_analytics: {
+        Row: {
+          admin_views: number | null
+          created_at: string | null
+          id: string
+          last_viewed_at: string | null
+          message_id: string
+          notification_opened_at: string | null
+          notification_sent_at: string | null
+          replied_at: string | null
+          reply_email_opened_at: string | null
+          reply_email_sent_at: string | null
+          response_time_hours: number | null
+          response_time_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_views?: number | null
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          message_id: string
+          notification_opened_at?: string | null
+          notification_sent_at?: string | null
+          replied_at?: string | null
+          reply_email_opened_at?: string | null
+          reply_email_sent_at?: string | null
+          response_time_hours?: number | null
+          response_time_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_views?: number | null
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          message_id?: string
+          notification_opened_at?: string | null
+          notification_sent_at?: string | null
+          replied_at?: string | null
+          reply_email_opened_at?: string | null
+          reply_email_sent_at?: string | null
+          response_time_hours?: number | null
+          response_time_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_analytics_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_notifications: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          email_log_id: string | null
+          id: string
+          message_id: string
+          notification_type: string
+          recipient_email: string
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          email_log_id?: string | null
+          id?: string
+          message_id: string
+          notification_type: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          email_log_id?: string | null
+          id?: string
+          message_id?: string
+          notification_type?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_notifications_email_log_id_fkey"
+            columns: ["email_log_id"]
+            isOneToOne: false
+            referencedRelation: "email_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_notifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "contact_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -671,6 +1000,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      react_email_templates: {
+        Row: {
+          available_variables: Json | null
+          component_name: string
+          created_at: string | null
+          created_by: string | null
+          default_props: Json | null
+          description: string | null
+          html_template: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          preview_props: Json | null
+          props_schema: Json | null
+          required_variables: string[] | null
+          template_type: string
+          text_template: string | null
+          updated_at: string | null
+          updated_by: string | null
+          version: number | null
+        }
+        Insert: {
+          available_variables?: Json | null
+          component_name: string
+          created_at?: string | null
+          created_by?: string | null
+          default_props?: Json | null
+          description?: string | null
+          html_template?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          preview_props?: Json | null
+          props_schema?: Json | null
+          required_variables?: string[] | null
+          template_type: string
+          text_template?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          available_variables?: Json | null
+          component_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          default_props?: Json | null
+          description?: string | null
+          html_template?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          preview_props?: Json | null
+          props_schema?: Json | null
+          required_variables?: string[] | null
+          template_type?: string
+          text_template?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number | null
+        }
+        Relationships: []
       }
       resume_certifications: {
         Row: {
@@ -979,6 +1374,21 @@ export type Database = {
       }
     }
     Views: {
+      email_analytics: {
+        Row: {
+          avg_delivery_time_seconds: number | null
+          bounced_count: number | null
+          click_rate: number | null
+          clicked_count: number | null
+          delivered_count: number | null
+          email_type: string | null
+          failed_count: number | null
+          open_rate: number | null
+          opened_count: number | null
+          total_sent: number | null
+        }
+        Relationships: []
+      }
       projects_with_categories: {
         Row: {
           category_color: string | null
@@ -1354,6 +1764,19 @@ export type Database = {
       calculate_read_time: { Args: { content_text: string }; Returns: number }
       generate_slug: { Args: { text_input: string }; Returns: string }
       get_active_categories_count: { Args: never; Returns: number }
+      get_email_statistics: {
+        Args: { p_days?: number }
+        Returns: {
+          bounced: number
+          click_rate: number
+          clicked: number
+          delivered: number
+          failed: number
+          open_rate: number
+          opened: number
+          total_sent: number
+        }[]
+      }
       get_featured_projects: {
         Args: { limit_count?: number }
         Returns: {
@@ -1502,6 +1925,14 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      update_email_log_status: {
+        Args: {
+          p_resend_email_id: string
+          p_status: string
+          p_timestamp?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
