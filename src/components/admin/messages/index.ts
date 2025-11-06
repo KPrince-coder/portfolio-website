@@ -42,20 +42,20 @@ export type {
 } from "./types";
 
 // ============================================================================
-// COMPONENTS (to be added as they're refactored)
+// COMPONENTS
 // ============================================================================
 
-// export { MessagesList } from './sections/MessagesList';
-// export { MessageReply } from './sections/MessageReply';
-// export { MessageStats } from './sections/MessageStats';
+export { MessagesList } from "./sections/MessagesList";
+export { MessageReply } from "./sections/MessageReply";
+export { MessageStats } from "./sections/MessageStats";
+export { MessagesManagement } from "./MessagesManagement";
 // export { EmailTemplatesSection } from './sections/EmailTemplatesSection';
-// export { MessagesManagement } from './MessagesManagement';
 // export { MessagesManagementRouter } from './MessagesManagementRouter';
 
 // ============================================================================
-// HOOKS (to be added)
+// HOOKS
 // ============================================================================
 
-// export { useMessages } from './hooks/useMessages';
-// export { useMessageStats } from './hooks/useMessageStats';
-// export { useEmailTemplates } from './hooks/useEmailTemplates';
+export { useMessages } from "./hooks/useMessages";
+export { useMessageStats } from "./hooks/useMessageStats";
+export { useEmailTemplates } from "./hooks/useEmailTemplates";
