@@ -1,180 +1,340 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from 'https://esm.sh/resend@2.0.0';
+/**
+ * Send Message Notification Edge Function
+ *
+ * Sends email notification to admin when a new contact message is received
+ *
+ * Modern implementation with:
+ * - TypeScript strict types
+ * - Comprehensive error handling
+ * - Email logging and tracking
+ * - Rate limiting
+ * - Retry logic
+ * - Proper validation
+ *
+ * @module send-message-notification
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
-interface NotificationRequest {
-  message_id: string;
-  admin_email?: string;
-}
+import type {
+  SendNotificationRequest,
+  EmailResponse,
+  ContactMessage,
+  EmailTemplate,
+} from "../_shared/types.ts";
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+import {
+  corsHeaders,
+  corsResponse,
+  successResponse,
+  errorResponse,
+  renderTemplate,
+  validateRequired,
+  validateEmail,
+  logInfo,
+  logError,
+  checkRateLimit,
+  getEnvConfig,
+  createEmailLog,
+  retryOperation,
+} from "../_shared/utils.ts";
+
+// ============================================================================
+// MAIN HANDLER
+// ============================================================================
+
+serve(async (req: Request): Promise<Response> => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return corsResponse();
   }
 
+  const startTime = Date.now();
+
   try {
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    // ============================================================================
+    // 1. PARSE AND VALIDATE REQUEST
+    // ============================================================================
+
+    const body = (await req.json()) as SendNotificationRequest;
+    const { message_id, admin_email } = body;
+
+    // Validate required fields
+    const validation = validateRequired(body, ["message_id"]);
+    if (!validation.valid) {
+      logError("Validation failed", { missing: validation.missing });
+      return errorResponse(
+        "Missing required fields",
+        { missing: validation.missing },
+        400
+      );
+    }
+
+    // Validate admin email if provided
+    if (admin_email && !validateEmail(admin_email)) {
+      return errorResponse("Invalid admin email format", null, 400);
+    }
+
+    // Rate limiting (10 requests per minute per message)
+    const rateLimit = checkRateLimit(`notification:${message_id}`, 10, 60000);
+    if (!rateLimit.allowed) {
+      logError("Rate limit exceeded", { message_id });
+      return errorResponse(
+        "Rate limit exceeded",
+        { resetAt: new Date(rateLimit.resetAt).toISOString() },
+        429
+      );
+    }
+
+    logInfo("Processing notification request", { message_id, admin_email });
+
+    // ============================================================================
+    // 2. INITIALIZE CLIENTS
+    // ============================================================================
+
+    const config = getEnvConfig();
+
+    const supabase = createClient(
+      config.supabaseUrl,
+      config.supabaseServiceKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
     );
 
-    const { message_id, admin_email } = await req.json() as NotificationRequest;
+    const resend = new Resend(config.resendApiKey);
 
-    if (!message_id) {
-      return new Response(
-        JSON.stringify({ error: 'Message ID is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    // ============================================================================
+    // 3. FETCH MESSAGE
+    // ============================================================================
 
-    // Get message details
-    const { data: message, error: messageError } = await supabaseClient
-      .from('contact_messages')
-      .select('*')
-      .eq('id', message_id)
-      .single();
+    const { data: message, error: messageError } = await supabase
+      .from("contact_messages")
+      .select("*")
+      .eq("id", message_id)
+      .single<ContactMessage>();
 
     if (messageError || !message) {
-      return new Response(
-        JSON.stringify({ error: 'Message not found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      logError("Message not found", { message_id, error: messageError });
+      return errorResponse("Message not found", null, 404);
     }
 
-    // Get email template
-    const { data: template, error: templateError } = await supabaseClient
-      .from('email_templates')
-      .select('*')
-      .eq('template_type', 'new_message_notification')
-      .eq('is_active', true)
-      .single();
+    // ============================================================================
+    // 4. FETCH EMAIL TEMPLATE
+    // ============================================================================
+
+    const { data: template, error: templateError } = await supabase
+      .from("email_templates")
+      .select("*")
+      .eq("template_type", "new_message_notification")
+      .eq("is_active", true)
+      .single<EmailTemplate>();
 
     if (templateError || !template) {
-      return new Response(
-        JSON.stringify({ error: 'Email template not found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+      logError("Template not found", { error: templateError });
+      return errorResponse(
+        "Email template not configured",
+        { template_type: "new_message_notification" },
+        404
       );
     }
 
-    // Get brand settings
-    const { data: brandSettings } = await supabaseClient
-      .from('brand_settings')
-      .select('*')
-      .in('setting_key', ['email_branding', 'notification_settings']);
+    // ============================================================================
+    // 5. FETCH BRAND SETTINGS
+    // ============================================================================
 
-    const emailBranding = brandSettings?.find(s => s.setting_key === 'email_branding')?.setting_value || {};
-    const notificationSettings = brandSettings?.find(s => s.setting_key === 'notification_settings')?.setting_value || {};
+    const { data: brandSettings } = await supabase
+      .from("brand_settings")
+      .select("*")
+      .in("setting_key", ["email_branding", "notification_settings"]);
 
-    // Prepare template variables
+    const emailBranding =
+      brandSettings?.find((s) => s.setting_key === "email_branding")
+        ?.setting_value || {};
+
+    const notificationSettings =
+      brandSettings?.find((s) => s.setting_key === "notification_settings")
+        ?.setting_value || {};
+
+    // ============================================================================
+    // 6. PREPARE TEMPLATE VARIABLES
+    // ============================================================================
+
     const variables = {
       sender_name: message.name,
       sender_email: message.email,
       subject: message.subject,
       message: message.message,
-      created_at: new Date(message.created_at).toLocaleString(),
-      admin_url: Deno.env.get('ADMIN_URL') || 'https://yoursite.com/admin',
+      priority: message.priority,
+      category: message.category,
+      created_at: new Date(message.created_at).toLocaleString("en-US", {
+        dateStyle: "full",
+        timeStyle: "short",
+      }),
+      admin_url: `${config.adminUrl}/messages?id=${message.id}`,
       message_id: message.id,
+      company_name: emailBranding.company_name || "Portfolio",
     };
 
-    // Replace variables in template
-    let emailSubject = template.subject;
-    let emailHtml = template.html_content;
-    let emailText = template.text_content || '';
+    // ============================================================================
+    // 7. RENDER TEMPLATE
+    // ============================================================================
 
-    Object.entries(variables).forEach(([key, value]) => {
-      const placeholder = `{{${key}}}`;
-      emailSubject = emailSubject.replace(new RegExp(placeholder, 'g'), value);
-      emailHtml = emailHtml.replace(new RegExp(placeholder, 'g'), value);
-      emailText = emailText.replace(new RegExp(placeholder, 'g'), value);
-    });
+    const rendered = renderTemplate(template, variables);
 
-    // Send email using Resend package
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      throw new Error('Resend API key not configured');
-    }
+    // ============================================================================
+    // 8. PREPARE EMAIL PAYLOAD
+    // ============================================================================
 
-    const resend = new Resend(resendApiKey);
+    const recipientEmail =
+      admin_email || notificationSettings.admin_email || "admin@example.com";
+
+    const fromName = emailBranding.company_name || "Portfolio";
+    const fromEmail = config.fromEmail;
 
     const emailPayload = {
-      from: `${emailBranding.company_name || 'Portfolio'} <onboarding@resend.dev>`, // Using Resend's default test domain
-      to: admin_email || notificationSettings.admin_email || 'admin@example.com',
-      subject: emailSubject,
-      html: emailHtml,
-      text: emailText,
+      from: `${fromName} <${fromEmail}>`,
+      to: recipientEmail,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+      tags: [
+        { name: "type", value: "notification" },
+        { name: "message_id", value: message.id },
+      ],
     };
 
-    const { data: resendResult, error: resendError } = await resend.emails.send(emailPayload);
+    // ============================================================================
+    // 9. SEND EMAIL WITH RETRY
+    // ============================================================================
 
-    if (resendError) {
-      throw new Error(`Resend API error: ${resendError.message}`);
-    }
+    const sendEmail = async () => {
+      const result = await resend.emails.send(emailPayload);
+      if (result.error) {
+        throw new Error(`Resend API error: ${result.error.message}`);
+      }
+      return result.data;
+    };
 
-    // Log notification
-    const { error: notificationError } = await supabaseClient
-      .from('message_notifications')
+    const resendResult = await retryOperation(sendEmail, 3, 1000);
+
+    logInfo("Email sent successfully", {
+      email_id: resendResult?.id,
+      recipient: recipientEmail,
+    });
+
+    // ============================================================================
+    // 10. LOG EMAIL
+    // ============================================================================
+
+    const emailLog = createEmailLog({
+      messageId: message.id,
+      templateId: template.id,
+      emailType: "new_message_notification",
+      fromEmail,
+      fromName,
+      toEmail: recipientEmail,
+      subject: rendered.subject,
+      htmlContent: rendered.html,
+      textContent: rendered.text,
+      templateVariables: variables,
+      status: "sent",
+      metadata: {
+        resend_email_id: resendResult?.id,
+        priority: message.priority,
+        category: message.category,
+      },
+    });
+
+    const { data: logData, error: logError } = await supabase
+      .from("email_logs")
       .insert({
-        message_id: message.id,
-        notification_type: 'new_message',
-        recipient_email: emailPayload.to,
-        subject: emailSubject,
-        content: emailHtml,
-        status: 'sent',
+        ...emailLog,
+        resend_email_id: resendResult?.id,
         sent_at: new Date().toISOString(),
-      });
+      })
+      .select()
+      .single();
 
-    if (notificationError) {
-      console.error('Failed to log notification:', notificationError);
+    if (logError) {
+      logError("Failed to create email log", logError);
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        email_id: resendResult?.id,
-        message: 'Notification sent successfully' 
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    // ============================================================================
+    // 11. CREATE NOTIFICATION RECORD
+    // ============================================================================
 
+    await supabase.from("message_notifications").insert({
+      message_id: message.id,
+      email_log_id: logData?.id,
+      notification_type: "new_message",
+      recipient_email: recipientEmail,
+      subject: rendered.subject,
+      content: rendered.html,
+      status: "sent",
+      sent_at: new Date().toISOString(),
+    });
+
+    // ============================================================================
+    // 12. RETURN SUCCESS RESPONSE
+    // ============================================================================
+
+    const duration = Date.now() - startTime;
+
+    logInfo("Notification sent successfully", {
+      message_id,
+      email_id: resendResult?.id,
+      duration_ms: duration,
+    });
+
+    return successResponse({
+      success: true,
+      email_id: resendResult?.id,
+      message: "Notification sent successfully",
+      duration_ms: duration,
+    } as EmailResponse);
   } catch (error) {
-    console.error('Error sending notification:', error);
-    
-    return new Response(
-      JSON.stringify({ 
-        error: 'Failed to send notification',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+    // ============================================================================
+    // ERROR HANDLING
+    // ============================================================================
+
+    const duration = Date.now() - startTime;
+
+    logError("Failed to send notification", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      duration_ms: duration,
+    });
+
+    return errorResponse(
+      "Failed to send notification",
+      error instanceof Error ? error.message : "Unknown error",
+      500
     );
   }
 });
 
-/* To deploy this function:
-1. Make sure you have the Supabase CLI installed
-2. Run: supabase functions deploy send-message-notification
-3. Set the required environment variables:
-   - RESEND_API_KEY
-   - ADMIN_URL
-*/
+/**
+ * Deployment Instructions:
+ *
+ * 1. Install Supabase CLI: npm install -g supabase
+ * 2. Deploy function: supabase functions deploy send-message-notification
+ * 3. Set environment variables:
+ *    - SUPABASE_URL
+ *    - SUPABASE_SERVICE_ROLE_KEY
+ *    - RESEND_API_KEY
+ *    - FROM_EMAIL (optional, defaults to onboarding@resend.dev)
+ *    - ADMIN_URL (optional, defaults to https://yoursite.com/admin)
+ *    - ENVIRONMENT (optional, defaults to production)
+ *
+ * 4. Test function:
+ *    curl -X POST https://your-project.supabase.co/functions/v1/send-message-notification \
+ *      -H "Authorization: Bearer YOUR_ANON_KEY" \
+ *      -H "Content-Type: application/json" \
+ *      -d '{"message_id": "uuid-here"}'
+ */
