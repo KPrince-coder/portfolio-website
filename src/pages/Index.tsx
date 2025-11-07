@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import ParticleSystem from "@/components/ParticleSystem";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/hero";
+import { Footer } from "@/components/Footer";
 import { usePublicBrandIdentity } from "@/hooks/useBrandIdentity";
 import { SEO_CONFIG } from "@/config/seo.config";
 
@@ -118,14 +119,7 @@ const Index: React.FC = () => {
         </main>
 
         {/* Footer */}
-        <footer className="bg-primary/5 border-t border-border py-8">
-          <div className="container mx-auto px-6 text-center">
-            <p className="text-muted-foreground">
-              © 2024 {brandIdentity?.logo_text || "Alex Neural"}. Crafted with
-              ❤️ using React, TypeScript & AI.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
