@@ -14,6 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { sendNotificationEmail } from "@/services/emailService";
@@ -24,6 +31,7 @@ interface FormData {
   email: string;
   subject: string;
   message: string;
+  priority: "low" | "medium" | "high";
 }
 
 interface FormErrors {
@@ -39,6 +47,7 @@ const Contact: React.FC = () => {
     email: "",
     subject: "",
     message: "",
+    priority: "medium",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +116,7 @@ const Contact: React.FC = () => {
             email: formData.email.trim(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
-            priority: "medium",
+            priority: formData.priority,
             category: "general",
             ip_address: null, // Could be populated with actual IP if needed
             user_agent: navigator.userAgent,
@@ -140,6 +149,7 @@ const Contact: React.FC = () => {
         email: "",
         subject: "",
         message: "",
+        priority: "medium",
       });
     } catch (error: any) {
       console.error("Contact form error:", error);
@@ -226,7 +236,7 @@ const Contact: React.FC = () => {
                       />
                       {errors.name && (
                         <div className="flex items-center space-x-2 text-destructive text-sm">
-                          <AlertCircle className="w-4 h-4" />
+                          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                           <span>{errors.name}</span>
                         </div>
                       )}
@@ -248,32 +258,73 @@ const Contact: React.FC = () => {
                       />
                       {errors.email && (
                         <div className="flex items-center space-x-2 text-destructive text-sm">
-                          <AlertCircle className="w-4 h-4" />
+                          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                           <span>{errors.email}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-sm font-medium">
-                      Subject *
-                    </Label>
-                    <Input
-                      id="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange("subject")}
-                      placeholder="What would you like to discuss?"
-                      className={`bg-background/50 border-border focus:border-secondary ${
-                        errors.subject ? "border-destructive" : ""
-                      }`}
-                    />
-                    {errors.subject && (
-                      <div className="flex items-center space-x-2 text-destructive text-sm">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>{errors.subject}</span>
-                      </div>
-                    )}
+                  <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
+                    <div className="md:col-span-2 space-y-2">
+                      <Label htmlFor="subject" className="text-sm font-medium">
+                        Subject *
+                      </Label>
+                      <Input
+                        id="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange("subject")}
+                        placeholder="What would you like to discuss?"
+                        className={`bg-background/50 border-border focus:border-secondary ${
+                          errors.subject ? "border-destructive" : ""
+                        }`}
+                      />
+                      {errors.subject && (
+                        <div className="flex items-center space-x-2 text-destructive text-sm">
+                          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                          <span>{errors.subject}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="priority" className="text-sm font-medium">
+                        Priority
+                      </Label>
+                      <Select
+                        value={formData.priority}
+                        onValueChange={(value: "low" | "medium" | "high") =>
+                          setFormData((prev) => ({ ...prev, priority: value }))
+                        }
+                      >
+                        <SelectTrigger className="bg-background/50 border-border focus:border-secondary w-full">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500 flex-shrink-0"></span>
+                              Low
+                            </span>
+                          </SelectItem>
+                          <SelectItem value="medium">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500 flex-shrink-0"></span>
+                              Medium
+                            </span>
+                          </SelectItem>
+                          <SelectItem value="high">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500 flex-shrink-0"></span>
+                              High
+                            </span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        How urgent is your inquiry?
+                      </p>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -292,12 +343,23 @@ const Contact: React.FC = () => {
                     />
                     {errors.message && (
                       <div className="flex items-center space-x-2 text-destructive text-sm">
-                        <AlertCircle className="w-4 h-4" />
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                         <span>{errors.message}</span>
                       </div>
                     )}
-                    <div className="text-xs text-muted-foreground text-right">
-                      {formData.message.length}/500 characters
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span className="hidden sm:inline">
+                        Minimum 10 characters
+                      </span>
+                      <span
+                        className={
+                          formData.message.length > 450
+                            ? "text-warning font-medium"
+                            : ""
+                        }
+                      >
+                        {formData.message.length}/500 characters
+                      </span>
                     </div>
                   </div>
 
@@ -309,7 +371,7 @@ const Contact: React.FC = () => {
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2" />
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2" />
                         Sending Message...
                       </>
                     ) : (
@@ -355,19 +417,19 @@ const Contact: React.FC = () => {
 
                 <div className="border-t border-border pt-4">
                   <h4 className="font-medium mb-3">Connect on Social</h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {socialLinks.map((social) => (
                       <Button
                         key={social.label}
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(social.href, "_blank")}
-                        className="justify-start neural-glow"
+                        className="justify-start neural-glow w-full"
                       >
                         <social.icon
-                          className={`w-4 h-4 mr-2 ${social.color}`}
+                          className={`w-4 h-4 mr-2 flex-shrink-0 ${social.color}`}
                         />
-                        {social.label}
+                        <span className="truncate">{social.label}</span>
                       </Button>
                     ))}
                   </div>
