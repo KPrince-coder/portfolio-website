@@ -117,7 +117,6 @@ export function useContactSettings(): UseContactSettingsReturn {
         .update({
           title: settings.title,
           description: settings.description,
-          messages_title: settings.messages_title,
           response_time: settings.response_time,
           expectations: settings.expectations,
           updated_at: new Date().toISOString(),

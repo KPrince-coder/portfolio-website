@@ -115,35 +115,17 @@ export function ContactSettingsSection() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Contact Page Title</Label>
-              <Input
-                id="title"
-                value={settings.title}
-                onChange={(e) => updateSettings({ title: e.target.value })}
-                placeholder="Let's Connect"
-              />
-              <p className="text-xs text-muted-foreground">
-                Full title - last word will be highlighted (e.g., "Let's
-                Connect")
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="messages_title">Messages Section Title</Label>
-              <Input
-                id="messages_title"
-                value={settings.messages_title}
-                onChange={(e) =>
-                  updateSettings({ messages_title: e.target.value })
-                }
-                placeholder="Contact Messages"
-              />
-              <p className="text-xs text-muted-foreground">
-                Admin messages list title - last word will be highlighted
-              </p>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Contact Page Title</Label>
+            <Input
+              id="title"
+              value={settings.title}
+              onChange={(e) => updateSettings({ title: e.target.value })}
+              placeholder="Let's Connect"
+            />
+            <p className="text-xs text-muted-foreground">
+              Full title - last word will be highlighted (e.g., "Let's Connect")
+            </p>
           </div>
 
           <div className="space-y-2">

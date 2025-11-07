@@ -216,7 +216,6 @@ export interface ContactSettings {
   id: string;
   title: string;
   description: string;
-  messages_title: string;
   response_time: string;
   expectations: ExpectationItem[];
   is_active: boolean;
@@ -227,7 +226,6 @@ export interface ContactSettings {
 export interface ContactSettingsFormData {
   title: string;
   description: string;
-  messages_title: string;
   response_time: string;
   expectations: ExpectationItem[];
 }
