@@ -30,7 +30,6 @@ import { AdminTab } from "./types";
 
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
-  { id: "brand", label: "Brand", icon: Palette },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -38,6 +37,12 @@ export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
   { id: "messages", label: "All Messages", icon: Mail },
   { id: "messages-stats", label: "Statistics", icon: TrendingUp },
   { id: "messages-templates", label: "Templates", icon: FileText },
+] as const;
+
+export const BRAND_SUB_TABS: readonly AdminTab[] = [
+  { id: "brand-logo", label: "Logo & Branding", icon: Palette },
+  { id: "brand-colors", label: "Colors", icon: Sparkles },
+  { id: "brand-seo", label: "SEO", icon: TrendingUp },
 ] as const;
 
 export const PROFILE_SUB_TABS: readonly AdminTab[] = [

@@ -164,7 +164,9 @@ export const AdminContent: React.FC<AdminContentProps> = ({
             />
           )}
 
-          {activeTab === "brand" && <BrandManagement />}
+          {activeTab.startsWith("brand") && (
+            <BrandManagement activeSubTab={activeTab} />
+          )}
 
           {activeTab === "settings" && fullUser && (
             <SettingsManagement user={fullUser} />

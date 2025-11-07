@@ -5,6 +5,7 @@ import {
   FileText,
   User,
   Mail,
+  Palette,
   ChevronDown,
   ChevronRight,
   ChevronLeft,
@@ -19,6 +20,7 @@ import { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 import { cn } from "@/lib/utils";
 import {
   MAIN_TABS,
+  BRAND_SUB_TABS,
   MESSAGES_SUB_TABS,
   PROFILE_SUB_TABS,
   SKILLS_SUB_TABS,
@@ -33,6 +35,7 @@ import {
 // ============================================================================
 
 type SectionState = {
+  brand: boolean;
   messages: boolean;
   profile: boolean;
   skills: boolean;
@@ -57,6 +60,7 @@ const sectionReducer = (
       return { ...state, [action.section]: true };
     case "COLLAPSE_ALL":
       return {
+        brand: false,
         messages: false,
         profile: false,
         skills: false,
@@ -99,6 +103,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
     // Consolidated state for expandable sections using useReducer
     const [expandedSections, dispatch] = useReducer(sectionReducer, {
+      brand: activeTab.startsWith("brand"),
       messages: activeTab.startsWith("messages"),
       profile: activeTab.startsWith("profile"),
       skills: activeTab.startsWith("skills"),
@@ -108,6 +113,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
     });
 
     // Memoized event handlers
+    const handleBrandClick = useCallback(() => {
+      dispatch({ type: "TOGGLE", section: "brand" });
+      if (!expandedSections.brand) {
+        onTabChange("brand-logo");
+      }
+    }, [expandedSections.brand, onTabChange]);
+
     const handleMessagesClick = useCallback(() => {
       dispatch({ type: "TOGGLE", section: "messages" });
       if (!expandedSections.messages) {
@@ -152,7 +164,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
     const handleSubTabClick = useCallback(
       (subTabId: string) => {
-        if (subTabId.startsWith("messages")) {
+        if (subTabId.startsWith("brand")) {
+          dispatch({ type: "EXPAND", section: "brand" });
+        } else if (subTabId.startsWith("messages")) {
           dispatch({ type: "EXPAND", section: "messages" });
         } else if (subTabId.startsWith("profile")) {
           dispatch({ type: "EXPAND", section: "profile" });
@@ -403,6 +417,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
             aria-label="Main navigation"
           >
             {MAIN_TABS.map((tab) => renderNavButton(tab))}
+
+            {/* Brand Section */}
+            {renderExpandableSection(
+              Palette,
+              "Brand",
+              expandedSections.brand,
+              handleBrandClick,
+              activeTab.startsWith("brand"),
+              BRAND_SUB_TABS as unknown as AdminTab[]
+            )}
 
             {/* Messages Section */}
             {renderExpandableSection(

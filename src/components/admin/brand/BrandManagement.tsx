@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Save, Palette, Globe, Eye, Info } from "lucide-react";
@@ -28,11 +27,24 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // COMPONENT
 // ============================================================================
 
-export function BrandManagement() {
+interface BrandManagementProps {
+  activeSubTab: string;
+}
+
+export function BrandManagement({ activeSubTab }: BrandManagementProps) {
   const { brandIdentity, loading, updateBrandIdentity } = useBrandIdentity();
   const [formData, setFormData] = useState<BrandIdentityFormData | null>(null);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
+
+  // Map subtab to internal tab
+  const getActiveTab = (subTab: string) => {
+    if (subTab === "brand-logo") return "general";
+    if (subTab === "brand-colors") return "colors";
+    if (subTab === "brand-seo") return "seo";
+    return "general";
+  };
+
+  const activeTab = getActiveTab(activeSubTab);
 
   // Initialize form data when brand identity loads
   React.useEffect(() => {
@@ -167,15 +179,9 @@ export function BrandManagement() {
         </AlertDescription>
       </Alert>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="general">Logo & Branding</TabsTrigger>
-          <TabsTrigger value="colors">Colors</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-        </TabsList>
-
-        {/* General Tab */}
-        <TabsContent value="general" className="space-y-6">
+      <div className="space-y-6">
+        {/* Logo & Branding Section */}
+        {activeTab === "general" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Logo & Branding */}
             <Card className="card-neural">
@@ -241,10 +247,10 @@ export function BrandManagement() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        )}
 
-        {/* Colors Tab */}
-        <TabsContent value="colors" className="space-y-6">
+        {/* Colors Section */}
+        {activeTab === "colors" && (
           <Card className="card-neural">
             <CardHeader>
               <CardTitle>Color Scheme</CardTitle>
@@ -324,10 +330,10 @@ export function BrandManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-        {/* SEO Tab */}
-        <TabsContent value="seo" className="space-y-6">
+        {/* SEO Section */}
+        {activeTab === "seo" && (
           <Card className="card-neural">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -411,8 +417,8 @@ export function BrandManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 }
