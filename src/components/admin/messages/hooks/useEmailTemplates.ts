@@ -114,7 +114,7 @@ export function useEmailTemplates(
       setError(null);
 
       let query = supabase
-        .from("email_templates")
+        .from("react_email_templates")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -126,7 +126,24 @@ export function useEmailTemplates(
 
       if (fetchError) throw fetchError;
 
-      setTemplates(data || []);
+      // Map react_email_templates to EmailTemplate format
+      const mappedData = (data || []).map((template: any) => ({
+        id: template.id,
+        name: template.name,
+        subject: `Email: ${template.name}`, // React templates don't have subject in DB
+        html_content: template.html_template,
+        text_content: template.text_template,
+        template_type: template.template_type,
+        is_active: template.is_active,
+        variables: {
+          available: template.available_variables,
+          required: template.required_variables,
+        },
+        created_at: template.created_at,
+        updated_at: template.updated_at,
+      }));
+
+      setTemplates(mappedData);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load templates";
@@ -172,16 +189,41 @@ export function useEmailTemplates(
   const createTemplate = useCallback(
     async (data: EmailTemplateFormData): Promise<EmailTemplate> => {
       try {
+        // Map to react_email_templates format
+        const reactTemplateData = {
+          name: data.name,
+          description: `Custom template: ${data.name}`,
+          template_type: data.template_type,
+          component_name: data.template_type,
+          html_template: data.html_content,
+          text_template: data.text_content,
+          is_active: data.is_active,
+        };
+
         const { data: template, error: createError } = await supabase
-          .from("email_templates")
-          .insert(data)
+          .from("react_email_templates")
+          .insert(reactTemplateData)
           .select()
           .single();
 
         if (createError) throw createError;
 
-        setTemplates((prev) => [template, ...prev]);
-        return template;
+        // Map back to EmailTemplate format
+        const mappedTemplate = {
+          id: template.id,
+          name: template.name,
+          subject: `Email: ${template.name}`,
+          html_content: template.html_template,
+          text_content: template.text_template,
+          template_type: template.template_type,
+          is_active: template.is_active,
+          variables: null,
+          created_at: template.created_at,
+          updated_at: template.updated_at,
+        };
+
+        setTemplates((prev) => [mappedTemplate, ...prev]);
+        return mappedTemplate;
       } catch (err) {
         console.error("Create template error:", err);
         throw err;
@@ -200,17 +242,43 @@ export function useEmailTemplates(
       data: Partial<EmailTemplateFormData>
     ): Promise<EmailTemplate> => {
       try {
+        // Map to react_email_templates format
+        const reactTemplateData: any = {};
+        if (data.name) reactTemplateData.name = data.name;
+        if (data.html_content)
+          reactTemplateData.html_template = data.html_content;
+        if (data.text_content)
+          reactTemplateData.text_template = data.text_content;
+        if (data.is_active !== undefined)
+          reactTemplateData.is_active = data.is_active;
+
         const { data: template, error: updateError } = await supabase
-          .from("email_templates")
-          .update(data)
+          .from("react_email_templates")
+          .update(reactTemplateData)
           .eq("id", id)
           .select()
           .single();
 
         if (updateError) throw updateError;
 
-        setTemplates((prev) => prev.map((t) => (t.id === id ? template : t)));
-        return template;
+        // Map back to EmailTemplate format
+        const mappedTemplate = {
+          id: template.id,
+          name: template.name,
+          subject: `Email: ${template.name}`,
+          html_content: template.html_template,
+          text_content: template.text_template,
+          template_type: template.template_type,
+          is_active: template.is_active,
+          variables: null,
+          created_at: template.created_at,
+          updated_at: template.updated_at,
+        };
+
+        setTemplates((prev) =>
+          prev.map((t) => (t.id === id ? mappedTemplate : t))
+        );
+        return mappedTemplate;
       } catch (err) {
         console.error("Update template error:", err);
         throw err;
@@ -226,7 +294,7 @@ export function useEmailTemplates(
   const deleteTemplate = useCallback(async (id: string) => {
     try {
       const { error: deleteError } = await supabase
-        .from("email_templates")
+        .from("react_email_templates")
         .delete()
         .eq("id", id);
 
