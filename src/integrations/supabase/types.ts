@@ -487,7 +487,6 @@ export type Database = {
           expectations: Json | null
           id: string
           is_active: boolean | null
-          messages_title: string | null
           response_time: string | null
           title: string | null
           updated_at: string | null
@@ -500,7 +499,6 @@ export type Database = {
           expectations?: Json | null
           id?: string
           is_active?: boolean | null
-          messages_title?: string | null
           response_time?: string | null
           title?: string | null
           updated_at?: string | null
@@ -513,7 +511,6 @@ export type Database = {
           expectations?: Json | null
           id?: string
           is_active?: boolean | null
-          messages_title?: string | null
           response_time?: string | null
           title?: string | null
           updated_at?: string | null
@@ -674,6 +671,60 @@ export type Database = {
           text_content?: string | null
           updated_at?: string | null
           variables?: Json | null
+        }
+        Relationships: []
+      }
+      footer_settings: {
+        Row: {
+          background_style: string | null
+          company_name: string | null
+          copyright_text: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          layout: string | null
+          links: Json | null
+          show_back_to_top: boolean | null
+          show_social_links: boolean | null
+          show_tagline: boolean | null
+          tagline: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          background_style?: string | null
+          company_name?: string | null
+          copyright_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout?: string | null
+          links?: Json | null
+          show_back_to_top?: boolean | null
+          show_social_links?: boolean | null
+          show_tagline?: boolean | null
+          tagline?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          background_style?: string | null
+          company_name?: string | null
+          copyright_text?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout?: string | null
+          links?: Json | null
+          show_back_to_top?: boolean | null
+          show_social_links?: boolean | null
+          show_tagline?: boolean | null
+          tagline?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -1893,9 +1944,23 @@ export type Database = {
           description: string
           expectations: Json
           id: string
-          messages_title: string
           response_time: string
           title: string
+        }[]
+      }
+      get_active_footer_settings: {
+        Args: never
+        Returns: {
+          background_style: string
+          company_name: string
+          copyright_text: string
+          id: string
+          layout: string
+          links: Json
+          show_back_to_top: boolean
+          show_social_links: boolean
+          show_tagline: boolean
+          tagline: string
         }[]
       }
       get_email_statistics: {
