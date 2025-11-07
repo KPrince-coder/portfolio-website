@@ -285,7 +285,7 @@ serve(async (req: Request): Promise<Response> => {
       },
     });
 
-    const { data: logData, error: logError } = await supabase
+    const { data: logData, error: emailLogError } = await supabase
       .from("email_logs")
       .insert({
         ...emailLog,
@@ -295,8 +295,8 @@ serve(async (req: Request): Promise<Response> => {
       .select()
       .single();
 
-    if (logError) {
-      logError("Failed to create email log", logError);
+    if (emailLogError) {
+      logError("Failed to create email log", emailLogError);
     }
 
     // ============================================================================
