@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import ParticleSystem from "@/components/ParticleSystem";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/hero";
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/footer";
 import { usePublicBrandIdentity } from "@/hooks/useBrandIdentity";
 import { SEO_CONFIG } from "@/config/seo.config";
 

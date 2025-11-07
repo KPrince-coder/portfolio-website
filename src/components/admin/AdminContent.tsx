@@ -16,6 +16,7 @@ import {
   ContactMessage,
 } from "@/components/admin";
 import { MessagesManagementRouter } from "@/components/admin/messages";
+import { FooterManagement } from "@/components/admin/footer";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import SkillsManagementRouter from "@/components/admin/skills/SkillsManagementRouter";
@@ -171,6 +172,8 @@ export const AdminContent: React.FC<AdminContentProps> = ({
           {activeTab === "settings" && fullUser && (
             <SettingsManagement user={fullUser} />
           )}
+
+          {activeTab === "footer" && <FooterManagement />}
         </div>
       </main>
     </>

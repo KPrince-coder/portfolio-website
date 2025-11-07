@@ -31,6 +31,7 @@ import { AdminTab } from "./types";
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
   { id: "settings", label: "Settings", icon: Settings },
+  { id: "footer", label: "Footer", icon: Settings },
 ] as const;
 
 export const MESSAGES_SUB_TABS: readonly AdminTab[] = [

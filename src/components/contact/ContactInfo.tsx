@@ -3,15 +3,13 @@
  *
  * Displays contact information and social links from backend
  */
-
-import React from "react";
 import {
   Mail,
   MessageSquare,
   CheckCircle,
-  Linkedin,
-  Github,
-  Twitter,
+  LinkedinIcon,
+  GithubIcon,
+  TwitterIcon,
   Globe,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,19 +84,19 @@ export function ContactInfo({
   // Build social links array from backend data
   const socialLinks = [
     linkedinUrl && {
-      icon: Linkedin,
+      icon: LinkedinIcon,
       label: "LinkedIn",
       href: linkedinUrl,
       color: "text-blue-500 hover:text-blue-400",
     },
     githubUrl && {
-      icon: Github,
+      icon: GithubIcon,
       label: "GitHub",
       href: githubUrl,
       color: "text-secondary hover:text-secondary-glow",
     },
     twitterUrl && {
-      icon: Twitter,
+      icon: TwitterIcon,
       label: "Twitter",
       href: twitterUrl,
       color: "text-blue-400 hover:text-blue-300",
