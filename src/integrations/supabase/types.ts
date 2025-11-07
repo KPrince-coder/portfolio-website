@@ -479,6 +479,48 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_settings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          expectations: Json | null
+          id: string
+          is_active: boolean | null
+          messages_title: string | null
+          response_time: string | null
+          title: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          expectations?: Json | null
+          id?: string
+          is_active?: boolean | null
+          messages_title?: string | null
+          response_time?: string | null
+          title?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          expectations?: Json | null
+          id?: string
+          is_active?: boolean | null
+          messages_title?: string | null
+          response_time?: string | null
+          title?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           bcc: string[] | null
@@ -1845,6 +1887,17 @@ export type Database = {
         }[]
       }
       get_active_categories_count: { Args: never; Returns: number }
+      get_active_contact_settings: {
+        Args: never
+        Returns: {
+          description: string
+          expectations: Json
+          id: string
+          messages_title: string
+          response_time: string
+          title: string
+        }[]
+      }
       get_email_statistics: {
         Args: { p_days?: number }
         Returns: {
