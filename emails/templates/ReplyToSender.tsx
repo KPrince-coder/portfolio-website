@@ -26,8 +26,8 @@ export function ReplyToSender({
   replyContent = "<p>Thank you for your message. We'll get back to you soon!</p>",
   originalMessage = "I would like to discuss a potential project...",
   originalSubject = "Project Inquiry",
-  adminName = "Support Team",
-  companyName = "Portfolio",
+  adminName = "Your Name",
+  companyName = "Your Portfolio",
   companyEmail = "contact@example.com",
 }: ReplyToSenderProps) {
   return (

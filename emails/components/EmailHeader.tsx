@@ -14,7 +14,7 @@ interface EmailHeaderProps {
 
 export function EmailHeader({
   title,
-  companyName = "Portfolio",
+  companyName = "Your Portfolio",
 }: EmailHeaderProps) {
   return (
     <Section style={header}>

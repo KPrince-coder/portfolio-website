@@ -22,8 +22,8 @@ export interface AutoReplyProps {
 export function AutoReply({
   senderName = "John Doe",
   subject = "Project Inquiry",
-  adminName = "Support Team",
-  companyName = "Portfolio",
+  adminName = "Your Name",
+  companyName = "Your Portfolio",
   expectedResponseTime = "24 hours",
 }: AutoReplyProps) {
   return (
@@ -34,25 +34,22 @@ export function AutoReply({
         <Text style={greeting}>Hi {senderName},</Text>
 
         <Text style={paragraph}>
-          Thank you for reaching out! We've received your message regarding "
-          <strong>{subject}</strong>" and wanted to let you know that we'll get
+          Thank you for reaching out! I've received your message regarding "
+          <strong>{subject}</strong>" and wanted to let you know that I'll get
           back to you as soon as possible.
         </Text>
 
         <Text style={paragraph}>
-          Our team typically responds within{" "}
-          <strong>{expectedResponseTime}</strong>. We appreciate your patience
-          and look forward to connecting with you.
+          I typically respond within <strong>{expectedResponseTime}</strong>. I
+          appreciate your patience and look forward to connecting with you.
         </Text>
       </EmailSection>
 
       <EmailSection background="gray" bordered>
         <Text style={infoTitle}>What happens next?</Text>
         <ul style={list}>
-          <li style={listItem}>We'll review your message carefully</li>
-          <li style={listItem}>
-            A team member will respond within {expectedResponseTime}
-          </li>
+          <li style={listItem}>I'll review your message carefully</li>
+          <li style={listItem}>I'll respond within {expectedResponseTime}</li>
           <li style={listItem}>
             You'll receive a personalized reply to your inquiry
           </li>
@@ -61,7 +58,7 @@ export function AutoReply({
 
       <EmailSection>
         <Text style={paragraph}>
-          In the meantime, feel free to explore our website or check out our
+          In the meantime, feel free to explore my website or check out my
           latest projects.
         </Text>
 

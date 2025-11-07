@@ -35,7 +35,7 @@ export function NewMessageNotification({
   createdAt = new Date().toLocaleString(),
   adminUrl = "https://yoursite.com/admin",
   messageId = "123",
-  companyName = "Portfolio",
+  companyName = "Your Portfolio",
 }: NewMessageNotificationProps) {
   const priorityColor = {
     high: "#ef4444",
