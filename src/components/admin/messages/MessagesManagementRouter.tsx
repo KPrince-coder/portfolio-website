@@ -30,6 +30,7 @@ export function MessagesManagementRouter({
     if (adminTab === "messages") return "messages";
     if (adminTab === "messages-stats") return "stats";
     if (adminTab === "messages-templates") return "templates";
+    if (adminTab === "messages-contact") return "contact";
     return "messages";
   };
 
@@ -41,6 +42,7 @@ export function MessagesManagementRouter({
       messages: "messages",
       stats: "messages-stats",
       templates: "messages-templates",
+      contact: "messages-contact",
     };
 
     onTabChange(adminTabMap[internalTab] || "messages");

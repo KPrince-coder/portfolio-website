@@ -204,6 +204,41 @@ export interface EmailStatistics {
 }
 
 // ============================================================================
+// CONTACT SETTINGS TYPES
+// ============================================================================
+
+export interface ExpectationItem {
+  text: string;
+  color: string;
+}
+
+export interface ContactSettings {
+  id: string;
+  title: string;
+  title_highlight: string;
+  description: string;
+  response_time: string;
+  expectations: ExpectationItem[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactSettingsFormData {
+  title: string;
+  title_highlight: string;
+  description: string;
+  response_time: string;
+  expectations: ExpectationItem[];
+}
+
+export interface ColorOption {
+  value: string;
+  label: string;
+  color: string;
+}
+
+// ============================================================================
 // RESULT TYPES
 // ============================================================================
 

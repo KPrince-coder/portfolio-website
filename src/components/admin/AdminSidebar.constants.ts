@@ -37,6 +37,7 @@ export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
   { id: "messages", label: "All Messages", icon: Mail },
   { id: "messages-stats", label: "Statistics", icon: TrendingUp },
   { id: "messages-templates", label: "Templates", icon: FileText },
+  { id: "messages-contact", label: "Contact Settings", icon: Settings },
 ] as const;
 
 export const BRAND_SUB_TABS: readonly AdminTab[] = [
