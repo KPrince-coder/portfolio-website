@@ -170,19 +170,19 @@ async function buildEmails() {
 
       // Store in database
       const { data, error } = await supabase
-        .from("email_templates")
+        .from("react_email_templates")
         .upsert(
           {
             name: template.name,
-            subject: getSubjectForTemplate(template.template_type),
-            html_content: html,
-            text_content: text,
+            description: template.description,
             template_type: template.template_type,
+            component_name: template.component.name || template.template_type,
+            html_template: html,
+            text_template: text,
             is_active: true,
-            variables: {
-              available: template.availableVariables,
-              required: template.requiredVariables,
-            },
+            available_variables: template.availableVariables,
+            required_variables: template.requiredVariables,
+            preview_props: template.sampleProps,
           },
           {
             onConflict: "name",
