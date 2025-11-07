@@ -9,6 +9,7 @@ import {
   ProfileManagement,
   ResumeManagement,
   SettingsManagement,
+  BrandManagement,
   MessageStats,
   ProjectStats,
   User,
@@ -162,6 +163,8 @@ export const AdminContent: React.FC<AdminContentProps> = ({
               onTabChange={onTabChange}
             />
           )}
+
+          {activeTab === "brand" && <BrandManagement />}
 
           {activeTab === "settings" && fullUser && (
             <SettingsManagement user={fullUser} />

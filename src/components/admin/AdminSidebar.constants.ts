@@ -4,6 +4,7 @@ import {
   Briefcase,
   FileText,
   Settings,
+  Palette,
   UserCircle,
   Sparkles,
   FileUser,
@@ -29,6 +30,7 @@ import { AdminTab } from "./types";
 
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
+  { id: "brand", label: "Brand", icon: Palette },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 

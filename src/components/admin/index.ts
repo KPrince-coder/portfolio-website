@@ -12,6 +12,7 @@ export { SkillsManagement } from "./skills";
 export { ProjectsManagement } from "./projects";
 export { ResumeManagement } from "./resume";
 export { SettingsManagement } from "./settings";
+export { BrandManagement } from "./brand";
 export { default as PlaceholderSection } from "./PlaceholderSection";
 export { default as ProjectStats } from "./ProjectStats";
 export { default as EmailTemplateForm } from "./EmailTemplateForm";

@@ -1,10 +1,12 @@
 /**
  * Email Configuration
  *
- * Centralized email configuration from environment variables
+ * Centralized email configuration from environment variables, profiles, and brand identity
  *
  * @module config/email
  */
+
+import { supabase } from "@/integrations/supabase/client";
 
 // ============================================================================
 // EMAIL CONFIGURATION
@@ -17,12 +19,12 @@ export const emailConfig = {
   adminEmail: import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com",
 
   /**
-   * Company name for email templates
+   * Company name for email templates (fallback)
    */
   companyName: import.meta.env.VITE_COMPANY_NAME || "Portfolio",
 
   /**
-   * Company email for replies
+   * Company email for replies (fallback)
    */
   companyEmail: import.meta.env.VITE_COMPANY_EMAIL || "contact@example.com",
 
@@ -31,6 +33,48 @@ export const emailConfig = {
    */
   adminUrl: window.location.origin + "/admin",
 } as const;
+
+// ============================================================================
+// DYNAMIC EMAIL CONFIG (FROM PROFILES AND BRAND IDENTITY)
+// ============================================================================
+
+/**
+ * Get email configuration with profile and brand identity data
+ */
+export async function getEmailConfigWithBrand() {
+  try {
+    // Get profile data (for portfolio name and contact email)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("hero_title, email")
+      .limit(1)
+      .single();
+
+    // Get brand identity (for logo and email branding)
+    const { data: brandIdentity } = await supabase
+      .from("brand_identity")
+      .select("logo_text, email_footer_text")
+      .eq("is_active", true)
+      .single();
+
+    return {
+      ...emailConfig,
+      companyName:
+        brandIdentity?.logo_text ||
+        profile?.hero_title ||
+        emailConfig.companyName,
+      companyEmail: profile?.email || emailConfig.companyEmail,
+      footerText:
+        brandIdentity?.email_footer_text || "Thank you for your interest",
+    };
+  } catch (error) {
+    console.warn("Failed to fetch brand/profile data for email config:", error);
+    return {
+      ...emailConfig,
+      footerText: "Thank you for your interest",
+    };
+  }
+}
 
 // ============================================================================
 // VALIDATION
