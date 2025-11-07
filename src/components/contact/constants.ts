@@ -119,6 +119,10 @@ export const DEFAULT_EXPECTATIONS: ContactExpectation[] = [
 ];
 
 export const DEFAULT_CONTACT_DATA: ContactData = {
+  title: "Let's Connect",
+  title_highlight: "Connect",
+  description:
+    "Ready to discuss your next AI project? I'm always excited to collaborate on innovative solutions that push the boundaries of what's possible with data and artificial intelligence.",
   email: "alex@alexneural.dev",
   github_url: "https://github.com/alexneural",
   linkedin_url: "https://linkedin.com/in/alexneural",

@@ -33,7 +33,13 @@ export function Contact() {
       className="py-20 bg-gradient-to-b from-background/50 to-background"
     >
       <div className="container mx-auto px-6">
-        <ContactHeader />
+        {contactData && (
+          <ContactHeader
+            title={contactData.title}
+            titleHighlight={contactData.title_highlight}
+            description={contactData.description}
+          />
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Contact Form */}

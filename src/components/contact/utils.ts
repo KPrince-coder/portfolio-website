@@ -90,6 +90,10 @@ export function mergeContactData(
   settings: ContactSettings | null
 ): ContactData {
   return {
+    title: settings?.title || DEFAULT_CONTACT_DATA.title,
+    title_highlight:
+      settings?.title_highlight || DEFAULT_CONTACT_DATA.title_highlight,
+    description: settings?.description || DEFAULT_CONTACT_DATA.description,
     email: profile?.email || DEFAULT_CONTACT_DATA.email,
     phone: profile?.phone,
     website_url: profile?.website_url,

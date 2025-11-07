@@ -57,6 +57,9 @@ export interface ContactExpectation {
 }
 
 export interface ContactData {
+  title: string;
+  title_highlight: string;
+  description: string;
   email: string;
   phone?: string;
   website_url?: string;
@@ -77,6 +80,9 @@ export interface ProfileData {
 }
 
 export interface ContactSettings {
+  title?: string;
+  title_highlight?: string;
+  description?: string;
   response_time?: string;
   expectations?: ContactExpectation[];
 }

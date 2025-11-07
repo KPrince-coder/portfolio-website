@@ -1,22 +1,35 @@
 /**
  * ContactHeader Component
  *
- * Header section for the contact page
+ * Header section for the contact page with dynamic content
  */
 
 import React from "react";
 
-export function ContactHeader() {
+interface ContactHeaderProps {
+  title: string;
+  titleHighlight: string;
+  description: string;
+}
+
+export function ContactHeader({
+  title,
+  titleHighlight,
+  description,
+}: ContactHeaderProps) {
+  // Split title to find the highlight
+  const titleParts = title.split(titleHighlight);
+
   return (
     <div className="text-center mb-16">
       <h2 className="heading-xl mb-6">
-        Let's <span className="text-neural">Connect</span>
+        {titleParts[0]}
+        <span className="text-neural">{titleHighlight}</span>
+        {titleParts[1]}
       </h2>
       <div className="w-24 h-1 bg-gradient-secondary mx-auto mb-8" />
       <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-        Ready to discuss your next AI project? I'm always excited to collaborate
-        on innovative solutions that push the boundaries of what's possible with
-        data and artificial intelligence.
+        {description}
       </p>
     </div>
   );
