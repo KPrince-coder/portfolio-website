@@ -24,12 +24,25 @@ config();
 // ============================================================================
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Try multiple possible variable names for the service role key
+const SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error("❌ Missing environment variables:");
-  console.error("   VITE_SUPABASE_URL");
-  console.error("   SUPABASE_SERVICE_ROLE_KEY");
+  console.error("   VITE_SUPABASE_URL:", SUPABASE_URL ? "✓" : "✗");
+  console.error(
+    "   SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_KEY):",
+    SUPABASE_SERVICE_KEY ? "✓" : "✗"
+  );
+  console.error("\n💡 Get your service role key from:");
+  console.error(
+    "   https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api"
+  );
+  console.error("\n   Add it to your .env file as:");
+  console.error("   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here");
   process.exit(1);
 }
 
