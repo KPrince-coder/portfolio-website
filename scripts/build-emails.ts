@@ -8,12 +8,16 @@
 
 import * as React from "react";
 import { createClient } from "@supabase/supabase-js";
+import { config } from "dotenv";
 import {
   NewMessageNotification,
   ReplyToSender,
   AutoReply,
   renderEmail,
 } from "../emails";
+
+// Load environment variables from .env file
+config();
 
 // ============================================================================
 // CONFIGURATION
@@ -143,8 +147,8 @@ async function buildEmails() {
 
       // Render template
       const component = React.createElement(
-        template.component as any,
-        template.sampleProps
+        template.component as React.ComponentType<any>,
+        template.sampleProps as any
       );
       const { html, text } = await renderEmail(component);
 
