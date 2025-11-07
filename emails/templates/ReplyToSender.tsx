@@ -23,7 +23,7 @@ export interface ReplyToSenderProps {
 
 export function ReplyToSender({
   senderName = "John Doe",
-  replyContent = "<p>Thank you for your message. We'll get back to you soon!</p>",
+  replyContent = "<p>Thank you for your message. I'll get back to you soon!</p>",
   originalMessage = "I would like to discuss a potential project...",
   originalSubject = "Project Inquiry",
   adminName = "Your Name",
