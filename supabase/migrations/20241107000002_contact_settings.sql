@@ -12,9 +12,6 @@ CREATE TABLE IF NOT EXISTS public.contact_settings (
   title TEXT DEFAULT 'Let''s Connect',
   description TEXT DEFAULT 'Ready to discuss your next AI project? I''m always excited to collaborate on innovative solutions that push the boundaries of what''s possible with data and artificial intelligence.',
   
-  -- Messages Section Title (for Admin Messages List)
-  messages_title TEXT DEFAULT 'Contact Messages',
-  
   -- Response Information
   response_time TEXT DEFAULT 'Within 24 hours',
   
@@ -64,14 +61,12 @@ CREATE UNIQUE INDEX idx_contact_settings_single_active
 INSERT INTO public.contact_settings (
   title,
   description,
-  messages_title,
   response_time,
   expectations,
   is_active
 ) VALUES (
   'Let''s Connect',
   'Ready to discuss your next AI project? I''m always excited to collaborate on innovative solutions that push the boundaries of what''s possible with data and artificial intelligence.',
-  'Contact Messages',
   'Within 24 hours',
   '[
     {
@@ -139,7 +134,6 @@ RETURNS TABLE (
   id UUID,
   title TEXT,
   description TEXT,
-  messages_title TEXT,
   response_time TEXT,
   expectations JSONB
 ) AS $$
@@ -149,7 +143,6 @@ BEGIN
     cs.id,
     cs.title,
     cs.description,
-    cs.messages_title,
     cs.response_time,
     cs.expectations
   FROM public.contact_settings cs
@@ -165,7 +158,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 COMMENT ON TABLE public.contact_settings IS 'Stores contact page configuration including title, description, response time and expectations. Email and social links are in profiles table.';
 COMMENT ON COLUMN public.contact_settings.title IS 'Full title for contact section - last word will be highlighted (e.g., "Let''s Connect")';
 COMMENT ON COLUMN public.contact_settings.description IS 'Description text displayed below title on contact page';
-COMMENT ON COLUMN public.contact_settings.messages_title IS 'Full title for messages section in admin - last word will be highlighted (e.g., "Contact Messages")';
 COMMENT ON COLUMN public.contact_settings.response_time IS 'Expected response time displayed on contact page';
 COMMENT ON COLUMN public.contact_settings.expectations IS 'Array of expectation items with text and color properties';
 COMMENT ON FUNCTION get_active_contact_settings IS 'Returns the active contact settings configuration';
