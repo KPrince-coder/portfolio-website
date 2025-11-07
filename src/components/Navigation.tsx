@@ -121,14 +121,18 @@ const Navigation: React.FC = () => {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center space-x-2 transition-transform hover:scale-105 cursor-pointer"
+            aria-label="Scroll to top"
+          >
             <div className="w-8 h-8 bg-gradient-neural rounded-lg flex items-center justify-center">
               <LogoIcon className="w-5 h-5" style={{ color: logoColor }} />
             </div>
             <span className="font-space font-bold text-xl text-neural">
               {logoText}
             </span>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
