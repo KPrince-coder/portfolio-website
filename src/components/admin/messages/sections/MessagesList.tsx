@@ -44,7 +44,9 @@ import { useMessages } from "../hooks/useMessages";
 import type {
   ContactMessage,
   MessageStatus,
+  MessagePriority,
   MessagesListProps,
+  UpdateMessageInput,
 } from "../types";
 
 // ============================================================================
@@ -135,7 +137,13 @@ export function MessagesList({
     updates: Partial<ContactMessage>
   ) => {
     try {
-      await updateMessage({ id: messageId, ...updates });
+      // Cast status to MessageStatus type
+      const updateInput: UpdateMessageInput = {
+        id: messageId,
+        ...(updates.status && { status: updates.status as MessageStatus }),
+        ...(updates.archived !== undefined && { archived: updates.archived }),
+      };
+      await updateMessage(updateInput);
     } catch (error) {
       console.error("Update status failed:", error);
     }
@@ -151,9 +159,11 @@ export function MessagesList({
     return <Icon className={`w-4 h-4 ${config.color}`} />;
   };
 
-  const renderStatusBadge = (status: MessageStatus) => {
+  const renderStatusBadge = (status: string | null) => {
+    if (!status) return null;
+    const statusKey = status as MessageStatus;
     return (
-      <Badge className={STATUS_COLORS[status]}>
+      <Badge className={STATUS_COLORS[statusKey] || STATUS_COLORS.read}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -316,10 +326,7 @@ export function MessagesList({
             <Select
               value={filters.priority || "all"}
               onValueChange={(value) =>
-                updateFilter(
-                  "priority",
-                  value as ContactMessage["priority"] | "all"
-                )
+                updateFilter("priority", value as MessagePriority | "all")
               }
             >
               <SelectTrigger>
@@ -525,7 +532,7 @@ export function MessagesList({
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
-                <p className="text-sm sm:text-base text-muted-foregroun
+                <p className="text-sm sm:text-base text-muted-foreground line-clamp-3 mb-4">
                   {message.message}
                 </p>
 
@@ -539,41 +546,41 @@ export function MessagesList({
                   </div>
                 )}
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:etween">
-                  <div className="flex flex-wrap g
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap gap-2">
                     {onReplyToMessage && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onReplyToMessage(message.id)}
-                       "
+                        className="flex-1 sm:flex-initial min-h-[44px]"
                       >
-                        <Mess" />
+                        <MessageSquare className="w-4 h-4 mr-2" />
                         Reply
-                      
+                      </Button>
                     )}
-                    {message.(
+                    {onViewMessage && (
                       <Button
                         size="sm"
                         variant="outline"
-                       
-                        className="flex-1 sm:flex-initiain-h-0"
+                        onClick={() => onViewMessage(message.id)}
+                        className="flex-1 sm:flex-initial min-h-[44px]"
                       >
-                        <Eye cl
-                      ad
-                      </n>
-
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                    )}
                   </div>
 
-                  {message.reply_s && (
-                    <div className="text-xs text-muted-foreground text-center">
+                  {message.reply_sent_at && (
+                    <div className="text-xs text-muted-foreground text-center sm:text-right">
                       Replied{" "}
-                      {fo
-                        adtrue,
-                    }
-                    </
+                      {formatDistanceToNow(new Date(message.reply_sent_at), {
+                        addSuffix: true,
+                      })}
+                    </div>
                   )}
-                </div>div>
+                </div>
               </CardContent>
             </Card>
           ))
