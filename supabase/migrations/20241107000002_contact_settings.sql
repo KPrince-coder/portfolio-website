@@ -8,6 +8,11 @@
 CREATE TABLE IF NOT EXISTS public.contact_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
+  -- Header Section
+  title TEXT DEFAULT 'Let''s Connect',
+  title_highlight TEXT DEFAULT 'Connect',
+  description TEXT DEFAULT 'Ready to discuss your next AI project? I''m always excited to collaborate on innovative solutions that push the boundaries of what''s possible with data and artificial intelligence.',
+  
   -- Response Information
   response_time TEXT DEFAULT 'Within 24 hours',
   
@@ -55,10 +60,16 @@ CREATE UNIQUE INDEX idx_contact_settings_single_active
 -- ============================================================================
 
 INSERT INTO public.contact_settings (
+  title,
+  title_highlight,
+  description,
   response_time,
   expectations,
   is_active
 ) VALUES (
+  'Let''s Connect',
+  'Connect',
+  'Ready to discuss your next AI project? I''m always excited to collaborate on innovative solutions that push the boundaries of what''s possible with data and artificial intelligence.',
   'Within 24 hours',
   '[
     {
@@ -124,6 +135,9 @@ CREATE TRIGGER update_contact_settings_updated_at
 CREATE OR REPLACE FUNCTION get_active_contact_settings()
 RETURNS TABLE (
   id UUID,
+  title TEXT,
+  title_highlight TEXT,
+  description TEXT,
   response_time TEXT,
   expectations JSONB
 ) AS $$
@@ -131,6 +145,9 @@ BEGIN
   RETURN QUERY
   SELECT 
     cs.id,
+    cs.title,
+    cs.title_highlight,
+    cs.description,
     cs.response_time,
     cs.expectations
   FROM public.contact_settings cs
@@ -143,7 +160,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Comments
 -- ============================================================================
 
-COMMENT ON TABLE public.contact_settings IS 'Stores contact page configuration including response time and expectations. Email and social links are in profiles table.';
+COMMENT ON TABLE public.contact_settings IS 'Stores contact page configuration including title, description, response time and expectations. Email and social links are in profiles table.';
+COMMENT ON COLUMN public.contact_settings.title IS 'Main title for contact section (e.g., "Let''s Connect")';
+COMMENT ON COLUMN public.contact_settings.title_highlight IS 'Highlighted portion of title (e.g., "Connect")';
+COMMENT ON COLUMN public.contact_settings.description IS 'Description text displayed below title';
 COMMENT ON COLUMN public.contact_settings.response_time IS 'Expected response time displayed on contact page';
 COMMENT ON COLUMN public.contact_settings.expectations IS 'Array of expectation items with text and color properties';
 COMMENT ON FUNCTION get_active_contact_settings IS 'Returns the active contact settings configuration';
