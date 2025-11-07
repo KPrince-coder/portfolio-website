@@ -66,3 +66,9 @@ export { MessagesManagementRouter } from "./MessagesManagementRouter";
 export { useMessages } from "./hooks/useMessages";
 export { useMessageStats } from "./hooks/useMessageStats";
 export { useEmailTemplates } from "./hooks/useEmailTemplates";
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
+export { splitTitle } from "./utils";

@@ -117,32 +117,31 @@ export function ContactSettingsSection() {
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Contact Page Title</Label>
               <Input
                 id="title"
                 value={settings.title}
-                onChange={(e) =>
-                  setSettings({ ...settings, title: e.target.value })
-                }
+                onChange={(e) => updateSettings({ title: e.target.value })}
                 placeholder="Let's Connect"
               />
               <p className="text-xs text-muted-foreground">
-                Main title for the contact section
+                Full title - last word will be highlighted (e.g., "Let's
+                Connect")
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title_highlight">Title Highlight</Label>
+              <Label htmlFor="messages_title">Messages Section Title</Label>
               <Input
-                id="title_highlight"
-                value={settings.title_highlight}
+                id="messages_title"
+                value={settings.messages_title}
                 onChange={(e) =>
-                  setSettings({ ...settings, title_highlight: e.target.value })
+                  updateSettings({ messages_title: e.target.value })
                 }
-                placeholder="Connect"
+                placeholder="Contact Messages"
               />
               <p className="text-xs text-muted-foreground">
-                Word to highlight in the title
+                Admin messages list title - last word will be highlighted
               </p>
             </div>
           </div>
@@ -152,14 +151,12 @@ export function ContactSettingsSection() {
             <Textarea
               id="description"
               value={settings.description}
-              onChange={(e) =>
-                setSettings({ ...settings, description: e.target.value })
-              }
+              onChange={(e) => updateSettings({ description: e.target.value })}
               placeholder="Description text..."
               rows={3}
             />
             <p className="text-xs text-muted-foreground">
-              Description displayed below the title
+              Description displayed below the title on contact page
             </p>
           </div>
 
@@ -169,7 +166,7 @@ export function ContactSettingsSection() {
               id="response_time"
               value={settings.response_time}
               onChange={(e) =>
-                setSettings({ ...settings, response_time: e.target.value })
+                updateSettings({ response_time: e.target.value })
               }
               placeholder="Within 24 hours"
             />
@@ -186,7 +183,7 @@ export function ContactSettingsSection() {
           <div className="flex items-center justify-between">
             <CardTitle>What to Expect</CardTitle>
             <Button
-              onClick={handleAddExpectation}
+              onClick={addExpectation}
               size="sm"
               variant="outline"
               className="neural-glow"
@@ -217,7 +214,7 @@ export function ContactSettingsSection() {
                 <div className="space-y-2">
                   <Label>Color</Label>
                   <div className="flex gap-2">
-                    {colorOptions.map((option) => (
+                    {CONTACT_COLOR_OPTIONS.map((option) => (
                       <button
                         key={option.value}
                         type="button"
@@ -234,14 +231,15 @@ export function ContactSettingsSection() {
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {colorOptions.find((c) => c.value === expectation.color)
-                      ?.label || expectation.color}
+                    {CONTACT_COLOR_OPTIONS.find(
+                      (c) => c.value === expectation.color
+                    )?.label || expectation.color}
                   </Badge>
                 </div>
               </div>
 
               <Button
-                onClick={() => handleRemoveExpectation(index)}
+                onClick={() => removeExpectation(index)}
                 size="icon"
                 variant="ghost"
                 className="text-destructive hover:text-destructive"

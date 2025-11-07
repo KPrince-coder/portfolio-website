@@ -6,8 +6,10 @@
  * @module messages/sections/MessagesList
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { splitTitle } from "../utils";
 import {
   Mail,
   Eye,
@@ -94,6 +96,49 @@ export function MessagesList({
     bulkArchive,
     bulkDelete,
   } = useMessages();
+
+  // ============================================================================
+  // STATE - MESSAGES TITLE
+  // ============================================================================
+
+  const [messagesTitle, setMessagesTitle] =
+    useState<string>("Contact Messages");
+  const [messagesDescription, setMessagesDescription] = useState<string>(
+    "Manage and respond to contact form submissions"
+  );
+
+  // ============================================================================
+  // FETCH MESSAGES TITLE
+  // ============================================================================
+
+  useEffect(() => {
+    const fetchMessagesTitle = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("contact_settings")
+          .select("messages_title")
+          .eq("is_active", true)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.messages_title) {
+          setMessagesTitle(data.messages_title);
+        }
+      } catch (error) {
+        console.error("Failed to fetch messages title:", error);
+        // Keep default title
+      }
+    };
+
+    fetchMessagesTitle();
+  }, []);
+
+  // Split title for highlighting
+  const { title: mainTitle, titleHighlight } = useMemo(
+    () => splitTitle(messagesTitle),
+    [messagesTitle]
+  );
 
   // ============================================================================
   // HANDLERS
@@ -245,11 +290,15 @@ export function MessagesList({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            Contact Messages
+            {mainTitle}
+            {titleHighlight && (
+              <>
+                {" "}
+                <span className="text-neural">{titleHighlight}</span>
+              </>
+            )}
           </h2>
-          <p className="text-muted-foreground">
-            Manage and respond to contact form submissions
-          </p>
+          <p className="text-muted-foreground">{messagesDescription}</p>
         </div>
         <div className="flex items-center space-x-2">
           <Badge variant="secondary">{filteredMessages.length} messages</Badge>
