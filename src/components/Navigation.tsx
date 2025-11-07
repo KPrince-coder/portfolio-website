@@ -10,15 +10,18 @@ import {
   Shield,
   FileText,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { useScrollProgress } from "@/hooks/useScrollProgress";
+import { usePublicBrandIdentity } from "@/hooks/useBrandIdentity";
 
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const { brandIdentity } = usePublicBrandIdentity();
 
   // Track active section
   const activeSection = useActiveSection([
@@ -31,6 +34,14 @@ const Navigation: React.FC = () => {
 
   // Track scroll progress
   const scrollProgress = useScrollProgress();
+
+  // Get logo icon component with fallback
+  const LogoIcon = brandIdentity?.logo_icon
+    ? (LucideIcons as any)[brandIdentity.logo_icon] || Brain
+    : Brain;
+
+  const logoText = brandIdentity?.logo_text || "DataFlow";
+  const logoColor = brandIdentity?.logo_icon_color || "#667eea";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,10 +123,10 @@ const Navigation: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-neural rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-white" />
+              <LogoIcon className="w-5 h-5" style={{ color: logoColor }} />
             </div>
             <span className="font-space font-bold text-xl text-neural">
-              DataFlow
+              {logoText}
             </span>
           </div>
 

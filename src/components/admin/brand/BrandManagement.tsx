@@ -88,10 +88,10 @@ export function BrandManagement() {
   };
 
   // ============================================================================
-  // LOADING STATE
+  // LOADING & ERROR STATES
   // ============================================================================
 
-  if (loading || !formData) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-2">
@@ -100,6 +100,40 @@ export function BrandManagement() {
             Loading brand settings...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (!formData) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold">Brand Management</h2>
+          <p className="text-muted-foreground">
+            Customize your portfolio logo, colors, and SEO settings
+          </p>
+        </div>
+
+        <Alert variant="destructive">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-2">
+              <p className="font-semibold">Brand Identity table not found</p>
+              <p>
+                Please run the following commands to set up the brand identity
+                system:
+              </p>
+              <div className="bg-black/50 p-3 rounded mt-2 font-mono text-xs">
+                <div>1. supabase db push</div>
+                <div>2. npm run types</div>
+              </div>
+              <p className="text-xs mt-2">
+                After running these commands, refresh this page to start
+                customizing your brand.
+              </p>
+            </div>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
