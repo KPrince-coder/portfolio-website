@@ -94,6 +94,40 @@ export const CONTACT_INFO = {
 };
 
 // ============================================================================
+// DEFAULT CONTACT DATA
+// ============================================================================
+
+import type { ContactData, ContactExpectation } from "./types";
+
+export const DEFAULT_EXPECTATIONS: ContactExpectation[] = [
+  {
+    text: "Detailed discussion about your project requirements",
+    color: "secondary",
+  },
+  {
+    text: "Technical feasibility assessment and recommendations",
+    color: "accent",
+  },
+  {
+    text: "Transparent timeline and cost estimates",
+    color: "success",
+  },
+  {
+    text: "Ongoing support and collaboration approach",
+    color: "warning",
+  },
+];
+
+export const DEFAULT_CONTACT_DATA: ContactData = {
+  email: "alex@alexneural.dev",
+  github_url: "https://github.com/alexneural",
+  linkedin_url: "https://linkedin.com/in/alexneural",
+  twitter_url: "https://twitter.com/alexneural",
+  response_time: "Within 24 hours",
+  expectations: DEFAULT_EXPECTATIONS,
+};
+
+// ============================================================================
 // SUCCESS MESSAGES
 // ============================================================================
 

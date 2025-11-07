@@ -46,3 +46,37 @@ export interface PriorityOption {
   color: string;
   description: string;
 }
+
+// ============================================================================
+// CONTACT DATA TYPES
+// ============================================================================
+
+export interface ContactExpectation {
+  text: string;
+  color: string;
+}
+
+export interface ContactData {
+  email: string;
+  phone?: string;
+  website_url?: string;
+  github_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  response_time: string;
+  expectations: ContactExpectation[];
+}
+
+export interface ProfileData {
+  email?: string;
+  phone?: string;
+  website_url?: string;
+  github_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+}
+
+export interface ContactSettings {
+  response_time?: string;
+  expectations?: ContactExpectation[];
+}

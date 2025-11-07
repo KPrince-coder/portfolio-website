@@ -1,7 +1,7 @@
 /**
  * Contact Component
  *
- * Main contact section with form and information
+ * Main contact section with form and information from backend
  */
 
 import React from "react";
@@ -9,6 +9,7 @@ import { ContactHeader } from "./ContactHeader";
 import { ContactForm } from "./ContactForm";
 import { ContactInfo } from "./ContactInfo";
 import { useContactForm } from "./hooks/useContactForm";
+import { useContactData } from "./hooks/useContactData";
 
 // ============================================================================
 // COMPONENT
@@ -23,6 +24,8 @@ export function Contact() {
     updatePriority,
     submitForm,
   } = useContactForm();
+
+  const { contactData, loading } = useContactData();
 
   return (
     <section
@@ -46,7 +49,18 @@ export function Contact() {
           </div>
 
           {/* Contact Info & Social Links */}
-          <ContactInfo />
+          {contactData && (
+            <ContactInfo
+              email={contactData.email}
+              responseTime={contactData.response_time}
+              githubUrl={contactData.github_url}
+              linkedinUrl={contactData.linkedin_url}
+              twitterUrl={contactData.twitter_url}
+              websiteUrl={contactData.website_url}
+              expectations={contactData.expectations}
+              loading={loading}
+            />
+          )}
         </div>
       </div>
     </section>

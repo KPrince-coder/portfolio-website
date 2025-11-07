@@ -71,3 +71,33 @@ export function sanitizeFormData(formData: ContactFormData): ContactFormData {
     message: formData.message.trim(),
   };
 }
+
+// ============================================================================
+// CONTACT DATA UTILITIES
+// ============================================================================
+
+import type { ContactData, ProfileData, ContactSettings } from "./types";
+import { DEFAULT_CONTACT_DATA } from "./constants";
+
+/**
+ * Merges profile and settings data into ContactData with fallbacks
+ * @param profile - Profile data from database
+ * @param settings - Contact settings from database
+ * @returns Merged contact data with fallbacks
+ */
+export function mergeContactData(
+  profile: ProfileData | null,
+  settings: ContactSettings | null
+): ContactData {
+  return {
+    email: profile?.email || DEFAULT_CONTACT_DATA.email,
+    phone: profile?.phone,
+    website_url: profile?.website_url,
+    github_url: profile?.github_url || DEFAULT_CONTACT_DATA.github_url,
+    linkedin_url: profile?.linkedin_url || DEFAULT_CONTACT_DATA.linkedin_url,
+    twitter_url: profile?.twitter_url || DEFAULT_CONTACT_DATA.twitter_url,
+    response_time:
+      settings?.response_time || DEFAULT_CONTACT_DATA.response_time,
+    expectations: settings?.expectations || DEFAULT_CONTACT_DATA.expectations,
+  };
+}
