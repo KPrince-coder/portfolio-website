@@ -7,7 +7,6 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "./hooks/useMessages";
 import { MessagesList } from "./sections/MessagesList";
@@ -163,31 +162,18 @@ export function MessagesManagement({
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-0 h-auto sm:h-10">
-          <TabsTrigger value="messages" className="min-h-[44px]">
-            Messages
-          </TabsTrigger>
-          <TabsTrigger value="stats" className="min-h-[44px]">
-            Statistics
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="min-h-[44px]">
-            Templates
-          </TabsTrigger>
-        </TabsList>
+      {/* Messages Section */}
+      {activeTab === "messages" && (
+        <MessagesList onReplyToMessage={handleReplyToMessage} />
+      )}
 
-        <TabsContent value="messages" className="mt-4 sm:mt-6">
-          <MessagesList onReplyToMessage={handleReplyToMessage} />
-        </TabsContent>
+      {/* Statistics Section */}
+      {activeTab === "stats" && (
+        <MessageStatsComponent stats={undefined as any} />
+      )}
 
-        <TabsContent value="stats" className="mt-4 sm:mt-6">
-          <MessageStatsComponent stats={undefined as any} />
-        </TabsContent>
-
-        <TabsContent value="templates" className="mt-4 sm:mt-6">
-          <EmailTemplatesSection />
-        </TabsContent>
-      </Tabs>
+      {/* Templates Section */}
+      {activeTab === "templates" && <EmailTemplatesSection />}
 
       {/* Reply Modal */}
       {replyingToMessage && (
