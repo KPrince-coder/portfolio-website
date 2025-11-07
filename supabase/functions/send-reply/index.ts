@@ -141,7 +141,7 @@ serve(async (req: Request): Promise<Response> => {
     // ============================================================================
 
     const { data: template, error: templateError } = await supabase
-      .from("email_templates")
+      .from("react_email_templates")
       .select("*")
       .eq("template_type", "reply_to_sender")
       .eq("is_active", true)

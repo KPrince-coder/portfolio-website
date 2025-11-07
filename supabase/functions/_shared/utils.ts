@@ -80,10 +80,16 @@ export function renderTemplate(
   html: string;
   text: string;
 } {
+  // Support both email_templates (old) and react_email_templates (new)
+  const htmlContent = (template as any).html_template || template.html_content;
+  const textContent =
+    (template as any).text_template || template.text_content || "";
+  const subject = template.subject || `Email: ${template.name}`;
+
   return {
-    subject: replaceTemplateVariables(template.subject, variables),
-    html: replaceTemplateVariables(template.html_content, variables),
-    text: replaceTemplateVariables(template.text_content || "", variables),
+    subject: replaceTemplateVariables(subject, variables),
+    html: replaceTemplateVariables(htmlContent, variables),
+    text: replaceTemplateVariables(textContent, variables),
   };
 }
 

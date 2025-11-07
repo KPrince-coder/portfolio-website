@@ -129,7 +129,7 @@ serve(async (req: Request): Promise<Response> => {
     // ============================================================================
 
     const { data: template, error: templateError } = await supabase
-      .from("email_templates")
+      .from("react_email_templates")
       .select("*")
       .eq("template_type", "new_message_notification")
       .eq("is_active", true)
