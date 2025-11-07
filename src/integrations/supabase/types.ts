@@ -353,6 +353,69 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_identity: {
+        Row: {
+          accent_color: string | null
+          created_at: string | null
+          created_by: string | null
+          email_footer_text: string | null
+          email_header_color: string | null
+          favicon_url: string | null
+          id: string
+          is_active: boolean | null
+          logo_icon: string
+          logo_icon_color: string | null
+          logo_text: string
+          meta_description: string | null
+          meta_keywords: string[] | null
+          meta_title: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email_footer_text?: string | null
+          email_header_color?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_icon?: string
+          logo_icon_color?: string | null
+          logo_text?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          email_footer_text?: string | null
+          email_header_color?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_icon?: string
+          logo_icon_color?: string | null
+          logo_text?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           admin_notes: string | null
@@ -1763,6 +1826,24 @@ export type Database = {
     Functions: {
       calculate_read_time: { Args: { content_text: string }; Returns: number }
       generate_slug: { Args: { text_input: string }; Returns: string }
+      get_active_brand_identity: {
+        Args: never
+        Returns: {
+          accent_color: string
+          email_footer_text: string
+          email_header_color: string
+          favicon_url: string
+          id: string
+          logo_icon: string
+          logo_icon_color: string
+          logo_text: string
+          meta_description: string
+          meta_keywords: string[]
+          meta_title: string
+          primary_color: string
+          secondary_color: string
+        }[]
+      }
       get_active_categories_count: { Args: never; Returns: number }
       get_email_statistics: {
         Args: { p_days?: number }
