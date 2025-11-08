@@ -5,6 +5,7 @@
  * Follows modular architecture with separate components for each section
  */
 
+import { useState, useEffect } from "react";
 import { useFooterSettings } from "./hooks/useFooterSettings";
 import { useSocialLinks } from "./hooks/useSocialLinks";
 import { useBrandIdentity } from "@/hooks/useBrandIdentity";
@@ -18,6 +19,11 @@ export function Footer() {
   const { settings, loading: settingsLoading } = useFooterSettings();
   const { socialLinks, loading: socialLoading } = useSocialLinks();
   const { brandIdentity } = useBrandIdentity();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Show minimal footer while loading
   if (settingsLoading || socialLoading) {
@@ -56,9 +62,16 @@ export function Footer() {
         : "items-start";
 
   return (
-    <footer className="bg-primary/5 border-t border-border py-8 relative">
-      <div className="container mx-auto px-6">
-        <div className={`flex flex-col ${layoutClass} gap-6`}>
+    <footer className="bg-primary/5 border-t border-border py-8 relative overflow-hidden">
+      {/* Subtle background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-50" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div
+          className={`flex flex-col ${layoutClass} gap-6 transition-all duration-700 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           {/* Social Links */}
           {settings?.show_social_links && socialLinks && (
             <FooterSocialLinks socialLinks={socialLinks} />
