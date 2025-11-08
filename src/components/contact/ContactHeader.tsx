@@ -1,10 +1,10 @@
 /**
  * ContactHeader Component
  *
- * Header section for the contact page with dynamic content
+ * Header section for the contact page using SectionHeader
  */
 
-import React from "react";
+import { SectionHeader } from "@/components/ui/section-header";
 
 interface ContactHeaderProps {
   title: string;
@@ -17,20 +17,12 @@ export function ContactHeader({
   titleHighlight,
   description,
 }: ContactHeaderProps) {
-  // Split title to find the highlight
-  const titleParts = title.split(titleHighlight);
-
   return (
-    <div className="text-center mb-16">
-      <h2 className="heading-xl mb-6">
-        {titleParts[0]}
-        <span className="text-neural">{titleHighlight}</span>
-        {titleParts[1]}
-      </h2>
-      <div className="w-24 h-1 bg-gradient-secondary mx-auto mb-8" />
-      <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-        {description}
-      </p>
-    </div>
+    <SectionHeader
+      title={title}
+      titleHighlight={titleHighlight}
+      description={description}
+      align="center"
+    />
   );
 }

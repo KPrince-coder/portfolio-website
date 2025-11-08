@@ -1,9 +1,10 @@
 import React from "react";
+import { SectionHeader } from "@/components/ui/section-header";
 import type { AboutHeaderProps } from "./types";
 
 /**
  * AboutHeader Component
- * Displays the section title and description
+ * Displays the section title and description using SectionHeader
  */
 const AboutHeader: React.FC<AboutHeaderProps> = ({
   title,
@@ -11,15 +12,13 @@ const AboutHeader: React.FC<AboutHeaderProps> = ({
   description,
 }) => {
   return (
-    <header className="text-center mb-16">
-      <h2 id="about-heading" className="heading-xl mb-6">
-        {title} <span className="text-neural">{fullName}</span>
-      </h2>
-      <div className="w-24 h-1 bg-gradient-secondary mx-auto mb-8"></div>
-      <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-        {description}
-      </p>
-    </header>
+    <SectionHeader
+      title={title}
+      titleHighlight={fullName}
+      description={description}
+      align="center"
+      id="about-heading"
+    />
   );
 };
 

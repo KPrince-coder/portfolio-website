@@ -82,3 +82,22 @@ export const formatCertificationDate = (date?: string): string => {
   const d = new Date(date);
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 };
+
+/**
+ * Split title into main part and highlight
+ * Highlights the last word by default
+ */
+export const splitTitle = (
+  fullTitle: string
+): { title: string; titleHighlight: string } => {
+  const words = fullTitle.trim().split(" ");
+
+  if (words.length === 1) {
+    return { title: fullTitle, titleHighlight: "" };
+  }
+
+  const titleHighlight = words[words.length - 1];
+  const title = words.slice(0, -1).join(" ");
+
+  return { title, titleHighlight };
+};

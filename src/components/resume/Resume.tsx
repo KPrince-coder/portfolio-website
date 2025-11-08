@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Download,
   MapPin,
@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SectionHeader } from "@/components/ui/section-header";
 import { useResumeData } from "./hooks/useResumeData";
 import ResumeSkeleton from "./ResumeSkeleton";
 import {
@@ -18,6 +19,7 @@ import {
   formatEducationPeriod,
   formatCertificationDate,
   isCertificationExpired,
+  splitTitle,
 } from "./utils";
 
 /**
@@ -54,18 +56,29 @@ const Resume: React.FC = () => {
     resume_url,
   } = data;
 
+  // Split title into main and highlight parts
+  const fullTitle = title || "Professional Resume";
+  const { title: mainTitle, titleHighlight } = useMemo(
+    () => splitTitle(fullTitle),
+    [fullTitle]
+  );
+
   return (
     <section id="resume" className="py-20 bg-card/50">
       <div className="container mx-auto px-6">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="heading-lg mb-4">{title || "Professional Resume"}</h2>
-          {description && (
-            <p className="text-muted text-lg max-w-2xl mx-auto mb-8">
-              {description}
-            </p>
-          )}
-          {resume_url && (
+        <SectionHeader
+          title={mainTitle}
+          titleHighlight={titleHighlight}
+          description={
+            description ||
+            "A comprehensive overview of my professional journey, education, and certifications."
+          }
+          align="center"
+        />
+
+        {resume_url && (
+          <div className="text-center mb-12">
             <Button className="neural-glow" size="lg" asChild>
               <a
                 href={resume_url}
@@ -77,8 +90,8 @@ const Resume: React.FC = () => {
                 Download PDF Resume
               </a>
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -330,12 +343,12 @@ const Resume: React.FC = () => {
                                 {cert.does_not_expire
                                   ? " • No Expiration"
                                   : cert.expiry_date
-                                  ? ` • ${
-                                      expired ? "Expired" : "Expires"
-                                    } ${formatCertificationDate(
-                                      cert.expiry_date
-                                    )}`
-                                  : ""}
+                                    ? ` • ${
+                                        expired ? "Expired" : "Expires"
+                                      } ${formatCertificationDate(
+                                        cert.expiry_date
+                                      )}`
+                                    : ""}
                               </div>
                             )}
                             {expired && (
