@@ -13,15 +13,15 @@
 /**
  * Available footer layout options
  */
-export type FooterLayout = "centered" | "split" | "stacked";
+export type FooterLayout = "left" | "center" | "right" | "split";
 
 /**
  * Available background style options
  */
 export type FooterBackgroundStyle =
-  | "default"
-  | "gradient"
+  | "subtle"
   | "solid"
+  | "gradient"
   | "transparent";
 
 /**

@@ -150,7 +150,9 @@ export function FooterManagement() {
             <Label>Layout</Label>
             <Select
               value={settings.layout}
-              onValueChange={(value) => updateSettings({ layout: value })}
+              onValueChange={(value) =>
+                updateSettings({ layout: value as typeof settings.layout })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -170,7 +172,9 @@ export function FooterManagement() {
             <Select
               value={settings.background_style}
               onValueChange={(value) =>
-                updateSettings({ background_style: value })
+                updateSettings({
+                  background_style: value as typeof settings.background_style,
+                })
               }
             >
               <SelectTrigger>

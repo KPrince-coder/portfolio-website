@@ -3,7 +3,7 @@
  */
 
 import type { FooterLink, FooterSettings } from "./types";
-import { DEFAULT_COPYRIGHT_TEXT, DEFAULT_COMPANY_NAME } from "./constants";
+import { DEFAULT_COMPANY_NAME } from "./constants";
 
 /**
  * Parse JSON links from database to FooterLink array

@@ -45,10 +45,13 @@ export function useFooterSettings(): UseFooterSettingsReturn {
 
       if (fetchError) throw fetchError;
 
-      // Parse links from JSON
+      // Parse links from JSON and ensure proper types
       const parsedSettings: FooterSettings = {
         ...data,
         links: parseFooterLinks(data.links),
+        layout: data.layout as FooterSettings["layout"],
+        background_style:
+          data.background_style as FooterSettings["background_style"],
       };
 
       setSettings(parsedSettings);
