@@ -1,10 +1,11 @@
 /**
  * FooterSocialLinks Component
  *
- * Displays social media links in footer
+ * Displays social media links in footer with neural-glow hover effects
  */
 
 import { GithubIcon, LinkedinIcon, TwitterIcon, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { SocialLinks } from "./types";
 
 interface FooterSocialLinksProps {
@@ -38,19 +39,29 @@ export function FooterSocialLinks({ socialLinks }: FooterSocialLinksProps) {
   if (links.length === 0) return null;
 
   return (
-    <div className="flex gap-4">
-      {links.map((link) => (
-        <a
-          key={link.label}
-          href={link.url}
-          target={link.label !== "Email" ? "_blank" : undefined}
-          rel={link.label !== "Email" ? "noopener noreferrer" : undefined}
-          className="text-muted-foreground hover:text-primary transition-colors"
-          aria-label={link.label}
-        >
-          <link.icon className="w-5 h-5" />
-        </a>
-      ))}
+    <div className="flex gap-3" role="list">
+      {links.map((link) => {
+        const Icon = link.icon;
+        return (
+          <Button
+            key={link.label}
+            variant="outline"
+            size="icon"
+            className="neural-glow transition-all duration-300 hover:scale-110"
+            asChild
+            role="listitem"
+          >
+            <a
+              href={link.url}
+              target={link.label !== "Email" ? "_blank" : undefined}
+              rel={link.label !== "Email" ? "noopener noreferrer" : undefined}
+              aria-label={link.label}
+            >
+              <Icon className="w-5 h-5" />
+            </a>
+          </Button>
+        );
+      })}
     </div>
   );
 }
