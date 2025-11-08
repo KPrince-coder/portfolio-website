@@ -30,6 +30,13 @@ import {
 const Resume: React.FC = () => {
   const { data, loading, error } = useResumeData();
 
+  // Split title into main and highlight parts (must be before conditional returns)
+  const fullTitle = data.title || "Professional Resume";
+  const { title: mainTitle, titleHighlight } = useMemo(
+    () => splitTitle(fullTitle),
+    [fullTitle]
+  );
+
   if (loading) {
     return <ResumeSkeleton />;
   }
@@ -51,17 +58,9 @@ const Resume: React.FC = () => {
     education,
     certifications,
     stats,
-    title,
     description,
     resume_url,
   } = data;
-
-  // Split title into main and highlight parts
-  const fullTitle = title || "Professional Resume";
-  const { title: mainTitle, titleHighlight } = useMemo(
-    () => splitTitle(fullTitle),
-    [fullTitle]
-  );
 
   return (
     <section id="resume" className="py-20 bg-card/50">

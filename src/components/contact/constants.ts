@@ -119,7 +119,7 @@ export const DEFAULT_EXPECTATIONS: ContactExpectation[] = [
 ];
 
 export const DEFAULT_CONTACT_DATA: ContactData = {
-  title: "Let's Connect",
+  title: "Let's",
   title_highlight: "Connect",
   description:
     "Ready to discuss your next AI project? I'm always excited to collaborate on innovative solutions that push the boundaries of what's possible with data and artificial intelligence.",

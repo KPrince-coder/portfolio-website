@@ -36,9 +36,7 @@ export function useContactData() {
 
         const { data: settings, error: settingsError } = await (supabase as any)
           .from("contact_settings")
-          .select(
-            "title, title_highlight, description, response_time, expectations"
-          )
+          .select("title, description, response_time, expectations")
           .eq("is_active", true)
           .single();
 

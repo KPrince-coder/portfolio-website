@@ -89,8 +89,12 @@ export function mergeContactData(
   profile: ProfileData | null,
   settings: ContactSettings | null
 ): ContactData {
+  const fullTitle = settings?.title || DEFAULT_CONTACT_DATA.title;
+  const { title, titleHighlight } = splitTitle(fullTitle);
+
   return {
-    title: settings?.title || DEFAULT_CONTACT_DATA.title,
+    title,
+    title_highlight: titleHighlight || "",
     description: settings?.description || DEFAULT_CONTACT_DATA.description,
     email: profile?.email || DEFAULT_CONTACT_DATA.email,
     phone: profile?.phone,

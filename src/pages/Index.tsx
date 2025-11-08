@@ -20,7 +20,11 @@ const Resume = lazy(() =>
     default: module.Resume,
   }))
 );
-const Contact = lazy(() => import("@/components/Contact"));
+const Contact = lazy(() =>
+  import("@/components/contact").then((module) => ({
+    default: module.Contact,
+  }))
+);
 
 const Index: React.FC = () => {
   const { brandIdentity } = usePublicBrandIdentity();
