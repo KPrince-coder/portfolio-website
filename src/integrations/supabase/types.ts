@@ -871,6 +871,90 @@ export type Database = {
           },
         ]
       }
+      og_image_settings: {
+        Row: {
+          accent_color: string | null
+          background_color: string | null
+          background_gradient_end: string | null
+          background_gradient_start: string | null
+          created_at: string | null
+          created_by: string | null
+          height: number | null
+          id: string
+          is_active: boolean | null
+          layout: string | null
+          logo_text: string | null
+          pattern_type: string | null
+          show_logo: boolean | null
+          show_pattern: boolean | null
+          subtitle: string | null
+          subtitle_color: string | null
+          subtitle_font_size: number | null
+          tagline: string | null
+          template_name: string
+          title: string | null
+          title_color: string | null
+          title_font_size: number | null
+          updated_at: string | null
+          updated_by: string | null
+          width: number | null
+        }
+        Insert: {
+          accent_color?: string | null
+          background_color?: string | null
+          background_gradient_end?: string | null
+          background_gradient_start?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          layout?: string | null
+          logo_text?: string | null
+          pattern_type?: string | null
+          show_logo?: boolean | null
+          show_pattern?: boolean | null
+          subtitle?: string | null
+          subtitle_color?: string | null
+          subtitle_font_size?: number | null
+          tagline?: string | null
+          template_name?: string
+          title?: string | null
+          title_color?: string | null
+          title_font_size?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+          width?: number | null
+        }
+        Update: {
+          accent_color?: string | null
+          background_color?: string | null
+          background_gradient_end?: string | null
+          background_gradient_start?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          layout?: string | null
+          logo_text?: string | null
+          pattern_type?: string | null
+          show_logo?: boolean | null
+          show_pattern?: boolean | null
+          subtitle?: string | null
+          subtitle_color?: string | null
+          subtitle_font_size?: number | null
+          tagline?: string | null
+          template_name?: string
+          title?: string | null
+          title_color?: string | null
+          title_font_size?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           about_description: string | null
@@ -1961,6 +2045,31 @@ export type Database = {
           show_social_links: boolean
           show_tagline: boolean
           tagline: string
+        }[]
+      }
+      get_active_og_image_settings: {
+        Args: never
+        Returns: {
+          accent_color: string
+          background_color: string
+          background_gradient_end: string
+          background_gradient_start: string
+          height: number
+          id: string
+          layout: string
+          logo_text: string
+          pattern_type: string
+          show_logo: boolean
+          show_pattern: boolean
+          subtitle: string
+          subtitle_color: string
+          subtitle_font_size: number
+          tagline: string
+          template_name: string
+          title: string
+          title_color: string
+          title_font_size: number
+          width: number
         }[]
       }
       get_email_statistics: {
