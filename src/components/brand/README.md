@@ -57,13 +57,13 @@ To generate favicon files:
 
 ## Brand Colors
 
-The logo uses a neural network inspired gradient:
+The logo uses the exact same gradient as your app's `bg-gradient-neural`:
 
-- Deep Navy: `#0A2540` (Primary)
-- Vibrant Cyan: `#00D4FF` (Secondary)
-- Coral Accent: `#FF6B6B` (Accent)
+- Vibrant Cyan: `#00D4FF` - hsl(191, 100%, 50%)
+- Purple: `#9D4EDD` - hsl(270, 70%, 60%)
+- Coral Accent: `#FF6B6B` - hsl(0, 100%, 70%)
 
-These colors match your app's cyberpunk theme and CSS variables.
+This matches the gradient used in your Navigation logo and throughout the app's neural network theme.
 
 ## Design Notes
 

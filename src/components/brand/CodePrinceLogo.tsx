@@ -16,7 +16,7 @@ import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export interface CodePrinceLogoProps {
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "responsive";
   className?: string;
   variant?: "default" | "icon-only" | "text-only";
   interactive?: boolean;
@@ -24,10 +24,16 @@ export interface CodePrinceLogoProps {
 }
 
 const sizeMap = {
-  sm: { width: 32, height: 32, fontSize: "text-sm" },
-  md: { width: 48, height: 48, fontSize: "text-base" },
-  lg: { width: 64, height: 64, fontSize: "text-xl" },
-  xl: { width: 96, height: 96, fontSize: "text-3xl" },
+  sm: { width: 32, height: 32, fontSize: "text-sm", svgClass: "w-8 h-8" },
+  md: { width: 48, height: 48, fontSize: "text-base", svgClass: "w-12 h-12" },
+  lg: { width: 64, height: 64, fontSize: "text-xl", svgClass: "w-16 h-16" },
+  xl: { width: 96, height: 96, fontSize: "text-3xl", svgClass: "w-24 h-24" },
+  responsive: {
+    width: 48,
+    height: 48,
+    fontSize: "text-sm sm:text-base md:text-lg lg:text-xl",
+    svgClass: "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16",
+  },
 } as const;
 
 export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
@@ -38,7 +44,9 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
     interactive = false,
     onClick,
   }) {
-    const { width, height, fontSize } = sizeMap[size];
+    // Enforce minimum size for interactive elements (accessibility)
+    const effectiveSize = interactive && size === "sm" ? "md" : size;
+    const { width, height, fontSize, svgClass } = sizeMap[effectiveSize];
 
     // Generate unique gradient IDs to prevent conflicts when multiple logos exist
     const gradientId = useMemo(
@@ -94,13 +102,12 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
         >
           <title>CodePrince</title>
 
-          {/* Gradient Definitions - Neural Network Theme */}
+          {/* Gradient Definitions - Neural Network Theme (matches bg-gradient-neural) */}
           <defs>
-            {/* Main background gradient - 45deg angle for better color distribution */}
+            {/* Main background gradient - 45deg angle matching CSS gradient-neural */}
             <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#0A2540" />
-              <stop offset="35%" stopColor="#00D4FF" />
-              <stop offset="70%" stopColor="#9D4EDD" />
+              <stop offset="0%" stopColor="#00D4FF" />
+              <stop offset="50%" stopColor="#9D4EDD" />
               <stop offset="100%" stopColor="#FF6B6B" />
             </linearGradient>
             {/* Text gradient with cyan glow */}
