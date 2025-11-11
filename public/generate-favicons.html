@@ -10,11 +10,11 @@
       max-width: 800px;
       margin: 40px auto;
       padding: 20px;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: #18182b;
+      color: #ffffff;
     }
     h1 {
-      background: linear-gradient(to right, #3b82f6, #06b6d4);
+      background: linear-gradient(45deg, #00D4FF, #9D4EDD, #FF6B6B);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -25,7 +25,7 @@
       border-radius: 8px;
     }
     button {
-      background: linear-gradient(to right, #3b82f6, #06b6d4);
+      background: linear-gradient(135deg, #00D4FF, #9D4EDD);
       color: white;
       border: none;
       padding: 12px 24px;
@@ -33,9 +33,11 @@
       cursor: pointer;
       font-weight: 600;
       margin: 10px 10px 10px 0;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
     }
     button:hover {
       opacity: 0.9;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
     }
     .preview-grid {
       display: grid;
@@ -44,10 +46,11 @@
       margin: 20px 0;
     }
     .preview-item {
-      background: #1e293b;
+      background: #1f1f33;
       padding: 20px;
       border-radius: 8px;
       text-align: center;
+      border: 1px solid #2d2d44;
     }
     .preview-item canvas {
       margin: 10px auto;
@@ -99,11 +102,11 @@
       // Clear canvas
       ctx.clearRect(0, 0, size, size);
 
-      // Create gradient
+      // Create gradient - Neural network inspired
       const gradient = ctx.createLinearGradient(0, 0, size, size);
-      gradient.addColorStop(0, '#3B82F6');
-      gradient.addColorStop(0.5, '#0EA5E9');
-      gradient.addColorStop(1, '#06B6D4');
+      gradient.addColorStop(0, '#0A2540');    // Deep navy
+      gradient.addColorStop(0.5, '#00D4FF');  // Vibrant cyan
+      gradient.addColorStop(1, '#FF6B6B');    // Coral accent
 
       // Draw outer circle
       ctx.fillStyle = gradient;

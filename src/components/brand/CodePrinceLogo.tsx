@@ -42,11 +42,11 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
 
     // Generate unique gradient IDs to prevent conflicts when multiple logos exist
     const gradientId = useMemo(
-      () => `cpGradient-${Math.random().toString(36).substr(2, 9)}`,
+      () => `cpGradient-${Math.random().toString(36).substring(2, 11)}`,
       []
     );
     const textGradientId = useMemo(
-      () => `cpTextGradient-${Math.random().toString(36).substr(2, 9)}`,
+      () => `cpTextGradient-${Math.random().toString(36).substring(2, 11)}`,
       []
     );
 
@@ -55,7 +55,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
       return (
         <span
           className={cn(
-            "font-bold bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent",
+            "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
             fontSize,
             interactive && "cursor-pointer transition-opacity hover:opacity-80",
             className
@@ -94,12 +94,12 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
         >
           <title>CodePrince</title>
 
-          {/* Gradient Definitions */}
+          {/* Gradient Definitions - Neural Network Theme */}
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="50%" stopColor="#0EA5E9" />
-              <stop offset="100%" stopColor="#06B6D4" />
+              <stop offset="0%" stopColor="#0A2540" />
+              <stop offset="50%" stopColor="#00D4FF" />
+              <stop offset="100%" stopColor="#FF6B6B" />
             </linearGradient>
             <linearGradient
               id={textGradientId}
@@ -109,7 +109,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
               y2="100%"
             >
               <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="100%" stopColor="#E0F2FE" />
+              <stop offset="100%" stopColor="#00D4FF" />
             </linearGradient>
           </defs>
 
@@ -162,7 +162,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
         {IconSVG}
         <span
           className={cn(
-            "font-bold bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent",
+            "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
             fontSize
           )}
           aria-hidden="true"

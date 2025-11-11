@@ -57,13 +57,13 @@ To generate favicon files:
 
 ## Brand Colors
 
-The logo uses a gradient from blue to cyan:
+The logo uses a neural network inspired gradient:
 
-- Primary Blue: `#3B82F6`
-- Sky Blue: `#0EA5E9`
-- Cyan: `#06B6D4`
+- Deep Navy: `#0A2540` (Primary)
+- Vibrant Cyan: `#00D4FF` (Secondary)
+- Coral Accent: `#FF6B6B` (Accent)
 
-These colors are consistent with your site's theme color (`#0EA5E9`).
+These colors match your app's cyberpunk theme and CSS variables.
 
 ## Design Notes
 
