@@ -33,16 +33,20 @@ const Index: React.FC = () => {
 
   // SEO meta tags with brand identity
   const metaTitle =
-    brandIdentity?.meta_title || `${SEO_CONFIG.siteName} - Portfolio`;
+    brandIdentity?.meta_title ||
+    `${SEO_CONFIG.siteName} - Full Stack Developer & AI Engineer`;
   const metaDescription =
     brandIdentity?.meta_description ||
-    "Professional portfolio showcasing projects, skills, and experience in software development.";
+    "Portfolio of Prince Kyeremeh (CodePrince), showcasing full-stack development, AI/ML projects, and modern web applications. Specializing in React, TypeScript, Python, and machine learning.";
   const metaKeywords =
     brandIdentity?.meta_keywords?.join(", ") ||
-    "portfolio, software developer, web development, projects";
+    "CodePrince, Prince Kyeremeh, Full Stack Developer, AI Engineer, React, TypeScript, Python, Machine Learning, Web Development, Portfolio";
 
   // Dynamic OG image URL
-  const ogImageUrl = getOGImageUrl();
+  const ogImageUrl = getOGImageUrl(
+    "CodePrince",
+    "Full Stack Developer & AI Engineer"
+  );
 
   // Update favicon if provided
   useEffect(() => {
