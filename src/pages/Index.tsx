@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import Hero from "@/components/hero";
 import { Footer } from "@/components/footer";
 import { usePublicBrandIdentity } from "@/hooks/useBrandIdentity";
+import { useOGImageSettings } from "@/hooks/useOGImageSettings";
 import { SEO_CONFIG } from "@/config/seo.config";
 
 // Lazy load below-the-fold components for better performance
@@ -28,6 +29,7 @@ const Contact = lazy(() =>
 
 const Index: React.FC = () => {
   const { brandIdentity } = usePublicBrandIdentity();
+  const { getOGImageUrl } = useOGImageSettings();
 
   // SEO meta tags with brand identity
   const metaTitle =
@@ -38,6 +40,9 @@ const Index: React.FC = () => {
   const metaKeywords =
     brandIdentity?.meta_keywords?.join(", ") ||
     "portfolio, software developer, web development, projects";
+
+  // Dynamic OG image URL
+  const ogImageUrl = getOGImageUrl();
 
   // Update favicon if provided
   useEffect(() => {
@@ -70,12 +75,10 @@ const Index: React.FC = () => {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SEO_CONFIG.siteUrl} />
-        {SEO_CONFIG.defaultImage && (
-          <meta
-            property="og:image"
-            content={`${SEO_CONFIG.siteUrl}${SEO_CONFIG.defaultImage}`}
-          />
-        )}
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={metaTitle} />
         <meta
           property="og:site_name"
           content={brandIdentity?.logo_text || SEO_CONFIG.siteName}
@@ -83,17 +86,12 @@ const Index: React.FC = () => {
         <meta property="og:locale" content={SEO_CONFIG.locale} />
 
         {/* Twitter Card */}
-        <meta name="twitter:card" content={SEO_CONFIG.twitterCardType} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
         {SEO_CONFIG.twitterHandle && (
           <meta name="twitter:site" content={SEO_CONFIG.twitterHandle} />
-        )}
-        {SEO_CONFIG.defaultImage && (
-          <meta
-            name="twitter:image"
-            content={`${SEO_CONFIG.siteUrl}${SEO_CONFIG.defaultImage}`}
-          />
         )}
 
         {/* Additional Meta Tags */}
