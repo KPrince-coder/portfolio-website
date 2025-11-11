@@ -17,10 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, Image, Eye, RefreshCw } from "lucide-react";
+import {
+  Save,
+  Image,
+  Eye,
+  RefreshCw,
+  Info,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOGImageSettings } from "@/hooks/useOGImageSettings";
+import { useBrandIdentity } from "@/hooks/useBrandIdentity";
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LAYOUT_OPTIONS = [
   { value: "centered", label: "Centered" },
@@ -46,8 +56,42 @@ export function OGImageManagement() {
     saveSettings,
     getOGImageUrl,
   } = useOGImageSettings();
+  const { brandIdentity } = useBrandIdentity();
 
   const [previewKey, setPreviewKey] = useState(0);
+  const [testingEndpoint, setTestingEndpoint] = useState(false);
+  const [endpointStatus, setEndpointStatus] = useState<
+    "unknown" | "available" | "unavailable"
+  >("unknown");
+
+  const testEndpoint = async () => {
+    setTestingEndpoint(true);
+    try {
+      const response = await fetch(ogImageUrl, { method: "HEAD" });
+      setEndpointStatus(response.ok ? "available" : "unavailable");
+      if (response.ok) {
+        toast({
+          title: "Endpoint available",
+          description: "OG image function is deployed and working.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Endpoint unavailable",
+          description: "Please deploy the Edge Function first.",
+        });
+      }
+    } catch (error) {
+      setEndpointStatus("unavailable");
+      toast({
+        variant: "destructive",
+        title: "Connection failed",
+        description: "Could not reach the OG image endpoint.",
+      });
+    } finally {
+      setTestingEndpoint(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -156,16 +200,45 @@ export function OGImageManagement() {
               </div>
 
               {settings.show_logo && (
-                <div className="space-y-2">
-                  <Label>Logo Text</Label>
-                  <Input
-                    value={settings.logo_text || ""}
-                    onChange={(e) =>
-                      updateSettings({ logo_text: e.target.value })
-                    }
-                    placeholder="DataFlow"
-                  />
-                </div>
+                <>
+                  {brandIdentity && (
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertDescription>
+                        Using logo from Brand Identity:{" "}
+                        <strong>{brandIdentity.logo_text}</strong>
+                        {brandIdentity.logo_icon && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            ({brandIdentity.logo_icon})
+                          </span>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="space-y-2">
+                    <Label>
+                      Logo Text Override{" "}
+                      <span className="text-muted-foreground text-xs">
+                        (optional)
+                      </span>
+                    </Label>
+                    <Input
+                      value={settings.logo_text || ""}
+                      onChange={(e) =>
+                        updateSettings({ logo_text: e.target.value })
+                      }
+                      placeholder={
+                        brandIdentity?.logo_text ||
+                        "Leave empty to use brand logo"
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty to automatically use logo from Brand Identity
+                      settings
+                    </p>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -367,8 +440,49 @@ export function OGImageManagement() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="aspect-[1200/630] bg-muted rounded-lg overflow-hidden border border-border">
+            <CardContent className="space-y-4">
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Setup Required:</strong> Deploy the Edge Function
+                  first:{" "}
+                  <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    supabase functions deploy og-image
+                  </code>
+                </AlertDescription>
+              </Alert>
+
+              <Button
+                onClick={testEndpoint}
+                disabled={testingEndpoint}
+                size="sm"
+                variant="outline"
+                className="w-full"
+              >
+                {testingEndpoint ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Testing Endpoint...
+                  </>
+                ) : endpointStatus === "available" ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                    Endpoint Available
+                  </>
+                ) : endpointStatus === "unavailable" ? (
+                  <>
+                    <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                    Endpoint Unavailable - Deploy Function
+                  </>
+                ) : (
+                  <>
+                    <Info className="w-4 h-4 mr-2" />
+                    Test Endpoint Connection
+                  </>
+                )}
+              </Button>
+
+              <div className="aspect-[1200/630] bg-muted rounded-lg overflow-hidden border border-border relative">
                 <img
                   key={previewKey}
                   src={`${ogImageUrl}&t=${Date.now()}`}
@@ -376,13 +490,39 @@ export function OGImageManagement() {
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     console.error("Failed to load OG image preview");
-                    e.currentTarget.src = "/placeholder-og.png";
+                    // Show error message instead of broken image
+                    const target = e.currentTarget;
+                    target.style.display = "none";
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector(".error-message")) {
+                      const errorDiv = document.createElement("div");
+                      errorDiv.className =
+                        "error-message absolute inset-0 flex flex-col items-center justify-center p-8 text-center";
+                      errorDiv.innerHTML = `
+                        <svg class="w-16 h-16 text-muted-foreground mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p class="text-sm text-muted-foreground mb-2">
+                          <strong>Preview not available</strong>
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                          Deploy the Edge Function first:<br/>
+                          <code class="bg-muted px-2 py-1 rounded mt-2 inline-block">supabase functions deploy og-image</code>
+                        </p>
+                      `;
+                      parent.appendChild(errorDiv);
+                    }
+                  }}
+                  onLoad={() => {
+                    // Remove error message if image loads successfully
+                    const parent = document.querySelector(".error-message");
+                    if (parent) parent.remove();
                   }}
                 />
               </div>
-              <div className="mt-4 space-y-2">
+              <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  <strong>URL:</strong>
+                  <strong>Endpoint URL:</strong>
                 </p>
                 <code className="block p-2 bg-muted rounded text-xs break-all">
                   {ogImageUrl}

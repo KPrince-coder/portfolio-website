@@ -247,10 +247,10 @@ serve(async (req) => {
     const customTitle = url.searchParams.get("title");
     const customSubtitle = url.searchParams.get("subtitle");
 
-    // Initialize Supabase client
+    // Initialize Supabase client (use service role for server-side access)
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch OG image settings
     const { data: settings, error } = await supabase
@@ -261,6 +261,20 @@ serve(async (req) => {
 
     if (error || !settings) {
       throw new Error("Failed to fetch OG image settings");
+    }
+
+    // Fetch brand identity if logo is enabled and no custom logo text
+    if (settings.show_logo && !settings.logo_text) {
+      const { data: brand } = await supabase
+        .from("brand_identity")
+        .select("logo_text, logo_icon")
+        .eq("is_active", true)
+        .single();
+
+      // Use brand identity logo text if available
+      if (brand?.logo_text) {
+        settings.logo_text = brand.logo_text;
+      }
     }
 
     // Generate SVG using Satori

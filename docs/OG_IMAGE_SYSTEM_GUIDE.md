@@ -343,3 +343,47 @@ For issues or questions:
 **Status**: ✅ Production Ready
 **Version**: 1.0.0
 **Last Updated**: 2024-11-08
+
+## Brand Identity Integration
+
+### Automatic Logo
+
+The OG image system automatically integrates with your Brand Identity settings:
+
+**How it works:**
+
+1. When "Show logo" is enabled in OG Image settings
+2. The system fetches `logo_text` and `logo_icon` from `brand_identity` table
+3. If no custom logo text is set in OG settings, it uses the brand logo
+4. This ensures consistency across your entire portfolio
+
+**Benefits:**
+
+- ✅ Single source of truth for branding
+- ✅ Automatic updates when brand changes
+- ✅ No duplicate data entry
+- ✅ Consistent branding everywhere
+
+**Override Option:**
+You can still override the logo text in OG Image settings if needed for specific use cases.
+
+### Example
+
+```typescript
+// Brand Identity has: logo_text = "DataFlow"
+// OG Image settings: logo_text = NULL
+
+// Result: OG image will display "DataFlow"
+
+// If you set OG Image logo_text = "Custom Logo"
+// Result: OG image will display "Custom Logo"
+```
+
+### Admin Interface
+
+The admin interface shows:
+
+- Current brand logo being used
+- Option to override with custom text
+- Clear indication of the source
+- Helpful placeholder text
