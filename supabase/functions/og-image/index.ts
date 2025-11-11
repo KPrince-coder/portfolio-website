@@ -10,7 +10,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 // Import for image generation
 const satori = (await import("npm:satori@0.10.9")).default;
-const { Resvg } = await import("npm:@resvg/resvg-js@2.4.1");
+// Use resvg-wasm instead of resvg-js for Edge Functions compatibility
+const initWasm = (await import("https://esm.sh/@resvg/resvg-wasm@2.4.1"))
+  .initWasm;
+const Resvg = (await import("https://esm.sh/@resvg/resvg-wasm@2.4.1")).Resvg;
+
+// Initialize WASM
+await initWasm(
+  fetch("https://unpkg.com/@resvg/resvg-wasm@2.4.1/index_bg.wasm")
+);
 
 // CORS headers
 const corsHeaders = {
@@ -277,6 +285,15 @@ serve(async (req) => {
       }
     }
 
+    // Load fonts
+    const fontNormal = await fetch(
+      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff"
+    ).then((res) => res.arrayBuffer());
+
+    const fontBold = await fetch(
+      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff"
+    ).then((res) => res.arrayBuffer());
+
     // Generate SVG using Satori
     const svg = await satori(
       generateOGImageTemplate(settings, customTitle, customSubtitle),
@@ -286,17 +303,13 @@ serve(async (req) => {
         fonts: [
           {
             name: "Inter",
-            data: await fetch(
-              "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff"
-            ).then((res) => res.arrayBuffer()),
+            data: fontNormal,
             weight: 400,
             style: "normal",
           },
           {
             name: "Inter",
-            data: await fetch(
-              "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.woff"
-            ).then((res) => res.arrayBuffer()),
+            data: fontBold,
             weight: 700,
             style: "normal",
           },
@@ -304,14 +317,8 @@ serve(async (req) => {
       }
     );
 
-    // Convert SVG to PNG using Resvg
-    const resvg = new Resvg(svg, {
-      fitTo: {
-        mode: "width",
-        value: settings.width,
-      },
-    });
-
+    // Convert SVG to PNG using Resvg WASM
+    const resvg = new Resvg(svg);
     const pngData = resvg.render();
     const pngBuffer = pngData.asPng();
 

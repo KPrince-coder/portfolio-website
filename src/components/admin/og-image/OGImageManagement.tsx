@@ -67,7 +67,15 @@ export function OGImageManagement() {
   const testEndpoint = async () => {
     setTestingEndpoint(true);
     try {
-      const response = await fetch(ogImageUrl, { method: "HEAD" });
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const baseUrl = ogImageUrl.split("?")[0];
+      const response = await fetch(baseUrl, {
+        method: "HEAD",
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${anonKey}`,
+        },
+      });
       setEndpointStatus(response.ok ? "available" : "unavailable");
       if (response.ok) {
         toast({
@@ -78,7 +86,7 @@ export function OGImageManagement() {
         toast({
           variant: "destructive",
           title: "Endpoint unavailable",
-          description: "Please deploy the Edge Function first.",
+          description: `Status: ${response.status}. Please check function deployment.`,
         });
       }
     } catch (error) {
@@ -485,9 +493,10 @@ export function OGImageManagement() {
               <div className="aspect-[1200/630] bg-muted rounded-lg overflow-hidden border border-border relative">
                 <img
                   key={previewKey}
-                  src={`${ogImageUrl}&t=${Date.now()}`}
+                  src={`${ogImageUrl.split("?")[0]}?t=${Date.now()}`}
                   alt="OG Image Preview"
                   className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
                   onError={(e) => {
                     console.error("Failed to load OG image preview");
                     // Show error message instead of broken image
