@@ -1,0 +1,5 @@
+1. Start-Sleep -Seconds 5; curl "https://jcsghggucepqzmonlpeg.supabase.co/functions/v1/og-image" --output test-og.png; if (Test-Path test-og.png) { Write-Host "✅ Image downloaded successfully!"; Get-Item test-og.png | Select-Object Name, Length } else { Write-Host "❌ Failed to download" }
+
+2. Start-Sleep -Seconds 3; curl "https://jcsghggucepqzmonlpeg.supabase.co/functions/v1/og-image" -I
+
+3. curl "https://jcsghggucepqzmonlpeg.supabase.co/functions/v1/og-image" -I
