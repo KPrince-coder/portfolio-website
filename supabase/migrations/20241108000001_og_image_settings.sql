@@ -90,7 +90,7 @@ INSERT INTO public.og_image_settings (
   'Full Stack Developer & AI Engineer',
   'Building intelligent systems with modern technology',
   true,
-  'DataFlow',
+  NULL, -- Will use brand_identity.logo_text automatically
   '#0F0F23',
   '#0A2540',
   '#0F0F23',
