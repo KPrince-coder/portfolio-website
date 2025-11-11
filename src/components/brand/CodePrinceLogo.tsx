@@ -96,11 +96,14 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
 
           {/* Gradient Definitions - Neural Network Theme */}
           <defs>
-            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            {/* Main background gradient - 45deg angle for better color distribution */}
+            <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#0A2540" />
-              <stop offset="50%" stopColor="#00D4FF" />
+              <stop offset="35%" stopColor="#00D4FF" />
+              <stop offset="70%" stopColor="#9D4EDD" />
               <stop offset="100%" stopColor="#FF6B6B" />
             </linearGradient>
+            {/* Text gradient with cyan glow */}
             <linearGradient
               id={textGradientId}
               x1="0%"
@@ -109,6 +112,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
               y2="100%"
             >
               <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="50%" stopColor="#E0F7FF" />
               <stop offset="100%" stopColor="#00D4FF" />
             </linearGradient>
           </defs>

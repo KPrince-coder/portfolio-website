@@ -102,10 +102,11 @@
       // Clear canvas
       ctx.clearRect(0, 0, size, size);
 
-      // Create gradient - Neural network inspired
-      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      // Create gradient - Neural network inspired (45deg angle)
+      const gradient = ctx.createLinearGradient(0, size, size, 0);
       gradient.addColorStop(0, '#0A2540');    // Deep navy
-      gradient.addColorStop(0.5, '#00D4FF');  // Vibrant cyan
+      gradient.addColorStop(0.35, '#00D4FF'); // Vibrant cyan
+      gradient.addColorStop(0.70, '#9D4EDD'); // Purple mid-tone
       gradient.addColorStop(1, '#FF6B6B');    // Coral accent
 
       // Draw outer circle
