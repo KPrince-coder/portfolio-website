@@ -303,14 +303,20 @@ serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    // Load fonts (Inter Latin 400 & 700)
+    // Load fonts (Inter from CDN)
     const fontNormal = await fetch(
-      "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMa2JL7W0s.ttf"
-    ).then((res) => res.arrayBuffer());
+      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff"
+    ).then((res) => {
+      if (!res.ok) throw new Error(`Failed to fetch font: ${res.status}`);
+      return res.arrayBuffer();
+    });
 
     const fontBold = await fetch(
-      "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMa0pb7W0s.ttf"
-    ).then((res) => res.arrayBuffer());
+      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff"
+    ).then((res) => {
+      if (!res.ok) throw new Error(`Failed to fetch font: ${res.status}`);
+      return res.arrayBuffer();
+    });
 
     // Generate SVG using Satori
     const svg: string = await satori(
