@@ -12,25 +12,38 @@ import { CodePrinceLogo } from "@/components/brand";
 // Default variant (icon + text)
 <CodePrinceLogo size="md" />
 
+// Responsive size (recommended for headers)
+<CodePrinceLogo size="responsive" />
+
 // Icon only
 <CodePrinceLogo size="lg" variant="icon-only" />
 
 // Text only
 <CodePrinceLogo size="sm" variant="text-only" />
+
+// Interactive logo (clickable)
+<CodePrinceLogo 
+  size="md" 
+  interactive 
+  onClick={() => navigate('/')} 
+/>
 ```
 
 ### Props
 
-- `size`: "sm" | "md" | "lg" | "xl" (default: "md")
+- `size`: "sm" | "md" | "lg" | "xl" | "responsive" (default: "md")
 - `variant`: "default" | "icon-only" | "text-only" (default: "default")
+- `interactive`: boolean - Makes logo clickable with hover effects (default: false)
+- `onClick`: () => void - Click handler (requires interactive: true)
 - `className`: Additional CSS classes
 
 ### Sizes
 
-- **sm**: 32x32px icon, small text
+- **sm**: 32x32px icon, small text (auto-upgraded to md for interactive elements)
 - **md**: 48x48px icon, base text
 - **lg**: 64x64px icon, large text
 - **xl**: 96x96px icon, extra large text
+- **responsive**: Scales from 32px → 64px based on screen size (mobile-first)
 
 ### Variants
 

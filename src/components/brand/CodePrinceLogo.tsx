@@ -64,6 +64,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
         <span
           className={cn(
             "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
+            "whitespace-nowrap", // Prevent text wrapping
             fontSize,
             interactive && "cursor-pointer transition-opacity hover:opacity-80",
             className
@@ -96,7 +97,10 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={variant === "icon-only" ? className : undefined}
+          className={cn(
+            svgClass, // Responsive Tailwind classes
+            variant === "icon-only" ? className : undefined
+          )}
           aria-label="CodePrince Logo"
           role="img"
         >
@@ -146,7 +150,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
           <circle cx="50" cy="85" r="2" fill="#FFFFFF" opacity="0.6" />
         </svg>
       ),
-      [width, height, gradientId, textGradientId, variant, className]
+      [width, height, svgClass, gradientId, textGradientId, variant, className]
     );
 
     // Icon-only variant
@@ -174,6 +178,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
         <span
           className={cn(
             "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
+            "whitespace-nowrap", // Prevent text wrapping
             fontSize
           )}
           aria-hidden="true"
@@ -187,7 +192,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
       <button
         onClick={onClick}
         className={cn(
-          "flex items-center gap-2 transition-transform hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded",
+          "flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded",
           className
         )}
         aria-label="CodePrince Logo"
@@ -196,7 +201,7 @@ export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
       </button>
     ) : (
       <div
-        className={cn("flex items-center gap-2", className)}
+        className={cn("flex items-center gap-2 sm:gap-3", className)}
         role="img"
         aria-label="CodePrince Logo"
       >
