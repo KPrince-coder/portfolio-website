@@ -144,14 +144,18 @@ export function OGImageManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">OG Image Settings</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">OG Image Settings</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Configure dynamic Open Graph images for social media sharing
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="neural-glow">
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="neural-glow w-full sm:w-auto shrink-0"
+        >
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Saving..." : "Save Changes"}
         </Button>
@@ -257,20 +261,21 @@ export function OGImageManagement() {
               <CardTitle>Colors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Background</Label>
+                  <Label className="text-sm">Background</Label>
                   <Input
                     type="color"
                     value={settings.background_color}
                     onChange={(e) =>
                       updateSettings({ background_color: e.target.value })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Gradient Start</Label>
+                  <Label className="text-sm">Gradient Start</Label>
                   <Input
                     type="color"
                     value={settings.background_gradient_start}
@@ -279,11 +284,12 @@ export function OGImageManagement() {
                         background_gradient_start: e.target.value,
                       })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Gradient End</Label>
+                  <Label className="text-sm">Gradient End</Label>
                   <Input
                     type="color"
                     value={settings.background_gradient_end}
@@ -292,39 +298,43 @@ export function OGImageManagement() {
                         background_gradient_end: e.target.value,
                       })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Title Color</Label>
+                  <Label className="text-sm">Title Color</Label>
                   <Input
                     type="color"
                     value={settings.title_color}
                     onChange={(e) =>
                       updateSettings({ title_color: e.target.value })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Subtitle Color</Label>
+                  <Label className="text-sm">Subtitle Color</Label>
                   <Input
                     type="color"
                     value={settings.subtitle_color}
                     onChange={(e) =>
                       updateSettings({ subtitle_color: e.target.value })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Accent Color</Label>
+                  <Label className="text-sm">Accent Color</Label>
                   <Input
                     type="color"
                     value={settings.accent_color}
                     onChange={(e) =>
                       updateSettings({ accent_color: e.target.value })
                     }
+                    className="h-12 w-full cursor-pointer"
                   />
                 </div>
               </div>
@@ -358,9 +368,9 @@ export function OGImageManagement() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Title Font Size</Label>
+                  <Label className="text-sm">Title Font Size</Label>
                   <Input
                     type="number"
                     value={settings.title_font_size}
@@ -371,11 +381,12 @@ export function OGImageManagement() {
                     }
                     min={40}
                     max={120}
+                    className="h-11"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Subtitle Font Size</Label>
+                  <Label className="text-sm">Subtitle Font Size</Label>
                   <Input
                     type="number"
                     value={settings.subtitle_font_size}
@@ -386,6 +397,7 @@ export function OGImageManagement() {
                     }
                     min={20}
                     max={60}
+                    className="h-11"
                   />
                 </div>
               </div>
@@ -430,7 +442,7 @@ export function OGImageManagement() {
 
         {/* Preview */}
         <div className="space-y-6">
-          <Card className="card-neural neural-glow sticky top-6">
+          <Card className="card-neural neural-glow lg:sticky lg:top-6">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -450,11 +462,11 @@ export function OGImageManagement() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert className="border-secondary/30 bg-secondary/5">
-                <Info className="h-4 w-4 text-secondary" />
-                <AlertDescription className="text-foreground">
+                <Info className="h-4 w-4 text-secondary shrink-0" />
+                <AlertDescription className="text-foreground text-sm">
                   <strong className="text-secondary">Setup Required:</strong>{" "}
                   Deploy the Edge Function first:{" "}
-                  <code className="text-xs bg-secondary/10 text-secondary border border-secondary/30 px-2 py-1 rounded font-mono">
+                  <code className="text-xs bg-secondary/10 text-secondary border border-secondary/30 px-2 py-1 rounded font-mono break-all sm:break-normal">
                     supabase functions deploy og-image
                   </code>
                 </AlertDescription>
@@ -465,27 +477,29 @@ export function OGImageManagement() {
                 disabled={testingEndpoint}
                 size="sm"
                 variant="outline"
-                className="w-full"
+                className="w-full min-h-[44px] text-xs sm:text-sm"
               >
                 {testingEndpoint ? (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Testing Endpoint...
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin shrink-0" />
+                    <span className="truncate">Testing Endpoint...</span>
                   </>
                 ) : endpointStatus === "available" ? (
                   <>
-                    <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                    Endpoint Available
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-500 shrink-0" />
+                    <span className="truncate">Endpoint Available</span>
                   </>
                 ) : endpointStatus === "unavailable" ? (
                   <>
-                    <XCircle className="w-4 h-4 mr-2 text-red-500" />
-                    Endpoint Unavailable - Deploy Function
+                    <XCircle className="w-4 h-4 mr-2 text-red-500 shrink-0" />
+                    <span className="truncate sm:whitespace-normal">
+                      Endpoint Unavailable
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Info className="w-4 h-4 mr-2" />
-                    Test Endpoint Connection
+                    <Info className="w-4 h-4 mr-2 shrink-0" />
+                    <span className="truncate">Test Endpoint</span>
                   </>
                 )}
               </Button>
@@ -533,7 +547,7 @@ export function OGImageManagement() {
                 <p className="text-sm font-semibold text-secondary">
                   Endpoint URL:
                 </p>
-                <code className="block p-3 bg-gradient-to-r from-secondary/10 to-accent/10 border border-secondary/30 rounded-lg text-xs break-all text-foreground font-mono shadow-glow-secondary">
+                <code className="block p-3 bg-gradient-to-r from-secondary/10 to-accent/10 border border-secondary/30 rounded-lg text-xs break-all overflow-x-auto text-foreground font-mono shadow-glow-secondary max-w-full">
                   {ogImageUrl}
                 </code>
               </div>
