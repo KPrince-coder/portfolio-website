@@ -1,63 +1,77 @@
 /**
- * OG Image Generation Edge Function
+ * OG Image Generation Edge Function (TypeScript)
  *
  * Generates dynamic Open Graph images using Satori and Resvg
  * Supports customizable templates, colors, and layouts
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.81.0";
 
+// Satori & Resvg (no official .d.ts, so we use `any` with safety)
 // Import for image generation
-const satori = (await import("npm:satori@0.10.9")).default;
-// Use resvg-wasm instead of resvg-js for Edge Functions compatibility
-const initWasm = (await import("https://esm.sh/@resvg/resvg-wasm@2.4.1"))
-  .initWasm;
-const Resvg = (await import("https://esm.sh/@resvg/resvg-wasm@2.4.1")).Resvg;
+const satori = (await import("npm:satori@0.18.3")).default as any;
+
+// Use resvg-wasm instead of resvg-js for Edge Functions compatibilit
+const { initWasm, Resvg } = await import(
+  "https://esm.sh/@resvg/resvg-wasm@2.6.2"
+);
 
 // Initialize WASM
 await initWasm(
-  fetch("https://unpkg.com/@resvg/resvg-wasm@2.4.1/index_bg.wasm")
+  fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm")
 );
 
 // CORS headers
-const corsHeaders = {
+const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
 
 // ============================================================================
-// TYPES
+// Types
 // ============================================================================
 
-interface OGImageSettings {
-  template_name: string;
+interface OGSettings {
   title: string;
   subtitle: string;
-  tagline?: string;
-  show_logo: boolean;
-  logo_text?: string;
   background_color: string;
   background_gradient_start: string;
   background_gradient_end: string;
+  accent_color: string;
   title_color: string;
   subtitle_color: string;
-  accent_color: string;
-  layout: "centered" | "left" | "right" | "split";
   title_font_size: number;
   subtitle_font_size: number;
+  layout: "left" | "center" | "right" | "split";
   show_pattern: boolean;
   pattern_type: "dots" | "grid" | "waves" | "none";
+  show_logo: boolean;
+  logo_text?: string;
+  tagline?: string;
   width: number;
   height: number;
+}
+
+interface BrandIdentity {
+  logo_text?: string;
+  logo_icon?: string;
+}
+
+interface VNode {
+  type: string;
+  props: {
+    style?: Record<string, any>;
+    children?: string | VNode | VNode[];
+  };
 }
 
 // ============================================================================
 // PATTERN GENERATORS
 // ============================================================================
 
-function generateDotsPattern(color: string) {
+function generateDotsPattern(color: string): VNode {
   return {
     type: "div",
     props: {
@@ -72,7 +86,7 @@ function generateDotsPattern(color: string) {
   };
 }
 
-function generateGridPattern(color: string) {
+function generateGridPattern(color: string): VNode {
   return {
     type: "div",
     props: {
@@ -95,14 +109,13 @@ function generateGridPattern(color: string) {
 // ============================================================================
 
 function generateOGImageTemplate(
-  settings: OGImageSettings,
-  customTitle?: string,
-  customSubtitle?: string
-) {
+  settings: OGSettings,
+  customTitle?: string | null,
+  customSubtitle?: string | null
+): VNode {
   const title = customTitle || settings.title;
   const subtitle = customSubtitle || settings.subtitle;
-
-  const children: any[] = [];
+  const children: VNode[] = [];
 
   // Add pattern if enabled
   if (settings.show_pattern && settings.pattern_type !== "none") {
@@ -114,7 +127,7 @@ function generateOGImageTemplate(
   }
 
   // Content container
-  const contentStyle: any = {
+  const contentStyle: Record<string, any> = {
     display: "flex",
     flexDirection: "column",
     alignItems:
@@ -124,12 +137,12 @@ function generateOGImageTemplate(
           ? "flex-end"
           : "center",
     justifyContent: "center",
-    padding: "80px",
-    zIndex: 10,
+    padding: 80,
     position: "relative",
+    // zIndex removed: Satori does NOT support z-index
   };
 
-  const contentChildren: any[] = [];
+  const contentChildren: VNode[] = [];
 
   // Logo
   if (settings.show_logo && settings.logo_text) {
@@ -243,7 +256,7 @@ function generateOGImageTemplate(
 // MAIN HANDLER
 // ============================================================================
 
-serve(async (req) => {
+serve(async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -258,6 +271,11 @@ serve(async (req) => {
     // Initialize Supabase client (use service role for server-side access)
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing Supabase environment variables");
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch OG image settings
@@ -265,10 +283,10 @@ serve(async (req) => {
       .from("og_image_settings")
       .select("*")
       .eq("is_active", true)
-      .single();
+      .single<OGSettings>();
 
     if (error || !settings) {
-      throw new Error("Failed to fetch OG image settings");
+      throw new Error("Failed to fetch OG image settings: " + error?.message);
     }
 
     // Fetch brand identity if logo is enabled and no custom logo text
@@ -277,7 +295,7 @@ serve(async (req) => {
         .from("brand_identity")
         .select("logo_text, logo_icon")
         .eq("is_active", true)
-        .single();
+        .single<BrandIdentity>();
 
       // Use brand identity logo text if available
       if (brand?.logo_text) {
@@ -285,17 +303,17 @@ serve(async (req) => {
       }
     }
 
-    // Load fonts
+    // Load fonts (Inter Latin 400 & 700)
     const fontNormal = await fetch(
-      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff"
+      "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMa2JL7W0s.ttf"
     ).then((res) => res.arrayBuffer());
 
     const fontBold = await fetch(
-      "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff"
+      "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMa0pb7W0s.ttf"
     ).then((res) => res.arrayBuffer());
 
     // Generate SVG using Satori
-    const svg = await satori(
+    const svg: string = await satori(
       generateOGImageTemplate(settings, customTitle, customSubtitle),
       {
         width: settings.width,
@@ -332,14 +350,19 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("OG Image generation error:", error);
-
     return new Response(
       JSON.stringify({
-        error: error.message || "Failed to generate OG image",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error!\nFailed to generate OG image",
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       }
     );
   }
