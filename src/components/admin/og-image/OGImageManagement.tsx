@@ -449,12 +449,12 @@ export function OGImageManagement() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Setup Required:</strong> Deploy the Edge Function
-                  first:{" "}
-                  <code className="text-xs bg-muted px-1 py-0.5 rounded">
+              <Alert className="border-secondary/30 bg-secondary/5">
+                <Info className="h-4 w-4 text-secondary" />
+                <AlertDescription className="text-foreground">
+                  <strong className="text-secondary">Setup Required:</strong>{" "}
+                  Deploy the Edge Function first:{" "}
+                  <code className="text-xs bg-secondary/10 text-secondary border border-secondary/30 px-2 py-1 rounded font-mono">
                     supabase functions deploy og-image
                   </code>
                 </AlertDescription>
@@ -516,7 +516,7 @@ export function OGImageManagement() {
                         </p>
                         <p class="text-xs text-muted-foreground">
                           Deploy the Edge Function first:<br/>
-                          <code class="bg-muted px-2 py-1 rounded mt-2 inline-block">supabase functions deploy og-image</code>
+                          <code class="bg-secondary/10 text-secondary border border-secondary/30 px-2 py-1 rounded mt-2 inline-block font-mono">supabase functions deploy og-image</code>
                         </p>
                       `;
                       parent.appendChild(errorDiv);
@@ -530,10 +530,10 @@ export function OGImageManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Endpoint URL:</strong>
+                <p className="text-sm font-semibold text-secondary">
+                  Endpoint URL:
                 </p>
-                <code className="block p-2 bg-muted rounded text-xs break-all">
+                <code className="block p-3 bg-gradient-to-r from-secondary/10 to-accent/10 border border-secondary/30 rounded-lg text-xs break-all text-foreground font-mono shadow-glow-secondary">
                   {ogImageUrl}
                 </code>
               </div>
