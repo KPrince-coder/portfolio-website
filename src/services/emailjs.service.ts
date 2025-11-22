@@ -202,6 +202,7 @@ export class EmailJSService {
         dateStyle: "full",
         timeStyle: "short",
       }),
+      current_year: new Date().getFullYear().toString(),
     });
 
     return this.sendWithRetry(
@@ -239,6 +240,7 @@ export class EmailJSService {
       original_subject: params.subject,
       company_name: "CodePrince",
       expected_response_time: "24 hours",
+      current_year: new Date().getFullYear().toString(),
     });
 
     return this.sendWithRetry(
@@ -281,6 +283,7 @@ export class EmailJSService {
       original_subject: params.originalSubject,
       company_name: "CodePrince",
       reply_to: emailJSConfig.adminEmail,
+      current_year: new Date().getFullYear().toString(),
     });
 
     return this.sendWithRetry(
