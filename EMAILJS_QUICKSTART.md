@@ -9,7 +9,7 @@ Your portfolio now uses **EmailJS** instead of Resend for all email functionalit
 - ✅ **Performance**: Non-blocking, parallel sending, retry logic
 - ✅ **Features**: Notification, auto-reply, manual replies
 
-## 📋 Setup Checklist (15 minutes)
+## 📋 Setup Checklist (20 minutes)
 
 ### 1. Create EmailJS Account
 
@@ -23,16 +23,26 @@ Your portfolio now uses **EmailJS** instead of Resend for all email functionalit
 - Choose Gmail → Connect Account
 - Copy **Service ID**
 
-### 3. Create 2 Templates (Free Tier)
+### 3. Choose Your Setup Path
 
-See `EMAILJS_TEMPLATES.md` for detailed template HTML.
+**Option A: Two Free Accounts (Recommended for Free Tier)**
 
-**Required Templates**:
+- Account 1: Notification + Auto-reply (2 templates)
+- Account 2: Manual reply (1 template)
+- See `EMAILJS_TWO_ACCOUNTS_SETUP.md` for detailed steps
 
-- `template_notification` - New message notification (to you) ✅ REQUIRED
-- `template_autoreply` - Auto-reply (to sender) ⚠️ OPTIONAL
+**Option B: Single Paid Account ($7/month)**
 
-**Manual Reply**: Uses `mailto:` link (no template needed!) 🎉
+- One account with all 3 templates
+- Simpler setup, no workarounds
+
+**Templates needed:**
+
+- `template_notification` - New message notification (to you)
+- `template_autoreply` - Auto-reply (to sender)
+- `template_manual_reply` - Manual replies from admin
+
+See `EMAILJS_TEMPLATES.md` for all template HTML.
 
 ### 4. Get API Keys
 
@@ -41,12 +51,33 @@ See `EMAILJS_TEMPLATES.md` for detailed template HTML.
 
 ### 5. Update .env File
 
+**Option A: Two Accounts Setup**
+
 ```env
-# Required
-VITE_EMAILJS_PUBLIC_KEY="your_public_key_here"
+# Account 1 (Primary) - Notification + Auto-reply
+VITE_EMAILJS_PUBLIC_KEY="primary_public_key"
+VITE_EMAILJS_SERVICE_ID="service_primary"
+VITE_EMAILJS_TEMPLATE_NOTIFICATION="template_notification"
+VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"
+
+# Account 2 (Secondary) - Manual Reply
+VITE_EMAILJS_SECONDARY_PUBLIC_KEY="secondary_public_key"
+VITE_EMAILJS_SECONDARY_SERVICE_ID="service_secondary"
+VITE_EMAILJS_TEMPLATE_MANUAL_REPLY="template_manual_reply"
+
+# Other
+VITE_ADMIN_EMAIL="contact@codeprince.qzz.io"
+```
+
+**Option B: Single Account Setup**
+
+```env
+# Single Account - All 3 templates
+VITE_EMAILJS_PUBLIC_KEY="your_public_key"
 VITE_EMAILJS_SERVICE_ID="service_abc123"
 VITE_EMAILJS_TEMPLATE_NOTIFICATION="template_notification"
-VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"  # Dual-purpose: auto-reply + manual reply
+VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"
+VITE_EMAILJS_TEMPLATE_MANUAL_REPLY="template_manual_reply"
 VITE_ADMIN_EMAIL="contact@codeprince.qzz.io"
 ```
 
@@ -130,25 +161,31 @@ These files are no longer needed but kept for reference:
 
 ## 📚 Documentation
 
-- **Setup Guide**: `docs/EMAILJS_SETUP_GUIDE.md`
+- **Two Accounts Setup**: `EMAILJS_TWO_ACCOUNTS_SETUP.md`
+- **Templates**: `EMAILJS_TEMPLATES.md`
+- **Template Settings**: `EMAILJS_TEMPLATE_SETTINGS.md`
+- **Troubleshooting**: `EMAILJS_TROUBLESHOOTING.md`
 - **EmailJS Dashboard**: <https://dashboard.emailjs.com>
 - **EmailJS Docs**: <https://www.emailjs.com/docs/>
 
 ## ✅ Next Steps
 
-1. Complete EmailJS setup (15 min)
-2. Test contact form
-3. Verify emails arrive
-4. (Optional) Remove old Resend files
+1. Choose setup path (Two accounts or Paid)
+2. Complete EmailJS setup (20 min)
+3. Test contact form
+4. Test manual reply from admin
+5. Verify all emails arrive
+6. (Optional) Remove old Resend files
 
 ## 🎉 Benefits
 
 - ✅ **No domain verification** needed
 - ✅ **No bouncing** issues (uses Gmail)
-- ✅ **Instant setup** (15 minutes)
-- ✅ **Free tier** (200 emails/month)
+- ✅ **Quick setup** (20 minutes)
+- ✅ **Free tier option** (2 accounts = 400 emails/month)
 - ✅ **Reliable** delivery
 - ✅ **Modern** implementation (Nov 2025)
+- ✅ **3 templates** (notification, auto-reply, manual reply)
 
 ---
 
