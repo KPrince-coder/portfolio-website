@@ -14,9 +14,8 @@ import { MessageReply } from "./sections/MessageReply";
 import { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
 import { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 import { ContactSettingsSection } from "./sections/ContactSettingsSection";
-import { sendReplyEmail } from "@/services/emailService";
+import { sendManualReplyEmail } from "@/services/emailjs.service";
 import { supabase } from "@/integrations/supabase/client";
-import { emailConfig } from "@/config/email.config";
 
 // ============================================================================
 // TYPES
@@ -93,29 +92,44 @@ export function MessagesManagement({
       if (!replyingToMessageId) return;
 
       try {
-        // Send email through Supabase Edge Function
-        // This will also update the message status automatically
-        const result = await sendReplyEmail(
-          replyingToMessageId,
-          content,
-          adminName
-        );
+        const message = messages.find((m) => m.id === replyingToMessageId);
+        if (!message) throw new Error("Message not found");
+
+        // Send email through EmailJS (November 2025)
+        const result = await sendManualReplyEmail({
+          recipientName: message.name,
+          recipientEmail: message.email,
+          replyContent: content,
+          originalMessage: message.message,
+          originalSubject: message.subject,
+          adminName: adminName || "Prince Kyeremeh",
+        });
 
         if (!result.success) {
           throw new Error(result.error || "Failed to send reply");
         }
 
+        // Update message in database
+        const now = new Date().toISOString();
+        const { error: updateError } = await supabase
+          .from("contact_messages")
+          .update({
+            reply_content: content,
+            reply_sent_at: now,
+            is_replied: true,
+            status: "replied",
+            updated_at: now,
+          })
+          .eq("id", replyingToMessageId);
+
+        if (updateError) throw updateError;
+
         toast({
           title: "Reply sent",
-          description: `Your reply has been sent successfully. ${
-            result.response_time_hours
-              ? `Response time: ${result.response_time_hours}h`
-              : ""
-          }`,
+          description: `Your reply has been sent successfully via EmailJS.`,
         });
 
-        // Refresh messages to get updated status
-        // The Edge Function already updated the database
+        // Refresh messages
         setReplyingToMessageId(null);
       } catch (error) {
         console.error("Send reply error:", error);

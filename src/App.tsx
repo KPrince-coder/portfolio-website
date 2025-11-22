@@ -14,6 +14,10 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Initialize EmailJS on app start (November 2025)
+import { EmailJSService } from "@/services/emailjs.service";
+EmailJSService.init();
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>

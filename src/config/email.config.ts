@@ -7,6 +7,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { baseEmailConfig, isDefaultEmail } from "./email.base";
 
 // ============================================================================
 // EMAIL CONFIGURATION
@@ -15,18 +16,21 @@ import { supabase } from "@/integrations/supabase/client";
 export const emailConfig = {
   /**
    * Admin email to receive notifications
+   * Shared from base email configuration
    */
-  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || "admin@example.com",
+  adminEmail: baseEmailConfig.adminEmail,
 
   /**
    * Company name for email templates (fallback)
+   * Shared from base email configuration
    */
-  companyName: import.meta.env.VITE_COMPANY_NAME || "Portfolio",
+  companyName: baseEmailConfig.companyName,
 
   /**
    * Company email for replies (fallback)
+   * Shared from base email configuration
    */
-  companyEmail: import.meta.env.VITE_COMPANY_EMAIL || "contact@example.com",
+  companyEmail: baseEmailConfig.companyEmail,
 
   /**
    * Admin panel URL (for notification links)
@@ -89,10 +93,7 @@ export function validateEmailConfig(): {
 } {
   const errors: string[] = [];
 
-  if (
-    !emailConfig.adminEmail ||
-    emailConfig.adminEmail === "admin@example.com"
-  ) {
+  if (!emailConfig.adminEmail || isDefaultEmail(emailConfig.adminEmail)) {
     errors.push("VITE_ADMIN_EMAIL not configured in .env");
   }
 
@@ -100,10 +101,7 @@ export function validateEmailConfig(): {
     errors.push("VITE_COMPANY_NAME not configured in .env");
   }
 
-  if (
-    !emailConfig.companyEmail ||
-    emailConfig.companyEmail === "contact@example.com"
-  ) {
+  if (!emailConfig.companyEmail || isDefaultEmail(emailConfig.companyEmail)) {
     errors.push("VITE_COMPANY_EMAIL not configured in .env");
   }
 

@@ -7,8 +7,10 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { sendNotificationEmail } from "@/services/emailService";
-import { emailConfig } from "@/config/email.config";
+import {
+  sendNotificationEmail,
+  sendAutoReplyEmail,
+} from "@/services/emailjs.service";
 import type { ContactFormData, ContactFormErrors } from "../types";
 import { validateContactForm, isFormValid, sanitizeFormData } from "../utils";
 import {
@@ -108,13 +110,27 @@ export function useContactForm() {
         throw error;
       }
 
-      // Send notification email (non-blocking)
-      try {
-        await sendNotificationEmail(data.id, emailConfig.adminEmail);
-      } catch (notificationError) {
-        console.error("Failed to send notification:", notificationError);
-        // Don't fail the whole operation if notification fails
-      }
+      // Send emails via EmailJS (non-blocking)
+      Promise.all([
+        // 1. Send notification to admin
+        sendNotificationEmail({
+          senderName: sanitizedData.name,
+          senderEmail: sanitizedData.email,
+          subject: sanitizedData.subject,
+          message: sanitizedData.message,
+          priority: sanitizedData.priority,
+          messageId: data.id,
+        }),
+        // 2. Send auto-reply to sender
+        sendAutoReplyEmail({
+          senderName: sanitizedData.name,
+          senderEmail: sanitizedData.email,
+          subject: sanitizedData.subject,
+        }),
+      ]).catch((emailError) => {
+        console.error("Email sending failed:", emailError);
+        // Don't fail the whole operation if emails fail
+      });
 
       // Show success message
       toast({
