@@ -46,13 +46,8 @@ See `EMAILJS_TEMPLATES.md` for detailed template HTML.
 VITE_EMAILJS_PUBLIC_KEY="your_public_key_here"
 VITE_EMAILJS_SERVICE_ID="service_abc123"
 VITE_EMAILJS_TEMPLATE_NOTIFICATION="template_notification"
+VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"  # Dual-purpose: auto-reply + manual reply
 VITE_ADMIN_EMAIL="contact@codeprince.qzz.io"
-
-# Optional (but recommended)
-VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"
-
-# NOT NEEDED - Manual reply uses mailto:
-# VITE_EMAILJS_TEMPLATE_MANUAL_REPLY="template_reply"
 ```
 
 ### 6. Restart Dev Server

@@ -46,10 +46,11 @@
 
 ---
 
-## Template 2: Auto Reply
+## Template 2: Auto-Reply Template
 
 **Template ID**: `template_autoreply`  
-**Subject**: `Thank you for contacting CodePrince`
+**Subject**: `Thank you for contacting CodePrince`  
+**Purpose**: Automatic confirmation when someone contacts you
 
 ### HTML Content (Copy & Paste)
 
@@ -68,14 +69,14 @@
     </p>
 
     <p style="color:#cbd5e1;line-height:1.6;margin:0 0 30px 0;">
-      I typically respond within <strong style="color:#FF6B6B;">{{expected_response_time}}</strong>. I appreciate your patience and look forward to connecting with you.
+      I typically respond within <strong style="color:#FF6B6B;">24 hours</strong>. I appreciate your patience and look forward to connecting with you.
     </p>
 
     <div style="background:rgba(0,212,255,0.1);border-left:4px solid #00D4FF;padding:20px;border-radius:6px;margin:20px 0;">
       <h3 style="color:#00D4FF;margin:0 0 15px 0;font-size:18px;">What happens next?</h3>
       <ul style="color:#cbd5e1;line-height:1.8;margin:0;padding-left:20px;">
         <li>I'll review your message carefully</li>
-        <li>I'll respond within {{expected_response_time}}</li>
+        <li>I'll respond within 24 hours</li>
         <li>You'll receive a personalized reply to your inquiry</li>
       </ul>
     </div>
@@ -99,23 +100,76 @@
 
 ---
 
-## ~~Template 3: Manual Reply~~ (NOT NEEDED - Free Tier Solution!)
+## Template 3: Manual Reply Template
 
-**🎉 Good news!** Manual replies don't need a template on the free tier.
+**Template ID**: `template_manual_reply`  
+**Subject**: `Re: {{original_subject}}`  
+**Purpose**: Your custom replies from admin panel
 
-Instead, when you click "Reply" in the admin panel:
+### HTML Content (Copy & Paste)
 
-1. Write your reply in the rich text editor
-2. Click "Open in Email Client"
-3. Your default email app opens with the reply pre-filled
-4. Send from your email client
+```html
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#18182b;color:#ffffff;padding:40px 20px;">
+  
+  <div style="background:linear-gradient(135deg,#00D4FF 0%,#9D4EDD 50%,#FF6B6B 100%);padding:20px;border-radius:12px;margin-bottom:30px;">
+    <p style="margin:0;color:#ffffff;font-size:14px;">Reply from CodePrince</p>
+  </div>
 
-**Benefits:**
+  <div style="background:#1f1f33;border:1px solid #2d2d44;border-radius:8px;padding:30px;margin-bottom:20px;">
+    <p style="color:#e2e8f0;line-height:1.6;margin:0 0 20px 0;">Hi <strong style="color:#00D4FF;">{{to_name}}</strong>,</p>
 
-- ✅ No third template needed (free tier only allows 2)
-- ✅ Uses your actual email (better deliverability)
-- ✅ You can edit before sending
-- ✅ Works with Gmail, Outlook, etc.
+    <div style="color:#cbd5e1;line-height:1.6;margin:20px 0;">
+      {{{reply_content}}}
+    </div>
+  </div>
+
+  <div style="background:rgba(157,78,221,0.1);border-left:4px solid #9D4EDD;padding:20px;border-radius:6px;margin:20px 0;">
+    <p style="color:#9D4EDD;font-size:13px;font-weight:bold;margin:0 0 10px 0;">Your original message:</p>
+    <p style="color:#94a3b8;font-size:14px;font-style:italic;margin:0;white-space:pre-wrap;line-height:1.5;">{{original_message}}</p>
+  </div>
+
+  <div style="background:#1f1f33;border:1px solid #2d2d44;border-radius:8px;padding:25px;margin:30px 0 20px 0;">
+    <p style="color:#cbd5e1;margin:0 0 5px 0;">Best regards,</p>
+    <p style="margin:0 0 5px 0;"><strong style="color:#00D4FF;font-size:18px;">{{from_name}}</strong></p>
+    <p style="color:#9D4EDD;margin:0 0 10px 0;">{{company_name}}</p>
+    <p style="margin:0;">
+      <a href="mailto:contact@codeprince.qzz.io" style="color:#00D4FF;text-decoration:none;font-size:14px;">contact@codeprince.qzz.io</a>
+    </p>
+  </div>
+
+  <div style="text-align:center;padding-top:30px;border-top:1px solid #2d2d44;">
+    <p style="color:#64748b;font-size:12px;margin:0;">© {{current_year}} CodePrince. All rights reserved.</p>
+  </div>
+</div>
+```
+
+### Template Settings
+
+In EmailJS dashboard, configure:
+
+```
+To Email: {{to_email}}
+From Name: {{from_name}}
+Reply To: contact@codeprince.qzz.io
+Subject: Re: {{original_subject}}
+```
+
+---
+
+## 🎯 Two Accounts Setup (Free Tier Workaround)
+
+Since EmailJS free tier only allows 2 templates per account, use 2 accounts:
+
+**Account 1 (Primary):**
+
+- Template 1: Notification
+- Template 2: Auto-reply
+
+**Account 2 (Secondary):**
+
+- Template 3: Manual Reply
+
+See `EMAILJS_TWO_ACCOUNTS_SETUP.md` for detailed setup instructions!
 
 ---
 

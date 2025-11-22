@@ -195,11 +195,21 @@ export class EmailJSService {
   static async sendManualReply(
     params: ManualReplyEmailParams
   ): Promise<EmailResponse> {
-    console.log("📧 Sending manual reply email...", {
-      serviceId: emailJSConfig.serviceId,
-      templateId: emailJSConfig.templates.manualReply,
-      to: params.recipientEmail,
-    });
+    // Use secondary account if configured (free tier workaround)
+    const useSecondary = !!emailJSConfig.secondary;
+    const serviceId = useSecondary
+      ? emailJSConfig.secondary!.serviceId
+      : emailJSConfig.serviceId;
+    const publicKey = useSecondary
+      ? emailJSConfig.secondary!.publicKey
+      : emailJSConfig.publicKey;
+
+    // console.log("📧 Sending manual reply email...", {
+    //   serviceId,
+    //   templateId: emailJSConfig.templates.manualReply,
+    //   to: params.recipientEmail,
+    //   usingSecondaryAccount: useSecondary,
+    // });
 
     // Rate limiting
     const rateLimitKey = `reply:${params.recipientEmail}`;
@@ -223,15 +233,39 @@ export class EmailJSService {
       original_message: params.originalMessage,
       original_subject: params.originalSubject,
       company_name: EMAIL_DEFAULTS.companyName,
-      is_manual_reply: "true", // Flag to differentiate from auto-reply
       current_year: new Date().getFullYear().toString(),
     });
 
-    const result = await this.sendWithRetry(
-      emailJSConfig.serviceId,
-      emailJSConfig.templates.manualReply,
-      sanitized
-    );
+    // If using secondary account, send with its credentials
+    let result: EmailResponse;
+    if (useSecondary) {
+      try {
+        const startTime = performance.now();
+        const response = await emailjs.send(
+          serviceId,
+          emailJSConfig.templates.manualReply,
+          sanitized,
+          publicKey
+        );
+        const duration = Math.round(performance.now() - startTime);
+        result = {
+          success: true,
+          messageId: response.text,
+          duration,
+        };
+      } catch (error) {
+        result = {
+          success: false,
+          error: (error as Error).message || "Failed to send email",
+        };
+      }
+    } else {
+      result = await this.sendWithRetry(
+        serviceId,
+        emailJSConfig.templates.manualReply,
+        sanitized
+      );
+    }
 
     if (result.success) {
       console.log("✅ Manual reply email sent successfully");

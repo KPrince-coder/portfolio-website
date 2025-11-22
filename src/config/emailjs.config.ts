@@ -26,6 +26,11 @@ export interface EmailJSConfig {
     readonly maxAttempts: number;
     readonly windowMs: number;
   };
+  // Secondary account for manual replies (free tier workaround)
+  readonly secondary?: {
+    readonly publicKey: string;
+    readonly serviceId: string;
+  };
 }
 
 // ============================================================================
@@ -47,12 +52,11 @@ export const emailJSConfig: EmailJSConfig = Object.freeze({
 
   /**
    * Template IDs for different email types
-   * Note: autoReply template is dual-purpose (auto-reply + manual reply)
    */
   templates: Object.freeze({
     notification: import.meta.env.VITE_EMAILJS_TEMPLATE_NOTIFICATION || "",
     autoReply: import.meta.env.VITE_EMAILJS_TEMPLATE_AUTO_REPLY || "",
-    manualReply: import.meta.env.VITE_EMAILJS_TEMPLATE_AUTO_REPLY || "", // Reuses auto-reply template
+    manualReply: import.meta.env.VITE_EMAILJS_TEMPLATE_MANUAL_REPLY || "",
   }),
 
   /**
@@ -68,6 +72,25 @@ export const emailJSConfig: EmailJSConfig = Object.freeze({
     maxAttempts: 3,
     windowMs: 60000, // 1 minute
   }),
+
+  /**
+   * Secondary EmailJS account (for manual replies)
+   *
+   * Free tier workaround: EmailJS free tier allows 200 emails/month and 2 templates.
+   * By using a secondary account for manual replies, we can:
+   * - Keep primary account for automated emails (notifications, auto-replies)
+   * - Use secondary account exclusively for admin-initiated manual replies
+   * - Effectively double our template limit and email capacity
+   *
+   * @see {@link https://www.emailjs.com/docs/user-guide/rate-limiting/}
+   * @see FREE_TIER_SOLUTION.md for detailed setup instructions
+   */
+  secondary: import.meta.env.VITE_EMAILJS_SECONDARY_PUBLIC_KEY
+    ? Object.freeze({
+        publicKey: import.meta.env.VITE_EMAILJS_SECONDARY_PUBLIC_KEY || "",
+        serviceId: import.meta.env.VITE_EMAILJS_SECONDARY_SERVICE_ID || "",
+      })
+    : undefined,
 });
 
 // ============================================================================
@@ -117,8 +140,26 @@ export function validateEmailJSConfig(): ValidationResult {
     warnings.push("VITE_EMAILJS_TEMPLATE_AUTO_REPLY not configured (optional)");
   }
 
-  // Manual reply doesn't need a template (uses mailto:)
-  // No warning needed
+  // Manual reply template
+  if (!emailJSConfig.templates.manualReply) {
+    warnings.push(
+      "VITE_EMAILJS_TEMPLATE_MANUAL_REPLY not configured (optional)"
+    );
+  }
+
+  // Secondary account validation
+  if (emailJSConfig.secondary) {
+    if (!emailJSConfig.secondary.publicKey) {
+      warnings.push(
+        "Secondary account configured but VITE_EMAILJS_SECONDARY_PUBLIC_KEY is missing"
+      );
+    }
+    if (!emailJSConfig.secondary.serviceId) {
+      warnings.push(
+        "Secondary account configured but VITE_EMAILJS_SECONDARY_SERVICE_ID is missing"
+      );
+    }
+  }
 
   // Validate email format
   if (emailJSConfig.adminEmail && !isValidEmail(emailJSConfig.adminEmail)) {
@@ -152,6 +193,11 @@ export function getConfigStatus(): {
     autoReply: boolean;
     manualReply: boolean;
   };
+  secondary: {
+    configured: boolean;
+    publicKey: boolean;
+    serviceId: boolean;
+  };
 } {
   return {
     configured: isEmailJSConfigured(),
@@ -162,6 +208,64 @@ export function getConfigStatus(): {
       autoReply: !!emailJSConfig.templates.autoReply,
       manualReply: !!emailJSConfig.templates.manualReply,
     },
+    secondary: {
+      configured: hasSecondaryAccount(),
+      publicKey: !!emailJSConfig.secondary?.publicKey,
+      serviceId: !!emailJSConfig.secondary?.serviceId,
+    },
+  };
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Check if secondary account is configured
+ */
+export function hasSecondaryAccount(): boolean {
+  return !!(
+    emailJSConfig.secondary?.publicKey && emailJSConfig.secondary?.serviceId
+  );
+}
+
+/**
+ * Get account configuration for specific use case
+ *
+ * @param useCase - The type of email being sent
+ * @returns Account configuration with publicKey, serviceId, and templateId
+ *
+ * @example
+ * ```typescript
+ * const config = getAccountForUseCase('manualReply');
+ * emailjs.init(config.publicKey);
+ * emailjs.send(config.serviceId, config.templateId, params);
+ * ```
+ */
+export function getAccountForUseCase(
+  useCase: "notification" | "autoReply" | "manualReply"
+): {
+  publicKey: string;
+  serviceId: string;
+  templateId: string;
+  isSecondary: boolean;
+} {
+  // Use secondary account for manual replies if configured
+  if (useCase === "manualReply" && hasSecondaryAccount()) {
+    return {
+      publicKey: emailJSConfig.secondary!.publicKey,
+      serviceId: emailJSConfig.secondary!.serviceId,
+      templateId: emailJSConfig.templates.manualReply,
+      isSecondary: true,
+    };
+  }
+
+  // Use primary account for all other cases
+  return {
+    publicKey: emailJSConfig.publicKey,
+    serviceId: emailJSConfig.serviceId,
+    templateId: emailJSConfig.templates[useCase],
+    isSecondary: false,
   };
 }
 
@@ -198,6 +302,10 @@ if (import.meta.env.DEV) {
     console.groupEnd();
   } else {
     console.log("✅ EmailJS configured successfully");
+
+    if (hasSecondaryAccount()) {
+      console.log("✅ Secondary account configured for manual replies");
+    }
 
     if (validation.warnings.length > 0) {
       console.group("⚠️ EmailJS Warnings");
