@@ -178,14 +178,14 @@ serve(async (req: Request): Promise<Response> => {
     // ============================================================================
 
     const variables = {
-      sender_name: message.name,
-      reply_content,
-      original_message: message.message,
-      original_subject: message.subject,
-      admin_name:
+      senderName: message.name,
+      replyContent: reply_content,
+      originalMessage: message.message,
+      originalSubject: message.subject,
+      adminName:
         admin_name || notificationSettings.reply_from_name || "Support Team",
-      company_name: emailBranding.company_name || "Portfolio",
-      company_email: emailBranding.company_email || config.fromEmail,
+      companyName: emailBranding.company_name || "CodePrince",
+      companyEmail: emailBranding.company_email || config.fromEmail,
     };
 
     // ============================================================================

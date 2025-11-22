@@ -166,19 +166,19 @@ serve(async (req: Request): Promise<Response> => {
     // ============================================================================
 
     const variables = {
-      sender_name: message.name,
-      sender_email: message.email,
+      senderName: message.name,
+      senderEmail: message.email,
       subject: message.subject,
       message: message.message,
       priority: message.priority,
       category: message.category,
-      created_at: new Date(message.created_at).toLocaleString("en-US", {
+      createdAt: new Date(message.created_at).toLocaleString("en-US", {
         dateStyle: "full",
         timeStyle: "short",
       }),
-      admin_url: `${config.adminUrl}/messages?id=${message.id}`,
-      message_id: message.id,
-      company_name: emailBranding.company_name || "Portfolio",
+      adminUrl: `${config.adminUrl}/messages?id=${message.id}`,
+      messageId: message.id,
+      companyName: emailBranding.company_name || "CodePrince",
     };
 
     // ============================================================================
