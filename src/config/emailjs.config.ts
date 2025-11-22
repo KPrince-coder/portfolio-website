@@ -47,12 +47,12 @@ export const emailJSConfig: EmailJSConfig = Object.freeze({
 
   /**
    * Template IDs for different email types
-   * Note: manualReply uses mailto: link (no template needed for free tier)
+   * Note: autoReply template is dual-purpose (auto-reply + manual reply)
    */
   templates: Object.freeze({
     notification: import.meta.env.VITE_EMAILJS_TEMPLATE_NOTIFICATION || "",
     autoReply: import.meta.env.VITE_EMAILJS_TEMPLATE_AUTO_REPLY || "",
-    manualReply: "", // Not used - manual replies use mailto: link
+    manualReply: import.meta.env.VITE_EMAILJS_TEMPLATE_AUTO_REPLY || "", // Reuses auto-reply template
   }),
 
   /**
@@ -68,6 +68,18 @@ export const emailJSConfig: EmailJSConfig = Object.freeze({
     maxAttempts: 3,
     windowMs: 60000, // 1 minute
   }),
+});
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+/**
+ * Default sender/company name for emails
+ */
+export const EMAIL_DEFAULTS = Object.freeze({
+  senderName: "CodePrince",
+  companyName: "CodePrince",
 });
 
 // ============================================================================

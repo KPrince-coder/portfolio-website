@@ -13,7 +13,7 @@
  */
 
 import emailjs from "@emailjs/browser";
-import { emailJSConfig } from "@/config/emailjs.config";
+import { emailJSConfig, EMAIL_DEFAULTS } from "@/config/emailjs.config";
 import { RateLimiter } from "./emailjs.rateLimit";
 import { sanitizeParams } from "./emailjs.sanitize";
 import type {
@@ -190,45 +190,56 @@ export class EmailJSService {
 
   /**
    * Send manual reply from admin panel
-   * Uses mailto: link to open user's email client (no template needed)
+   * Uses the manual reply template (dual-purpose auto-reply template)
    */
   static async sendManualReply(
     params: ManualReplyEmailParams
   ): Promise<EmailResponse> {
-    try {
-      // Convert HTML to plain text for email body
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = params.replyContent;
-      const plainTextReply = tempDiv.textContent || tempDiv.innerText || "";
+    console.log("📧 Sending manual reply email...", {
+      serviceId: emailJSConfig.serviceId,
+      templateId: emailJSConfig.templates.manualReply,
+      to: params.recipientEmail,
+    });
 
-      // Build email body with context
-      const emailBody = `${plainTextReply}
-
----
-Original Message:
-From: ${params.recipientName} <${params.recipientEmail}>
-Subject: ${params.originalSubject}
-
-${params.originalMessage}`;
-
-      // Create mailto link
-      const subject = encodeURIComponent(`Re: ${params.originalSubject}`);
-      const body = encodeURIComponent(emailBody);
-      const mailtoLink = `mailto:${params.recipientEmail}?subject=${subject}&body=${body}`;
-
-      // Open email client
-      window.open(mailtoLink, "_blank");
-
-      return {
-        success: true,
-        messageId: "mailto-opened",
-      };
-    } catch (error) {
+    // Rate limiting
+    const rateLimitKey = `reply:${params.recipientEmail}`;
+    if (!rateLimiter.check(rateLimitKey)) {
+      console.error("❌ Rate limit exceeded for:", params.recipientEmail);
       return {
         success: false,
-        error: (error as Error).message || "Failed to open email client",
+        error: "Rate limit exceeded.",
       };
     }
+
+    // Sanitize inputs
+    const sanitized = sanitizeParams({
+      to_email: params.recipientEmail,
+      to_name: params.recipientName,
+      from_name: params.adminName || EMAIL_DEFAULTS.senderName,
+      from_email: emailJSConfig.adminEmail,
+      subject: `Re: ${params.originalSubject}`,
+      message: params.replyContent,
+      reply_content: params.replyContent,
+      original_message: params.originalMessage,
+      original_subject: params.originalSubject,
+      company_name: EMAIL_DEFAULTS.companyName,
+      is_manual_reply: "true", // Flag to differentiate from auto-reply
+      current_year: new Date().getFullYear().toString(),
+    });
+
+    const result = await this.sendWithRetry(
+      emailJSConfig.serviceId,
+      emailJSConfig.templates.manualReply,
+      sanitized
+    );
+
+    if (result.success) {
+      console.log("✅ Manual reply email sent successfully");
+    } else {
+      console.error("❌ Failed to send manual reply email:", result.error);
+    }
+
+    return result;
   }
 }
 
