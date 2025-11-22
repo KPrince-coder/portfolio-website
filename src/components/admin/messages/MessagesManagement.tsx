@@ -16,6 +16,7 @@ import { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 import { ContactSettingsSection } from "./sections/ContactSettingsSection";
 import { sendManualReplyEmail } from "@/services/emailjs.service";
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_ADMIN_NAME } from "./constants";
 
 // ============================================================================
 // TYPES
@@ -63,7 +64,7 @@ export function MessagesManagement({
             setAdminName(profile.full_name);
           } else {
             // Fallback to email username or default
-            setAdminName(user.email?.split("@")[0] || "CodePrince");
+            setAdminName(user.email?.split("@")[0] || DEFAULT_ADMIN_NAME);
           }
         }
       } catch (error) {
