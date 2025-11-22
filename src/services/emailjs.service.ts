@@ -14,88 +14,33 @@
 
 import emailjs from "@emailjs/browser";
 import { emailJSConfig } from "@/config/emailjs.config";
+import { RateLimiter } from "./emailjs.rateLimit";
+import { sanitizeParams } from "./emailjs.sanitize";
+import type {
+  EmailParams,
+  EmailResponse,
+  NotificationEmailParams,
+  AutoReplyEmailParams,
+  ManualReplyEmailParams,
+} from "./emailjs.types";
+
+// Re-export types for convenience
+export type {
+  EmailParams,
+  EmailResponse,
+  NotificationEmailParams,
+  AutoReplyEmailParams,
+  ManualReplyEmailParams,
+};
 
 // ============================================================================
-// TYPES
+// RATE LIMITER INSTANCE
 // ============================================================================
 
-export interface EmailParams {
-  to_email: string;
-  to_name?: string;
-  from_name: string;
-  from_email: string;
-  subject: string;
-  message: string;
-  reply_to?: string;
-  [key: string]: any;
-}
-
-export interface EmailResponse {
-  success: boolean;
-  messageId?: string;
-  error?: string;
-  duration?: number;
-}
-
-// ============================================================================
-// RATE LIMITING
-// ============================================================================
-
-class RateLimiter {
-  private attempts: Map<string, number[]> = new Map();
-
-  check(key: string): boolean {
-    const now = Date.now();
-    const attempts = this.attempts.get(key) || [];
-
-    // Remove old attempts outside the window
-    const recentAttempts = attempts.filter(
-      (time) => now - time < emailJSConfig.rateLimit.windowMs
-    );
-
-    if (recentAttempts.length >= emailJSConfig.rateLimit.maxAttempts) {
-      return false;
-    }
-
-    recentAttempts.push(now);
-    this.attempts.set(key, recentAttempts);
-    return true;
-  }
-
-  reset(key: string): void {
-    this.attempts.delete(key);
-  }
-}
-
-const rateLimiter = new RateLimiter();
-
-// ============================================================================
-// INPUT SANITIZATION
-// ============================================================================
-
-function sanitizeEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
-
-function sanitizeText(text: string): string {
-  return text
-    .trim()
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "");
-}
-
-function sanitizeParams(params: EmailParams): EmailParams {
-  return {
-    ...params,
-    to_email: sanitizeEmail(params.to_email),
-    from_email: sanitizeEmail(params.from_email),
-    from_name: sanitizeText(params.from_name),
-    subject: sanitizeText(params.subject),
-    message: sanitizeText(params.message),
-    to_name: params.to_name ? sanitizeText(params.to_name) : undefined,
-    reply_to: params.reply_to ? sanitizeEmail(params.reply_to) : undefined,
-  };
-}
+const rateLimiter = new RateLimiter({
+  maxAttempts: emailJSConfig.rateLimit.maxAttempts,
+  windowMs: emailJSConfig.rateLimit.windowMs,
+});
 
 // ============================================================================
 // EMAIL SERVICE
@@ -170,14 +115,9 @@ export class EmailJSService {
   /**
    * Send notification email to admin
    */
-  static async sendNotification(params: {
-    senderName: string;
-    senderEmail: string;
-    subject: string;
-    message: string;
-    priority?: string;
-    messageId?: string;
-  }): Promise<EmailResponse> {
+  static async sendNotification(
+    params: NotificationEmailParams
+  ): Promise<EmailResponse> {
     // Rate limiting
     const rateLimitKey = `notification:${params.senderEmail}`;
     if (!rateLimiter.check(rateLimitKey)) {
@@ -215,11 +155,9 @@ export class EmailJSService {
   /**
    * Send auto-reply to message sender
    */
-  static async sendAutoReply(params: {
-    senderName: string;
-    senderEmail: string;
-    subject: string;
-  }): Promise<EmailResponse> {
+  static async sendAutoReply(
+    params: AutoReplyEmailParams
+  ): Promise<EmailResponse> {
     // Rate limiting
     const rateLimitKey = `autoreply:${params.senderEmail}`;
     if (!rateLimiter.check(rateLimitKey)) {
@@ -252,45 +190,45 @@ export class EmailJSService {
 
   /**
    * Send manual reply from admin panel
+   * Uses mailto: link to open user's email client (no template needed)
    */
-  static async sendManualReply(params: {
-    recipientName: string;
-    recipientEmail: string;
-    replyContent: string;
-    originalMessage: string;
-    originalSubject: string;
-    adminName?: string;
-  }): Promise<EmailResponse> {
-    // Rate limiting
-    const rateLimitKey = `reply:${params.recipientEmail}`;
-    if (!rateLimiter.check(rateLimitKey)) {
+  static async sendManualReply(
+    params: ManualReplyEmailParams
+  ): Promise<EmailResponse> {
+    try {
+      // Convert HTML to plain text for email body
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = params.replyContent;
+      const plainTextReply = tempDiv.textContent || tempDiv.innerText || "";
+
+      // Build email body with context
+      const emailBody = `${plainTextReply}
+
+---
+Original Message:
+From: ${params.recipientName} <${params.recipientEmail}>
+Subject: ${params.originalSubject}
+
+${params.originalMessage}`;
+
+      // Create mailto link
+      const subject = encodeURIComponent(`Re: ${params.originalSubject}`);
+      const body = encodeURIComponent(emailBody);
+      const mailtoLink = `mailto:${params.recipientEmail}?subject=${subject}&body=${body}`;
+
+      // Open email client
+      window.open(mailtoLink, "_blank");
+
+      return {
+        success: true,
+        messageId: "mailto-opened",
+      };
+    } catch (error) {
       return {
         success: false,
-        error: "Rate limit exceeded.",
+        error: (error as Error).message || "Failed to open email client",
       };
     }
-
-    // Sanitize inputs
-    const sanitized = sanitizeParams({
-      to_email: params.recipientEmail,
-      to_name: params.recipientName,
-      from_name: params.adminName || "CodePrince Team",
-      from_email: emailJSConfig.adminEmail,
-      subject: `Re: ${params.originalSubject}`,
-      message: params.replyContent,
-      reply_content: params.replyContent,
-      original_message: params.originalMessage,
-      original_subject: params.originalSubject,
-      company_name: "CodePrince",
-      reply_to: emailJSConfig.adminEmail,
-      current_year: new Date().getFullYear().toString(),
-    });
-
-    return this.sendWithRetry(
-      emailJSConfig.serviceId,
-      emailJSConfig.templates.manualReply,
-      sanitized
-    );
   }
 }
 
@@ -301,38 +239,26 @@ export class EmailJSService {
 /**
  * Send notification email
  */
-export async function sendNotificationEmail(params: {
-  senderName: string;
-  senderEmail: string;
-  subject: string;
-  message: string;
-  priority?: string;
-  messageId?: string;
-}): Promise<EmailResponse> {
+export async function sendNotificationEmail(
+  params: NotificationEmailParams
+): Promise<EmailResponse> {
   return EmailJSService.sendNotification(params);
 }
 
 /**
  * Send auto-reply email
  */
-export async function sendAutoReplyEmail(params: {
-  senderName: string;
-  senderEmail: string;
-  subject: string;
-}): Promise<EmailResponse> {
+export async function sendAutoReplyEmail(
+  params: AutoReplyEmailParams
+): Promise<EmailResponse> {
   return EmailJSService.sendAutoReply(params);
 }
 
 /**
  * Send manual reply email
  */
-export async function sendManualReplyEmail(params: {
-  recipientName: string;
-  recipientEmail: string;
-  replyContent: string;
-  originalMessage: string;
-  originalSubject: string;
-  adminName?: string;
-}): Promise<EmailResponse> {
+export async function sendManualReplyEmail(
+  params: ManualReplyEmailParams
+): Promise<EmailResponse> {
   return EmailJSService.sendManualReply(params);
 }

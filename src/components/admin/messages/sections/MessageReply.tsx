@@ -74,15 +74,16 @@ export function MessageReply({
     try {
       await onSendReply(content);
       toast({
-        title: "Reply sent successfully",
-        description: "Your reply has been sent to the sender.",
+        title: "Email client opened",
+        description:
+          "Your email client has been opened with the reply. Send it from there to complete.",
       });
-      onClose();
+      // Don't close immediately - let user decide after sending from email client
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Failed to send reply",
-        description: "Please try again or contact support.",
+        title: "Failed to open email client",
+        description: "Please try again or copy the message and send manually.",
       });
     } finally {
       setIsSending(false);
@@ -285,7 +286,7 @@ export function MessageReply({
             </Button>
             <Button onClick={handleSendReply} disabled={isSending || loading}>
               <Send className="w-4 h-4 mr-2" />
-              {isSending ? "Sending..." : "Send Reply"}
+              {isSending ? "Opening..." : "Open in Email Client"}
             </Button>
           </div>
         </div>

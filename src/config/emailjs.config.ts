@@ -47,11 +47,12 @@ export const emailJSConfig: EmailJSConfig = Object.freeze({
 
   /**
    * Template IDs for different email types
+   * Note: manualReply uses mailto: link (no template needed for free tier)
    */
   templates: Object.freeze({
     notification: import.meta.env.VITE_EMAILJS_TEMPLATE_NOTIFICATION || "",
     autoReply: import.meta.env.VITE_EMAILJS_TEMPLATE_AUTO_REPLY || "",
-    manualReply: import.meta.env.VITE_EMAILJS_TEMPLATE_MANUAL_REPLY || "",
+    manualReply: "", // Not used - manual replies use mailto: link
   }),
 
   /**
@@ -104,11 +105,8 @@ export function validateEmailJSConfig(): ValidationResult {
     warnings.push("VITE_EMAILJS_TEMPLATE_AUTO_REPLY not configured (optional)");
   }
 
-  if (!emailJSConfig.templates.manualReply) {
-    warnings.push(
-      "VITE_EMAILJS_TEMPLATE_MANUAL_REPLY not configured (optional)"
-    );
-  }
+  // Manual reply doesn't need a template (uses mailto:)
+  // No warning needed
 
   // Validate email format
   if (emailJSConfig.adminEmail && !isValidEmail(emailJSConfig.adminEmail)) {

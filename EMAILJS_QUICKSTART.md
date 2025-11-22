@@ -23,15 +23,16 @@ Your portfolio now uses **EmailJS** instead of Resend for all email functionalit
 - Choose Gmail → Connect Account
 - Copy **Service ID**
 
-### 3. Create 3 Templates
+### 3. Create 2 Templates (Free Tier)
 
-See `docs/EMAILJS_SETUP_GUIDE.md` for detailed template HTML.
+See `EMAILJS_TEMPLATES.md` for detailed template HTML.
 
-**Quick Template IDs**:
+**Required Templates**:
 
-- `template_notification` - New message notification (to you)
-- `template_autoreply` - Auto-reply (to sender)
-- `template_reply` - Manual reply (from admin)
+- `template_notification` - New message notification (to you) ✅ REQUIRED
+- `template_autoreply` - Auto-reply (to sender) ⚠️ OPTIONAL
+
+**Manual Reply**: Uses `mailto:` link (no template needed!) 🎉
 
 ### 4. Get API Keys
 
@@ -41,12 +42,17 @@ See `docs/EMAILJS_SETUP_GUIDE.md` for detailed template HTML.
 ### 5. Update .env File
 
 ```env
+# Required
 VITE_EMAILJS_PUBLIC_KEY="your_public_key_here"
 VITE_EMAILJS_SERVICE_ID="service_abc123"
 VITE_EMAILJS_TEMPLATE_NOTIFICATION="template_notification"
-VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"
-VITE_EMAILJS_TEMPLATE_MANUAL_REPLY="template_reply"
 VITE_ADMIN_EMAIL="contact@codeprince.qzz.io"
+
+# Optional (but recommended)
+VITE_EMAILJS_TEMPLATE_AUTO_REPLY="template_autoreply"
+
+# NOT NEEDED - Manual reply uses mailto:
+# VITE_EMAILJS_TEMPLATE_MANUAL_REPLY="template_reply"
 ```
 
 ### 6. Restart Dev Server

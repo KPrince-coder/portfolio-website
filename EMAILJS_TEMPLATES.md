@@ -99,47 +99,23 @@
 
 ---
 
-## Template 3: Manual Reply
+## ~~Template 3: Manual Reply~~ (NOT NEEDED - Free Tier Solution!)
 
-**Template ID**: `template_reply`  
-**Subject**: `Re: {{original_subject}}`
+**🎉 Good news!** Manual replies don't need a template on the free tier.
 
-### HTML Content (Copy & Paste)
+Instead, when you click "Reply" in the admin panel:
 
-```html
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#18182b;color:#ffffff;padding:40px 20px;">
-  
-  <div style="background:linear-gradient(135deg,#00D4FF 0%,#9D4EDD 50%,#FF6B6B 100%);padding:20px;border-radius:12px;margin-bottom:30px;">
-    <p style="margin:0;color:#ffffff;font-size:14px;">Reply from CodePrince</p>
-  </div>
+1. Write your reply in the rich text editor
+2. Click "Open in Email Client"
+3. Your default email app opens with the reply pre-filled
+4. Send from your email client
 
-  <div style="background:#1f1f33;border:1px solid #2d2d44;border-radius:8px;padding:30px;margin-bottom:20px;">
-    <p style="color:#e2e8f0;line-height:1.6;margin:0 0 20px 0;">Hi <strong style="color:#00D4FF;">{{to_name}}</strong>,</p>
+**Benefits:**
 
-    <div style="color:#cbd5e1;line-height:1.6;margin:20px 0;">
-      {{reply_content}}
-    </div>
-  </div>
-
-  <div style="background:rgba(157,78,221,0.1);border-left:4px solid #9D4EDD;padding:20px;border-radius:6px;margin:20px 0;">
-    <p style="color:#9D4EDD;font-size:13px;font-weight:bold;margin:0 0 10px 0;">Your original message:</p>
-    <p style="color:#94a3b8;font-size:14px;font-style:italic;margin:0;white-space:pre-wrap;line-height:1.5;">{{original_message}}</p>
-  </div>
-
-  <div style="background:#1f1f33;border:1px solid #2d2d44;border-radius:8px;padding:25px;margin:30px 0 20px 0;">
-    <p style="color:#cbd5e1;margin:0 0 5px 0;">Best regards,</p>
-    <p style="margin:0 0 5px 0;"><strong style="color:#00D4FF;font-size:18px;">{{from_name}}</strong></p>
-    <p style="color:#9D4EDD;margin:0 0 10px 0;">{{company_name}}</p>
-    <p style="margin:0;">
-      <a href="mailto:contact@codeprince.qzz.io" style="color:#00D4FF;text-decoration:none;font-size:14px;">contact@codeprince.qzz.io</a>
-    </p>
-  </div>
-
-  <div style="text-align:center;padding-top:30px;border-top:1px solid #2d2d44;">
-    <p style="color:#64748b;font-size:12px;margin:0;">© {{current_year}} CodePrince. All rights reserved.</p>
-  </div>
-</div>
-```
+- ✅ No third template needed (free tier only allows 2)
+- ✅ Uses your actual email (better deliverability)
+- ✅ You can edit before sending
+- ✅ Works with Gmail, Outlook, etc.
 
 ---
 

@@ -62,8 +62,8 @@ export function MessagesManagement({
           if (profile?.full_name) {
             setAdminName(profile.full_name);
           } else {
-            // Fallback to email username or company name
-            setAdminName(user.email?.split("@")[0] || emailConfig.companyName);
+            // Fallback to email username or default
+            setAdminName(user.email?.split("@")[0] || "CodePrince");
           }
         }
       } catch (error) {
