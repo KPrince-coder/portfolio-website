@@ -22,16 +22,16 @@ const ProjectsGrid: React.FC<ProjectsGridProps> = ({
   const groupedProjects = groupProjectsByCategory(projects);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-12">
       {Object.entries(groupedProjects).map(([category, categoryProjects]) => (
         <div key={category}>
-          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+          <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
             <span className="text-neural">{category}</span>
-            <span className="text-sm text-muted-foreground font-normal">
+            <span className="text-xs sm:text-sm text-muted-foreground font-normal">
               ({categoryProjects.length})
             </span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {categoryProjects.map((project) => (
               <ProjectCard
                 key={project.id}

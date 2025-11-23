@@ -12,14 +12,14 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onCategoryChange,
 }) => {
   return (
-    <div className="flex flex-wrap gap-3 justify-center mb-12">
+    <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-8 sm:mb-12">
       <Button
         variant={activeCategory === "all" ? "default" : "outline"}
         onClick={() => onCategoryChange("all")}
         className={
           activeCategory === "all"
-            ? "neural-glow"
-            : "hover:border-neural/50 transition-colors"
+            ? "neural-glow min-h-[44px]"
+            : "hover:border-neural/50 transition-colors min-h-[44px]"
         }
       >
         All Projects
@@ -31,8 +31,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
           onClick={() => onCategoryChange(category.id)}
           className={
             activeCategory === category.id
-              ? "neural-glow"
-              : "hover:border-neural/50 transition-colors"
+              ? "neural-glow min-h-[44px]"
+              : "hover:border-neural/50 transition-colors min-h-[44px]"
           }
         >
           {category.label}

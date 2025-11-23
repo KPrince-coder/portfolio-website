@@ -58,7 +58,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
       >
         {/* Hero Image Section */}
         {project.image_url && (
-          <div className="relative h-64 md:h-80 overflow-hidden bg-gradient-to-br from-neural/20 to-accent/20">
+          <div className="relative h-48 sm:h-56 md:h-64 lg:h-80 overflow-hidden bg-gradient-to-br from-neural/20 to-accent/20">
             <img
               src={project.image_url}
               alt={`${project.title} project screenshot`}
@@ -66,16 +66,19 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               loading="lazy"
             />
             {project.is_featured && (
-              <div className="absolute top-4 right-4 bg-warning/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                <Star className="w-4 h-4 fill-current" aria-hidden="true" />
-                <span className="text-sm font-medium">Featured</span>
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-warning/90 backdrop-blur-sm px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-1.5 shadow-lg">
+                <Star
+                  className="w-3 h-3 sm:w-4 sm:h-4 fill-current"
+                  aria-hidden="true"
+                />
+                <span className="text-xs sm:text-sm font-medium">Featured</span>
               </div>
             )}
           </div>
         )}
 
-        <ScrollArea className="max-h-[calc(90vh-16rem)] md:max-h-[calc(90vh-20rem)]">
-          <div className="p-6 md:p-8">
+        <ScrollArea className="max-h-[calc(90vh-12rem)] sm:max-h-[calc(90vh-14rem)] md:max-h-[calc(90vh-16rem)] lg:max-h-[calc(90vh-20rem)]">
+          <div className="p-4 sm:p-6 md:p-8">
             {/* Header Section */}
             <DialogHeader className="space-y-4">
               <div className="flex flex-wrap items-start gap-3">
@@ -108,12 +111,12 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </DialogHeader>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row fm:mt-6">
               {project.demo_url && (
                 <Button
                   variant="default"
                   size="lg"
-                  className="neural-glow"
+                  className="neural-glow w-auto"
                   asChild
                 >
                   <a
@@ -122,20 +125,26 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                     rel="noopener noreferrer"
                     aria-label={`View live demo of ${project.title}`}
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" />
+                    <ExternalLink
+                      className="w-4 h-4 mr-2 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     View Demo
                   </a>
                 </Button>
               )}
               {project.github_url && (
-                <Button variant="outline" size="lg" asChild>
+                <Button variant="outline" size="lg" className="w-auto" asChild>
                   <a
                     href={project.github_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`View source code of ${project.title} on GitHub`}
                   >
-                    <Github className="w-4 h-4 mr-2" aria-hidden="true" />
+                    <Github
+                      className="w-4 h-4 mr-2 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     Source Code
                   </a>
                 </Button>

@@ -7,6 +7,13 @@ import ProjectDetailModal from "./ProjectDetailModal";
 import { useProjectsData } from "./hooks/useProjectsData";
 import { splitTitle } from "./utils";
 import type { ProjectWithCategory } from "./types";
+import {
+  INITIAL_DISPLAY_COUNT,
+  DEFAULT_CATEGORY,
+  DEFAULT_TITLE,
+  DEFAULT_DESCRIPTION,
+  MODAL_CLOSE_DELAY,
+} from "./constants";
 
 /**
  * Projects Component
@@ -14,13 +21,11 @@ import type { ProjectWithCategory } from "./types";
  */
 const Projects: React.FC = () => {
   const { data, loading } = useProjectsData();
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState(DEFAULT_CATEGORY);
   const [selectedProject, setSelectedProject] =
     useState<ProjectWithCategory | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
-
-  const INITIAL_DISPLAY_COUNT = 6;
 
   const handleProjectClick = (project: ProjectWithCategory) => {
     setSelectedProject(project);
@@ -31,24 +36,23 @@ const Projects: React.FC = () => {
     setIsModalOpen(open);
     if (!open) {
       // Delay clearing selected project for smooth animation
-      setTimeout(() => setSelectedProject(null), 200);
+      setTimeout(() => setSelectedProject(null), MODAL_CLOSE_DELAY);
     }
   };
 
   // Split title into main and highlight parts
-  const fullTitle = data.profileData?.projects_title || "Featured Projects";
+  const fullTitle = data.profileData?.projects_title || DEFAULT_TITLE;
   const { title, titleHighlight } = useMemo(
     () => splitTitle(fullTitle),
     [fullTitle]
   );
 
   const description =
-    data.profileData?.projects_description ||
-    "A showcase of my work spanning web applications, AI/ML systems, and data engineering solutions.";
+    data.profileData?.projects_description || DEFAULT_DESCRIPTION;
 
   // Filter projects based on active category
   const filteredProjects = useMemo(() => {
-    if (activeCategory === "all") {
+    if (activeCategory === DEFAULT_CATEGORY) {
       return data.projects;
     }
     return data.projects.filter(
@@ -87,9 +91,9 @@ const Projects: React.FC = () => {
   return (
     <section
       id="projects"
-      className="py-20 bg-gradient-to-b from-background to-background/50"
+      className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-background to-background/50"
     >
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           title={title}
           titleHighlight={titleHighlight}
@@ -103,11 +107,11 @@ const Projects: React.FC = () => {
         />
 
         {filteredProjects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="text-center space-y-4 max-w-md">
-              <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+            <div className="text-center space-y-3 sm:space-y-4 max-w-md">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
                 <svg
-                  className="w-8 h-8 text-accent/50"
+                  className="w-6 h-6 sm:w-8 sm:h-8 text-accent/50"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -120,14 +124,16 @@ const Projects: React.FC = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold">No Projects Found</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg sm:text-xl font-semibold">
+                No Projects Found
+              </h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 There are no projects in this category yet. Check back later or
                 explore other categories!
               </p>
               <button
-                onClick={() => setActiveCategory("all")}
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-secondary hover:text-secondary/80 transition-colors"
+                onClick={() => setActiveCategory(DEFAULT_CATEGORY)}
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-secondary hover:text-secondary/80 transition-colors min-h-[44px]"
               >
                 View All Projects
               </button>
@@ -141,15 +147,15 @@ const Projects: React.FC = () => {
             />
 
             {hasMore && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 sm:mt-8 px-4">
                 <button
                   onClick={() => setShowAll(!showAll)}
-                  className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all duration-200 neural-glow"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 text-secondary transition-all duration-200 neural-glow min-h-[44px]"
                 >
                   {showAll ? (
                     <>
                       <svg
-                        className="w-4 h-4 mr-2"
+                        className="w-4 h-4 mr-2 flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -166,7 +172,7 @@ const Projects: React.FC = () => {
                   ) : (
                     <>
                       <svg
-                        className="w-4 h-4 mr-2"
+                        className="w-4 h-4 mr-2 flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -178,8 +184,10 @@ const Projects: React.FC = () => {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                      View More (
-                      {filteredProjects.length - INITIAL_DISPLAY_COUNT} more)
+                      <span className="truncate">
+                        View More (
+                        {filteredProjects.length - INITIAL_DISPLAY_COUNT} more)
+                      </span>
                     </>
                   )}
                 </button>

@@ -39,14 +39,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     >
       {/* Project Image */}
       {project.image_url && (
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-40 sm:h-48 md:h-56 overflow-hidden">
           <img
             src={project.image_url}
             alt={project.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            loading="lazy"
           />
           {project.is_featured && (
-            <div className="absolute top-4 right-4 bg-warning/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-warning/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-1 rounded-full flex items-center gap-1">
               <Star className="w-3 h-3 fill-current" />
               <span className="text-xs font-medium">Featured</span>
             </div>
@@ -54,32 +55,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       )}
 
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         {/* Category Badge */}
         <Badge
           variant="outline"
-          className={`mb-3 ${project.category_color || "text-secondary"}`}
+          className={`mb-2 sm:mb-3 text-xs sm:text-sm ${
+            project.category_color || "text-secondary"
+          }`}
         >
           {project.category_label}
         </Badge>
 
         {/* Title */}
-        <h3 className="text-xl font-bold mb-2 group-hover:text-neural transition-colors">
+        <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:text-neural transition-colors">
           {project.title}
         </h3>
 
         {/* Description */}
-        <p className="text-muted-foreground mb-4 line-clamp-2">
+        <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
           {project.description}
         </p>
 
         {/* Status Badge */}
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <Badge
             variant="outline"
-            className={
+            className={`text-xs ${
               statusColors[project.status as keyof typeof statusColors]
-            }
+            }`}
           >
             {project.status.replace("-", " ")}
           </Badge>
@@ -107,7 +110,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Button
               variant="default"
               size="sm"
-              className="flex-1 neural-glow"
+              className="flex-1 neural-glow min-h-[44px]"
               asChild
             >
               <a
@@ -115,20 +118,25 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Demo
+                <ExternalLink className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">Demo</span>
               </a>
             </Button>
           )}
           {project.github_url && (
-            <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 min-h-[44px]"
+              asChild
+            >
               <a
                 href={project.github_url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Github className="w-4 h-4 mr-2" />
-                Code
+                <Github className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">Code</span>
               </a>
             </Button>
           )}
