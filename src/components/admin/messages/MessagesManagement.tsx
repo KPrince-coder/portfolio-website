@@ -12,7 +12,6 @@ import { useMessages } from "./hooks/useMessages";
 import { MessagesList } from "./sections/MessagesList";
 import { MessageReply } from "./sections/MessageReply";
 import { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
-import { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 import { ContactSettingsSection } from "./sections/ContactSettingsSection";
 import { sendManualReplyEmail } from "@/services/emailjs.service";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,9 +186,6 @@ export function MessagesManagement({
       {activeTab === "stats" && (
         <MessageStatsComponent stats={undefined as any} />
       )}
-
-      {/* Templates Section */}
-      {activeTab === "templates" && <EmailTemplatesSection />}
 
       {/* Contact Settings Section */}
       {activeTab === "contact" && <ContactSettingsSection />}

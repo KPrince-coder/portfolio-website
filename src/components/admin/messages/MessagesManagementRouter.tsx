@@ -29,7 +29,6 @@ export function MessagesManagementRouter({
   const getInternalTab = (adminTab: string): string => {
     if (adminTab === "messages") return "messages";
     if (adminTab === "messages-stats") return "stats";
-    if (adminTab === "messages-templates") return "templates";
     if (adminTab === "messages-contact") return "contact";
     return "messages";
   };
@@ -41,7 +40,6 @@ export function MessagesManagementRouter({
     const adminTabMap: Record<string, string> = {
       messages: "messages",
       stats: "messages-stats",
-      templates: "messages-templates",
       contact: "messages-contact",
     };
 

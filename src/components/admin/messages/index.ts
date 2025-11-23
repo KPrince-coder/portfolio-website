@@ -55,7 +55,6 @@ export type {
 export { MessagesList } from "./sections/MessagesList";
 export { MessageReply } from "./sections/MessageReply";
 export { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
-export { EmailTemplatesSection } from "./sections/EmailTemplatesSection";
 export { MessagesManagement } from "./MessagesManagement";
 export { MessagesManagementRouter } from "./MessagesManagementRouter";
 
@@ -65,4 +64,3 @@ export { MessagesManagementRouter } from "./MessagesManagementRouter";
 
 export { useMessages } from "./hooks/useMessages";
 export { useMessageStats } from "./hooks/useMessageStats";
-export { useEmailTemplates } from "./hooks/useEmailTemplates";
