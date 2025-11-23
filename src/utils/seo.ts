@@ -1,18 +1,14 @@
 /**
- * SEO Utilities
+ * SEO Meta Tag Utilities
  *
  * Dynamic meta tag management for SEO and social sharing
+ * Handles DOM manipulation for meta tags and resource hints
+ *
+ * @module utils/seo
  */
 
 import { SEO_CONFIG } from "@/config/seo.config";
-
-interface MetaTagConfig {
-  title?: string;
-  description?: string;
-  image?: string;
-  url?: string;
-  type?: string;
-}
+import type { MetaTagConfig, MetaTagAttribute } from "./seo.types";
 
 /**
  * Get OG Image URL from Supabase Edge Function
