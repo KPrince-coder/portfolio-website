@@ -31,8 +31,17 @@ const Skills: React.FC = () => {
     if (activeCategory === "all") {
       return data.skills;
     }
-    return data.skills.filter((skill) => skill.category_id === activeCategory);
-  }, [data.skills, activeCategory]);
+    // Find the category name for the selected ID
+    const selectedCategory = data.categories.find(
+      (cat) => cat.id === activeCategory
+    );
+    if (!selectedCategory) return data.skills;
+
+    // Filter by category name (since view doesn't include category_id)
+    return data.skills.filter(
+      (skill) => skill.category_name === selectedCategory.name
+    );
+  }, [data.skills, activeCategory, data.categories]);
 
   if (loading) {
     return (
