@@ -1,0 +1,214 @@
+/**
+ * CodePrince Logo Component
+ *
+ * A modern, professional logo featuring the "CP" initials
+ * with gradient styling and multiple size variants
+ *
+ * Features:
+ * - Multiple size variants (sm, md, lg, xl)
+ * - Three display modes (default, icon-only, text-only)
+ * - Memoized for performance
+ * - Accessible with ARIA labels
+ * - Unique gradient IDs to prevent conflicts
+ */
+
+import React, { useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+export interface CodePrinceLogoProps {
+  size?: "sm" | "md" | "lg" | "xl" | "responsive";
+  className?: string;
+  variant?: "default" | "icon-only" | "text-only";
+  interactive?: boolean;
+  onClick?: () => void;
+}
+
+const sizeMap = {
+  sm: { width: 32, height: 32, fontSize: "text-sm", svgClass: "w-8 h-8" },
+  md: { width: 48, height: 48, fontSize: "text-base", svgClass: "w-12 h-12" },
+  lg: { width: 64, height: 64, fontSize: "text-xl", svgClass: "w-16 h-16" },
+  xl: { width: 96, height: 96, fontSize: "text-3xl", svgClass: "w-24 h-24" },
+  responsive: {
+    width: 48,
+    height: 48,
+    fontSize: "text-sm sm:text-base md:text-lg lg:text-xl",
+    svgClass: "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16",
+  },
+} as const;
+
+export const CodePrinceLogo = React.memo<CodePrinceLogoProps>(
+  function CodePrinceLogo({
+    size = "md",
+    className = "",
+    variant = "default",
+    interactive = false,
+    onClick,
+  }) {
+    // Enforce minimum size for interactive elements (accessibility)
+    const effectiveSize = interactive && size === "sm" ? "md" : size;
+    const { width, height, fontSize, svgClass } = sizeMap[effectiveSize];
+
+    // Generate unique gradient IDs to prevent conflicts when multiple logos exist
+    const gradientId = useMemo(
+      () => `cpGradient-${Math.random().toString(36).substring(2, 11)}`,
+      []
+    );
+    const textGradientId = useMemo(
+      () => `cpTextGradient-${Math.random().toString(36).substring(2, 11)}`,
+      []
+    );
+
+    // Text-only variant
+    if (variant === "text-only") {
+      return (
+        <span
+          className={cn(
+            "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
+            "whitespace-nowrap", // Prevent text wrapping
+            fontSize,
+            interactive && "cursor-pointer transition-opacity hover:opacity-80",
+            className
+          )}
+          onClick={onClick}
+          role={interactive ? "button" : undefined}
+          tabIndex={interactive ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (
+              interactive &&
+              onClick &&
+              (e.key === "Enter" || e.key === " ")
+            ) {
+              e.preventDefault();
+              onClick();
+            }
+          }}
+        >
+          CodePrince
+        </span>
+      );
+    }
+
+    // Memoized SVG icon
+    const IconSVG = useMemo(
+      () => (
+        <svg
+          width={width}
+          height={height}
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className={cn(
+            svgClass, // Responsive Tailwind classes
+            variant === "icon-only" ? className : undefined
+          )}
+          aria-label="CodePrince Logo"
+          role="img"
+        >
+          <title>CodePrince</title>
+
+          {/* Gradient Definitions - Neural Network Theme (matches bg-gradient-neural) */}
+          <defs>
+            {/* Main background gradient - 45deg angle matching CSS gradient-neural */}
+            <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#00D4FF" />
+              <stop offset="50%" stopColor="#9D4EDD" />
+              <stop offset="100%" stopColor="#FF6B6B" />
+            </linearGradient>
+            {/* Text gradient with cyan glow */}
+            <linearGradient
+              id={textGradientId}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="50%" stopColor="#E0F7FF" />
+              <stop offset="100%" stopColor="#00D4FF" />
+            </linearGradient>
+          </defs>
+
+          {/* Outer Circle */}
+          <circle cx="50" cy="50" r="48" fill={`url(#${gradientId})`} />
+
+          {/* Inner Shadow Circle */}
+          <circle cx="50" cy="50" r="44" fill="rgba(0,0,0,0.1)" />
+
+          {/* "C" Letter */}
+          <path
+            d="M 35 30 Q 25 30 25 40 L 25 60 Q 25 70 35 70 L 45 70 L 45 62 L 35 62 Q 33 62 33 60 L 33 40 Q 33 38 35 38 L 45 38 L 45 30 Z"
+            fill={`url(#${textGradientId})`}
+          />
+
+          {/* "P" Letter */}
+          <path
+            d="M 55 30 L 55 70 L 63 70 L 63 55 L 70 55 Q 75 55 75 50 L 75 35 Q 75 30 70 30 Z M 63 38 L 70 38 Q 71 38 71 40 L 71 48 Q 71 49 70 49 L 63 49 Z"
+            fill={`url(#${textGradientId})`}
+          />
+
+          {/* Accent Dot */}
+          <circle cx="50" cy="85" r="2" fill="#FFFFFF" opacity="0.6" />
+        </svg>
+      ),
+      [width, height, svgClass, gradientId, textGradientId, variant, className]
+    );
+
+    // Icon-only variant
+    if (variant === "icon-only") {
+      return interactive ? (
+        <button
+          onClick={onClick}
+          className={cn(
+            "transition-transform hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded",
+            className
+          )}
+          aria-label="CodePrince Logo"
+        >
+          {IconSVG}
+        </button>
+      ) : (
+        IconSVG
+      );
+    }
+
+    // Default variant with icon and text
+    const content = (
+      <>
+        {IconSVG}
+        <span
+          className={cn(
+            "font-space font-bold bg-gradient-neural bg-clip-text text-transparent",
+            "whitespace-nowrap", // Prevent text wrapping
+            fontSize
+          )}
+          aria-hidden="true"
+        >
+          CodePrince
+        </span>
+      </>
+    );
+
+    return interactive ? (
+      <button
+        onClick={onClick}
+        className={cn(
+          "flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded",
+          className
+        )}
+        aria-label="CodePrince Logo"
+      >
+        {content}
+      </button>
+    ) : (
+      <div
+        className={cn("flex items-center gap-2 sm:gap-3", className)}
+        role="img"
+        aria-label="CodePrince Logo"
+      >
+        {content}
+      </div>
+    );
+  }
+);
+
+export default CodePrinceLogo;
