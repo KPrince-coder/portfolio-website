@@ -43,7 +43,7 @@ npx supabase migration new projects
 npx supabase db push
 
 # Regenerate types
-npx supabase gen types typescript --project-id jcsghggucepqzmonlpeg > src/integrations/supabase/types.ts
+npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/integrations/supabase/types.ts
 ```
 
 ## 🎯 Performance Optimizations
