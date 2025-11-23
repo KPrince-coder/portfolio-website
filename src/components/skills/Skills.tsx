@@ -6,6 +6,12 @@ import LearningGoalsCard from "./LearningGoalsCard";
 import SkillsSkeleton from "./SkillsSkeleton";
 import { useSkillsData } from "./hooks/useSkillsData";
 import { splitTitle } from "./utils";
+import {
+  INITIAL_DISPLAY_COUNT,
+  DEFAULT_CATEGORY,
+  DEFAULT_TITLE,
+  DEFAULT_DESCRIPTION,
+} from "./constants";
 
 /**
  * Skills Component
@@ -13,25 +19,22 @@ import { splitTitle } from "./utils";
  */
 const Skills: React.FC = () => {
   const { data, loading } = useSkillsData();
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState(DEFAULT_CATEGORY);
   const [showAll, setShowAll] = useState(false);
 
-  const INITIAL_DISPLAY_COUNT = 6;
-
   // Split title into main and highlight parts (must be before conditional return)
-  const fullTitle = data.profileData?.skills_title || "Technical Expertise";
+  const fullTitle = data.profileData?.skills_title || DEFAULT_TITLE;
   const { title, titleHighlight } = useMemo(
     () => splitTitle(fullTitle),
     [fullTitle]
   );
 
   const description =
-    data.profileData?.skills_description ||
-    "A comprehensive toolkit for building intelligent systems, from data pipelines to user interfaces.";
+    data.profileData?.skills_description || DEFAULT_DESCRIPTION;
 
   // Filter skills based on active category
   const filteredSkills = useMemo(() => {
-    if (activeCategory === "all") {
+    if (activeCategory === DEFAULT_CATEGORY) {
       return data.skills;
     }
     // Find the category name for the selected ID
@@ -116,7 +119,7 @@ const Skills: React.FC = () => {
                 explore other categories!
               </p>
               <button
-                onClick={() => setActiveCategory("all")}
+                onClick={() => setActiveCategory(DEFAULT_CATEGORY)}
                 className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-secondary hover:text-secondary/80 transition-colors"
               >
                 View All Skills
