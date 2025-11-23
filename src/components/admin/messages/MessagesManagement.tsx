@@ -2,13 +2,16 @@
  * MessagesManagement Component
  *
  * Main container for messages management with tab navigation
+ * Responsive design with mobile-first approach
  *
  * @module messages/MessagesManagement
  */
 
 import { useState, useCallback, useEffect } from "react";
+import { Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMessages } from "./hooks/useMessages";
+import { useMessageStats } from "./hooks/useMessageStats";
 import { MessagesList } from "./sections/MessagesList";
 import { MessageReply } from "./sections/MessageReply";
 import { MessageStats as MessageStatsComponent } from "./sections/MessageStats";
@@ -23,7 +26,6 @@ import { DEFAULT_ADMIN_NAME } from "./constants";
 
 interface MessagesManagementProps {
   activeTab?: string;
-  onTabChange?: (tab: string) => void;
 }
 
 // ============================================================================
@@ -32,14 +34,17 @@ interface MessagesManagementProps {
 
 export function MessagesManagement({
   activeTab = "messages",
-  onTabChange,
 }: MessagesManagementProps) {
   const { toast } = useToast();
-  const { messages, updateMessage } = useMessages();
+  const { messages, loading, updateMessage } = useMessages();
+  const { stats, loading: statsLoading } = useMessageStats({
+    autoLoad: activeTab === "stats",
+  });
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | null>(
     null
   );
   const [adminName, setAdminName] = useState<string>("Support Team");
+  const [adminLoading, setAdminLoading] = useState(true);
 
   // ============================================================================
   // FETCH ADMIN NAME
@@ -69,6 +74,8 @@ export function MessagesManagement({
       } catch (error) {
         console.error("Failed to fetch admin name:", error);
         // Keep default "Support Team"
+      } finally {
+        setAdminLoading(false);
       }
     };
 
@@ -175,16 +182,56 @@ export function MessagesManagement({
 
   const replyingToMessage = messages.find((m) => m.id === replyingToMessageId);
 
+  // Loading state
+  if (loading || adminLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] sm:min-h-[500px]">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Messages Section */}
       {activeTab === "messages" && (
-        <MessagesList onReplyToMessage={handleReplyToMessage} />
+        <>
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] text-center p-6">
+              <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                No messages yet
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                When visitors submit the contact form, their messages will
+                appear here.
+              </p>
+            </div>
+          ) : (
+            <MessagesList onReplyToMessage={handleReplyToMessage} />
+          )}
+        </>
       )}
 
       {/* Statistics Section */}
       {activeTab === "stats" && (
-        <MessageStatsComponent stats={undefined as any} />
+        <>
+          {statsLoading ? (
+            <div className="flex items-center justify-center min-h-[400px] sm:min-h-[500px]">
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+                <p className="text-sm text-muted-foreground">
+                  Loading statistics...
+                </p>
+              </div>
+            </div>
+          ) : (
+            <MessageStatsComponent stats={stats} />
+          )}
+        </>
       )}
 
       {/* Contact Settings Section */}

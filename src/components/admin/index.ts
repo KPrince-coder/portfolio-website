@@ -15,6 +15,5 @@ export { SettingsManagement } from "./settings";
 export { BrandManagement } from "./brand";
 export { default as PlaceholderSection } from "./PlaceholderSection";
 export { default as ProjectStats } from "./ProjectStats";
-export { default as EmailTemplateForm } from "./EmailTemplateForm";
 export { default as MessageStats } from "./MessageStats";
 export * from "./types";
