@@ -28,3 +28,5 @@ supabase/.temp/
 supabase/config.toml
 
 links.txt
+
+.kiro*
