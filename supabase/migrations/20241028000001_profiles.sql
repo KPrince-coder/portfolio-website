@@ -202,8 +202,8 @@ CREATE POLICY "Authenticated users can delete resumes"
 -- =====================================================
 
 -- After uploading files, the URLs will be in this format:
--- Avatar URL: https://jcsghggucepqzmonlpeg.supabase.co/storage/v1/object/public/avatars/filename.jpg
--- Resume URL: https://jcsghggucepqzmonlpeg.supabase.co/storage/v1/object/public/resumes/filename.pdf
+-- Avatar URL: https://YOUR_PROJECT_ID.supabase.co/storage/v1/object/public/avatars/filename.jpg
+-- Resume URL: https://YOUR_PROJECT_ID.supabase.co/storage/v1/object/public/resumes/filename.pdf
 
 -- To upload files programmatically:
 -- const { data, error } = await supabase.storage

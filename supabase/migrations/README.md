@@ -119,7 +119,7 @@ We're using a **modular migration approach** where each major feature has its ow
 1. **Link to your project:**
 
    ```bash
-   supabase link --project-ref jcsghggucepqzmonlpeg
+   supabase link --project-ref YOUR_PROJECT_ID
    ```
 
 2. **Apply all migrations:**
@@ -138,7 +138,7 @@ We're using a **modular migration approach** where each major feature has its ow
 
 If you prefer to apply migrations manually through the Supabase Dashboard:
 
-1. Go to <https://supabase.com/dashboard/project/jcsghggucepqzmonlpeg>
+1. Go to <https://supabase.com/dashboard/project/YOUR_PROJECT_ID>
 2. Navigate to SQL Editor
 3. Copy the contents of the migration file
 4. Execute the SQL
@@ -212,12 +212,12 @@ DROP FUNCTION IF EXISTS public.update_updated_at_column CASCADE;
 
 ## Old Migrations
 
-The `migrations_old` directory contains migrations from the previous Supabase project (kmsalrouzjnwejevtmdf). These are kept for reference but are not applied to the new database.
+The `migrations_old` directory contains migrations from the previous Supabase project. These are kept for reference but are not applied to the new database.
 
 ## Project Configuration
 
-- **Project ID:** jcsghggucepqzmonlpeg
-- **Project URL:** <https://jcsghggucepqzmonlpeg.supabase.co>
+- **Project ID:** YOUR_PROJECT_ID
+- **Project URL:** <https://YOUR_PROJECT_ID.supabase.co>
 - **Region:** Configured in Supabase Dashboard
 
 ## Verifying Migrations

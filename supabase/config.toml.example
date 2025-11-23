@@ -1,0 +1,7 @@
+# Supabase Configuration Example
+# Copy this file to config.toml and replace YOUR_PROJECT_ID with your actual project ID
+
+project_id = "YOUR_PROJECT_ID"
+
+[functions.og-image]
+verify_jwt = false
