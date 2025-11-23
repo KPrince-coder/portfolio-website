@@ -14,6 +14,9 @@ import { splitTitle } from "./utils";
 const Skills: React.FC = () => {
   const { data, loading } = useSkillsData();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [showAll, setShowAll] = useState(false);
+
+  const INITIAL_DISPLAY_COUNT = 6;
 
   // Split title into main and highlight parts (must be before conditional return)
   const fullTitle = data.profileData?.skills_title || "Technical Expertise";
@@ -42,6 +45,21 @@ const Skills: React.FC = () => {
       (skill) => skill.category_name === selectedCategory.name
     );
   }, [data.skills, activeCategory, data.categories]);
+
+  // Display skills (limited or all)
+  const displayedSkills = useMemo(() => {
+    if (showAll || filteredSkills.length <= INITIAL_DISPLAY_COUNT) {
+      return filteredSkills;
+    }
+    return filteredSkills.slice(0, INITIAL_DISPLAY_COUNT);
+  }, [filteredSkills, showAll, INITIAL_DISPLAY_COUNT]);
+
+  const hasMore = filteredSkills.length > INITIAL_DISPLAY_COUNT;
+
+  // Reset showAll when category changes
+  React.useEffect(() => {
+    setShowAll(false);
+  }, [activeCategory]);
 
   if (loading) {
     return (
@@ -106,7 +124,55 @@ const Skills: React.FC = () => {
             </div>
           </div>
         ) : (
-          <SkillsGrid skills={filteredSkills} />
+          <>
+            <SkillsGrid skills={displayedSkills} />
+
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 text-secondary transition-all duration-200 neural-glow"
+                >
+                  {showAll ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      View More ({filteredSkills.length - INITIAL_DISPLAY_COUNT}{" "}
+                      more)
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         <LearningGoalsCard goals={data.learningGoals} />
