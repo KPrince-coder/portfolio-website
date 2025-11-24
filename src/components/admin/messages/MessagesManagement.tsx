@@ -58,11 +58,15 @@ export function MessagesManagement({
         } = await supabase.auth.getUser();
         if (user) {
           // Try to get name from user profile
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from("profiles")
             .select("full_name")
             .eq("user_id", user.id)
-            .single();
+            .maybeSingle();
+
+          if (profileError) {
+            console.warn("Failed to fetch profile:", profileError);
+          }
 
           if (profile?.full_name) {
             setAdminName(profile.full_name);
@@ -185,27 +189,29 @@ export function MessagesManagement({
   // Loading state
   if (loading || adminLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] sm:min-h-[500px]">
-        <div className="text-center space-y-4">
+      <div className="flex items-center justify-center min-h-[25rem] sm:min-h-[31.25rem]">
+        <div className="text-center space-y-3 sm:space-y-4">
           <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Loading messages...</p>
+          <p className="text-xs sm:text-sm text-muted-foreground px-4">
+            Loading messages...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 p-4 sm:p-5 md:p-6 lg:p-8">
       {/* Messages Section */}
       {activeTab === "messages" && (
         <>
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] text-center p-6">
-              <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-4" />
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">
+            <div className="flex flex-col items-center justify-center min-h-[25rem] sm:min-h-[31.25rem] text-center p-4 sm:p-6">
+              <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2">
                 No messages yet
               </h3>
-              <p className="text-sm text-muted-foreground max-w-md">
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-[90%] sm:max-w-md px-2">
                 When visitors submit the contact form, their messages will
                 appear here.
               </p>
@@ -220,10 +226,10 @@ export function MessagesManagement({
       {activeTab === "stats" && (
         <>
           {statsLoading ? (
-            <div className="flex items-center justify-center min-h-[400px] sm:min-h-[500px]">
-              <div className="text-center space-y-4">
+            <div className="flex items-center justify-center min-h-[25rem] sm:min-h-[31.25rem]">
+              <div className="text-center space-y-3 sm:space-y-4">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground px-4">
                   Loading statistics...
                 </p>
               </div>
