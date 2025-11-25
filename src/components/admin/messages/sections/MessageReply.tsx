@@ -58,9 +58,17 @@ export function MessageReply({
     }
   }, [editor, message.reply_content]);
 
-  // Auto-scroll to top when modal opens
+  // Auto-scroll to top and lock body scroll when modal opens
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Lock body scroll
+    document.body.style.overflow = "hidden";
+
+    // Cleanup: restore body scroll when modal closes
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, []);
 
   const handleSendReply = async () => {
