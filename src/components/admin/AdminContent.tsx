@@ -125,14 +125,33 @@ export const AdminContent: React.FC<AdminContentProps> = ({
       <main id="main-content" className={mainContentClasses} role="main">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           {activeTab === "overview" && (
-            <div className="space-y-6">
-              <MessageStats {...messageStats} />
-              <ProjectStats {...projectStats} />
-              <AdminDashboard
-                contactMessages={contactMessages}
-                projects={projects}
-                unreadMessages={unreadMessages}
-              />
+            <div className="space-y-8">
+              {/* Page Header */}
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Dashboard Overview
+                </h1>
+                <p className="text-muted-foreground">
+                  Monitor your portfolio's performance and manage content
+                </p>
+              </div>
+
+              {/* Statistics Grid */}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Message Analytics
+                  </h2>
+                  <MessageStats {...messageStats} />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Project Analytics
+                  </h2>
+                  <ProjectStats {...projectStats} />
+                </div>
+              </div>
             </div>
           )}
 
