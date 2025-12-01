@@ -25,6 +25,8 @@ import {
   Layers,
   Target,
   User,
+  Zap,
+  BookOpen,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -45,10 +47,10 @@ export const SECTION_TABS: readonly AdminTab[] = [
   { id: "brand", label: "Brand", icon: Palette },
   { id: "messages", label: "Messages", icon: Mail },
   { id: "profile", label: "Profile", icon: User },
-  { id: "skills", label: "Skills", icon: Briefcase },
+  { id: "skills", label: "Skills", icon: Zap },
   { id: "projects", label: "Projects", icon: Briefcase },
   { id: "resume", label: "Resume", icon: FileText },
-  { id: "posts", label: "Blog Posts", icon: FileText },
+  { id: "posts", label: "Blog Posts", icon: BookOpen },
 ] as const;
 
 export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
