@@ -8,7 +8,6 @@ import {
   UserCircle,
   Sparkles,
   FileUser,
-  Briefcase as BriefcaseIcon,
   TrendingUp,
   Award,
   Link as LinkIcon,
@@ -31,6 +30,7 @@ import {
   Star,
   Search,
   BarChart3,
+  FolderKanban,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -52,7 +52,7 @@ export const SECTION_TABS: readonly AdminTab[] = [
   { id: "messages", label: "Messages", icon: Mail },
   { id: "profile", label: "Profile", icon: User },
   { id: "skills", label: "Skills", icon: Zap },
-  { id: "projects", label: "Projects", icon: Briefcase },
+  { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "resume", label: "Resume", icon: FileText },
   { id: "posts", label: "Blog Posts", icon: BookOpen },
 ] as const;
@@ -73,7 +73,7 @@ export const PROFILE_SUB_TABS: readonly AdminTab[] = [
   { id: "profile-personal", label: "Personal Info", icon: UserCircle },
   { id: "profile-hero", label: "Hero Section", icon: Star },
   { id: "profile-about", label: "About Section", icon: FileUser },
-  { id: "profile-experience", label: "Experience", icon: BriefcaseIcon },
+  { id: "profile-experience", label: "Experience", icon: Briefcase },
   { id: "profile-metrics", label: "Impact Metrics", icon: BarChart3 },
   { id: "profile-philosophy", label: "Philosophy", icon: Sparkles },
   { id: "profile-social", label: "Social Links", icon: LinkIcon },
@@ -96,7 +96,7 @@ export const PROJECTS_SUB_TABS: readonly AdminTab[] = [
 
 export const RESUME_SUB_TABS: readonly AdminTab[] = [
   { id: "resume-header", label: "Resume Header", icon: ScrollText },
-  { id: "resume-experiences", label: "Work Experiences", icon: BriefcaseIcon },
+  { id: "resume-experiences", label: "Work Experiences", icon: Briefcase },
   { id: "resume-education", label: "Education", icon: GraduationCap },
   { id: "resume-certifications", label: "Certifications", icon: Award },
 ] as const;
