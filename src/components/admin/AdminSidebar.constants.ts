@@ -24,6 +24,8 @@ import {
   Layout,
   PenSquare,
   ScrollText,
+  Layers,
+  Target,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -63,15 +65,15 @@ export const PROFILE_SUB_TABS: readonly AdminTab[] = [
 ] as const;
 
 export const SKILLS_SUB_TABS: readonly AdminTab[] = [
-  { id: "skills-header", label: "Skills Header", icon: FileText },
-  { id: "skills-categories", label: "Categories", icon: Briefcase },
+  { id: "skills-header", label: "Skills Header", icon: Layers },
+  { id: "skills-categories", label: "Categories", icon: Folder },
   { id: "skills-list", label: "Skills", icon: Award },
-  { id: "skills-goals", label: "Learning Goals", icon: TrendingUp },
+  { id: "skills-goals", label: "Learning Goals", icon: Target },
 ] as const;
 
 export const PROJECTS_SUB_TABS: readonly AdminTab[] = [
   { id: "projects-header", label: "Projects Header", icon: FileText },
-  { id: "projects-categories", label: "Categories", icon: FolderKanban },
+  { id: "projects-categories", label: "Categories", icon: Folder },
   { id: "projects-list", label: "Projects", icon: Briefcase },
   { id: "projects-technologies", label: "Technologies", icon: Code },
 ] as const;
