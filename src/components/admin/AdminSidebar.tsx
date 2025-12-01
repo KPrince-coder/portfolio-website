@@ -1,11 +1,6 @@
 import React, { useReducer, useCallback, useRef, useEffect } from "react";
 import {
   Shield,
-  Briefcase,
-  FileText,
-  User,
-  Mail,
-  Palette,
   ChevronDown,
   ChevronRight,
   ChevronLeft,
@@ -20,6 +15,7 @@ import { MobileSidebarBackdrop } from "./MobileSidebarBackdrop";
 import { cn } from "@/lib/utils";
 import {
   MAIN_TABS,
+  SECTION_TABS,
   BRAND_SUB_TABS,
   MESSAGES_SUB_TABS,
   PROFILE_SUB_TABS,
@@ -290,14 +286,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
     // Memoized render expandable section
     const renderExpandableSection = useCallback(
       (
-        icon: React.ComponentType<{ className?: string }>,
-        label: string,
+        sectionTab: AdminTab,
         isExpanded: boolean,
         onClick: () => void,
         isActive: boolean,
         subTabs: AdminTab[]
       ) => {
-        const Icon = icon;
+        const Icon = sectionTab.icon;
 
         return (
           <div className="space-y-1">
@@ -311,7 +306,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
                   : "justify-start"
               )}
               onClick={onClick}
-              title={sidebarCollapsed && isDesktop ? label : undefined}
+              title={
+                sidebarCollapsed && isDesktop ? sectionTab.label : undefined
+              }
             >
               {sidebarCollapsed && isDesktop ? (
                 // Collapsed state - icon only, perfectly centered
@@ -320,7 +317,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
                 // Expanded state - icon + label + chevron
                 <>
                   <Icon className="w-4 h-4 flex-shrink-0 mr-2" />
-                  <span className="flex-1 text-left">{label}</span>
+                  <span className="flex-1 text-left">{sectionTab.label}</span>
                   <span className="ml-auto">
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4" />
@@ -420,8 +417,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Brand Section */}
             {renderExpandableSection(
-              Palette,
-              "Brand",
+              SECTION_TABS[0], // Brand
               expandedSections.brand,
               handleBrandClick,
               activeTab.startsWith("brand"),
@@ -430,8 +426,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Messages Section */}
             {renderExpandableSection(
-              Mail,
-              "Messages",
+              SECTION_TABS[1], // Messages
               expandedSections.messages,
               handleMessagesClick,
               activeTab.startsWith("messages"),
@@ -440,8 +435,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Profile Section */}
             {renderExpandableSection(
-              User,
-              "Profile",
+              SECTION_TABS[2], // Profile
               expandedSections.profile,
               handleProfileClick,
               activeTab.startsWith("profile"),
@@ -450,8 +444,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Skills Section */}
             {renderExpandableSection(
-              Briefcase,
-              "Skills",
+              SECTION_TABS[3], // Skills
               expandedSections.skills,
               handleSkillsClick,
               activeTab.startsWith("skills"),
@@ -460,8 +453,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Projects Section */}
             {renderExpandableSection(
-              Briefcase,
-              "Projects",
+              SECTION_TABS[4], // Projects
               expandedSections.projects,
               handleProjectsClick,
               activeTab.startsWith("projects"),
@@ -470,8 +462,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Resume Section */}
             {renderExpandableSection(
-              FileText,
-              "Resume",
+              SECTION_TABS[5], // Resume
               expandedSections.resume,
               handleResumeClick,
               activeTab.startsWith("resume"),
@@ -480,8 +471,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = React.memo(
 
             {/* Blog Posts Section */}
             {renderExpandableSection(
-              FileText,
-              "Blog Posts",
+              SECTION_TABS[6], // Blog Posts
               expandedSections.posts,
               handlePostsClick,
               activeTab.startsWith("posts"),

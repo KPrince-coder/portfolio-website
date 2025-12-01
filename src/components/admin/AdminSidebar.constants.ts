@@ -13,11 +13,9 @@ import {
   Award,
   Link as LinkIcon,
   Upload,
-  FolderKanban,
   Code,
   GraduationCap,
   List,
-  Plus,
   Folder,
   Tag,
   Image,
@@ -26,6 +24,7 @@ import {
   ScrollText,
   Layers,
   Target,
+  User,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -39,6 +38,17 @@ export const MAIN_TABS: readonly AdminTab[] = [
   { id: "settings", label: "Settings", icon: Settings },
   { id: "footer", label: "Footer", icon: Layout },
   { id: "og-image", label: "OG Image", icon: Image },
+] as const;
+
+// Main expandable section tabs
+export const SECTION_TABS: readonly AdminTab[] = [
+  { id: "brand", label: "Brand", icon: Palette },
+  { id: "messages", label: "Messages", icon: Mail },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "skills", label: "Skills", icon: Briefcase },
+  { id: "projects", label: "Projects", icon: Briefcase },
+  { id: "resume", label: "Resume", icon: FileText },
+  { id: "posts", label: "Blog Posts", icon: FileText },
 ] as const;
 
 export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
