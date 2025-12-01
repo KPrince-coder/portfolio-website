@@ -83,7 +83,7 @@ export const PROFILE_SUB_TABS: readonly AdminTab[] = [
 export const SKILLS_SUB_TABS: readonly AdminTab[] = [
   { id: "skills-header", label: "Skills Header", icon: Layers },
   { id: "skills-categories", label: "Categories", icon: Folder },
-  { id: "skills-list", label: "Skills", icon: Award },
+  { id: "skills-list", label: "Skills", icon: Zap },
   { id: "skills-goals", label: "Learning Goals", icon: Target },
 ] as const;
 
