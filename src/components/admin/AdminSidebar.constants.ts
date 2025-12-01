@@ -21,6 +21,7 @@ import {
   Folder,
   Tag,
   Image,
+  Layout,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -32,7 +33,7 @@ import { AdminTab } from "./types";
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
   { id: "settings", label: "Settings", icon: Settings },
-  { id: "footer", label: "Footer", icon: Settings },
+  { id: "footer", label: "Footer", icon: Layout },
   { id: "og-image", label: "OG Image", icon: Image },
 ] as const;
 
