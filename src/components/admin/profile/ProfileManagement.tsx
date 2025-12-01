@@ -49,13 +49,14 @@ const ProfileManagement: React.FC<ProfileManagementProps> = ({
         return;
       }
 
+      // Get the single profile (no user_id filter - shared portfolio)
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         throw error;
       }
 
@@ -99,13 +100,15 @@ const ProfileManagement: React.FC<ProfileManagementProps> = ({
       if (!user) throw new Error("Not authenticated");
 
       if (profile) {
+        // Update existing profile
         const { error } = await supabase
           .from("profiles")
           .update(formData)
-          .eq("user_id", user.id);
+          .eq("id", profile.id);
 
         if (error) throw error;
       } else {
+        // Create new profile with current user_id
         const { error } = await supabase
           .from("profiles")
           .insert({ ...formData, user_id: user.id } as ProfileInsert);

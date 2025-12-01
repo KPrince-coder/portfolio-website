@@ -61,7 +61,7 @@ export function MessagesManagement({
           const { data: profile, error: profileError } = await supabase
             .from("profiles")
             .select("full_name")
-            .eq("user_id", user.id)
+            .limit(1)
             .maybeSingle();
 
           if (profileError) {

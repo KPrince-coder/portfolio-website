@@ -38,8 +38,8 @@ const ProjectsHeaderSection: React.FC = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("projects_title, projects_description")
-        .eq("user_id", user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -78,7 +78,8 @@ const ProjectsHeaderSection: React.FC = () => {
           projects_title: formData.projects_title,
           projects_description: formData.projects_description,
         })
-        .eq("user_id", user.id);
+        .limit(1)
+        .single();
 
       if (error) throw error;
 

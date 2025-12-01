@@ -8,19 +8,29 @@ import {
   UserCircle,
   Sparkles,
   FileUser,
-  Briefcase as BriefcaseIcon,
   TrendingUp,
   Award,
   Link as LinkIcon,
   Upload,
-  FolderKanban,
   Code,
   GraduationCap,
   List,
-  Plus,
   Folder,
   Tag,
   Image,
+  Layout,
+  PenSquare,
+  ScrollText,
+  Layers,
+  Target,
+  User,
+  Zap,
+  BookOpen,
+  Droplets,
+  Star,
+  Search,
+  BarChart3,
+  FolderKanban,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -32,8 +42,19 @@ import { AdminTab } from "./types";
 export const MAIN_TABS: readonly AdminTab[] = [
   { id: "overview", label: "Overview", icon: Shield },
   { id: "settings", label: "Settings", icon: Settings },
-  { id: "footer", label: "Footer", icon: Settings },
+  { id: "footer", label: "Footer", icon: Layout },
   { id: "og-image", label: "OG Image", icon: Image },
+] as const;
+
+// Main expandable section tabs
+export const SECTION_TABS: readonly AdminTab[] = [
+  { id: "brand", label: "Brand", icon: Palette },
+  { id: "messages", label: "Messages", icon: Mail },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "skills", label: "Skills", icon: Zap },
+  { id: "projects", label: "Projects", icon: FolderKanban },
+  { id: "resume", label: "Resume", icon: FileText },
+  { id: "posts", label: "Blog Posts", icon: BookOpen },
 ] as const;
 
 export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
@@ -44,45 +65,45 @@ export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
 
 export const BRAND_SUB_TABS: readonly AdminTab[] = [
   { id: "brand-logo", label: "Logo & Branding", icon: Palette },
-  { id: "brand-colors", label: "Colors", icon: Sparkles },
-  { id: "brand-seo", label: "SEO", icon: TrendingUp },
+  { id: "brand-colors", label: "Colors", icon: Droplets },
+  { id: "brand-seo", label: "SEO", icon: Search },
 ] as const;
 
 export const PROFILE_SUB_TABS: readonly AdminTab[] = [
   { id: "profile-personal", label: "Personal Info", icon: UserCircle },
-  { id: "profile-hero", label: "Hero Section", icon: Sparkles },
+  { id: "profile-hero", label: "Hero Section", icon: Star },
   { id: "profile-about", label: "About Section", icon: FileUser },
-  { id: "profile-experience", label: "Experience", icon: BriefcaseIcon },
-  { id: "profile-metrics", label: "Impact Metrics", icon: TrendingUp },
-  { id: "profile-philosophy", label: "Philosophy", icon: Award },
+  { id: "profile-experience", label: "Experience", icon: Briefcase },
+  { id: "profile-metrics", label: "Impact Metrics", icon: BarChart3 },
+  { id: "profile-philosophy", label: "Philosophy", icon: Sparkles },
   { id: "profile-social", label: "Social Links", icon: LinkIcon },
   { id: "profile-resume", label: "Resume", icon: Upload },
 ] as const;
 
 export const SKILLS_SUB_TABS: readonly AdminTab[] = [
-  { id: "skills-header", label: "Skills Header", icon: FileText },
-  { id: "skills-categories", label: "Categories", icon: Briefcase },
-  { id: "skills-list", label: "Skills", icon: Award },
-  { id: "skills-goals", label: "Learning Goals", icon: TrendingUp },
+  { id: "skills-header", label: "Skills Header", icon: Layers },
+  { id: "skills-categories", label: "Categories", icon: Folder },
+  { id: "skills-list", label: "Skills", icon: Zap },
+  { id: "skills-goals", label: "Learning Goals", icon: Target },
 ] as const;
 
 export const PROJECTS_SUB_TABS: readonly AdminTab[] = [
   { id: "projects-header", label: "Projects Header", icon: FileText },
-  { id: "projects-categories", label: "Categories", icon: FolderKanban },
+  { id: "projects-categories", label: "Categories", icon: Folder },
   { id: "projects-list", label: "Projects", icon: Briefcase },
   { id: "projects-technologies", label: "Technologies", icon: Code },
 ] as const;
 
 export const RESUME_SUB_TABS: readonly AdminTab[] = [
-  { id: "resume-header", label: "Resume Header", icon: FileText },
-  { id: "resume-experiences", label: "Work Experiences", icon: BriefcaseIcon },
+  { id: "resume-header", label: "Resume Header", icon: ScrollText },
+  { id: "resume-experiences", label: "Work Experiences", icon: Briefcase },
   { id: "resume-education", label: "Education", icon: GraduationCap },
   { id: "resume-certifications", label: "Certifications", icon: Award },
 ] as const;
 
 export const POSTS_SUB_TABS: readonly AdminTab[] = [
   { id: "posts-list", label: "All Posts", icon: List },
-  { id: "posts-new", label: "Create New", icon: Plus },
+  { id: "posts-new", label: "Create New", icon: PenSquare },
   { id: "posts-categories", label: "Categories", icon: Folder },
   { id: "posts-tags", label: "Tags", icon: Tag },
 ] as const;
