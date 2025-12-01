@@ -43,7 +43,7 @@ const ResumeHeaderSection: React.FC = () => {
           "resume_title, resume_description, years_of_experience, projects_completed, technologies_mastered, show_resume_stats"
         )
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

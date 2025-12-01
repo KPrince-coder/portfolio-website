@@ -39,7 +39,7 @@ const ProjectsHeaderSection: React.FC = () => {
         .from("profiles")
         .select("projects_title, projects_description")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

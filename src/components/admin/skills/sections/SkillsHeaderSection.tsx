@@ -40,7 +40,7 @@ const SkillsHeaderSection: React.FC = () => {
         .from("profiles")
         .select("skills_title, skills_description")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
