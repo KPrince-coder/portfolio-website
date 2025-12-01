@@ -42,7 +42,7 @@ const ResumeHeaderSection: React.FC = () => {
         .select(
           "resume_title, resume_description, years_of_experience, projects_completed, technologies_mastered, show_resume_stats"
         )
-        .eq("user_id", user.id)
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
@@ -88,7 +88,8 @@ const ResumeHeaderSection: React.FC = () => {
           technologies_mastered: formData.technologies_mastered,
           show_resume_stats: formData.show_resume_stats,
         })
-        .eq("user_id", user.id);
+        .limit(1)
+        .single();
 
       if (error) throw error;
 
