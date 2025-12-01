@@ -22,6 +22,8 @@ import {
   Tag,
   Image,
   Layout,
+  PenSquare,
+  ScrollText,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -75,7 +77,7 @@ export const PROJECTS_SUB_TABS: readonly AdminTab[] = [
 ] as const;
 
 export const RESUME_SUB_TABS: readonly AdminTab[] = [
-  { id: "resume-header", label: "Resume Header", icon: FileText },
+  { id: "resume-header", label: "Resume Header", icon: ScrollText },
   { id: "resume-experiences", label: "Work Experiences", icon: BriefcaseIcon },
   { id: "resume-education", label: "Education", icon: GraduationCap },
   { id: "resume-certifications", label: "Certifications", icon: Award },
@@ -83,7 +85,7 @@ export const RESUME_SUB_TABS: readonly AdminTab[] = [
 
 export const POSTS_SUB_TABS: readonly AdminTab[] = [
   { id: "posts-list", label: "All Posts", icon: List },
-  { id: "posts-new", label: "Create New", icon: Plus },
+  { id: "posts-new", label: "Create New", icon: PenSquare },
   { id: "posts-categories", label: "Categories", icon: Folder },
   { id: "posts-tags", label: "Tags", icon: Tag },
 ] as const;
