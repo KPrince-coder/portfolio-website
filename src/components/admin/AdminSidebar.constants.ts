@@ -27,6 +27,10 @@ import {
   User,
   Zap,
   BookOpen,
+  Droplets,
+  Star,
+  Search,
+  BarChart3,
 } from "lucide-react";
 import { AdminTab } from "./types";
 
@@ -61,17 +65,17 @@ export const MESSAGES_SUB_TABS: readonly AdminTab[] = [
 
 export const BRAND_SUB_TABS: readonly AdminTab[] = [
   { id: "brand-logo", label: "Logo & Branding", icon: Palette },
-  { id: "brand-colors", label: "Colors", icon: Sparkles },
-  { id: "brand-seo", label: "SEO", icon: TrendingUp },
+  { id: "brand-colors", label: "Colors", icon: Droplets },
+  { id: "brand-seo", label: "SEO", icon: Search },
 ] as const;
 
 export const PROFILE_SUB_TABS: readonly AdminTab[] = [
   { id: "profile-personal", label: "Personal Info", icon: UserCircle },
-  { id: "profile-hero", label: "Hero Section", icon: Sparkles },
+  { id: "profile-hero", label: "Hero Section", icon: Star },
   { id: "profile-about", label: "About Section", icon: FileUser },
   { id: "profile-experience", label: "Experience", icon: BriefcaseIcon },
-  { id: "profile-metrics", label: "Impact Metrics", icon: TrendingUp },
-  { id: "profile-philosophy", label: "Philosophy", icon: Award },
+  { id: "profile-metrics", label: "Impact Metrics", icon: BarChart3 },
+  { id: "profile-philosophy", label: "Philosophy", icon: Sparkles },
   { id: "profile-social", label: "Social Links", icon: LinkIcon },
   { id: "profile-resume", label: "Resume", icon: Upload },
 ] as const;
